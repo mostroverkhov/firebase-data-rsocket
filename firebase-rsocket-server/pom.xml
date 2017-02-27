@@ -9,5 +9,17 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>firebase-rsocket-server</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.github.mostroverkhov</groupId>
+            <artifactId>firebase-data-rxjava</artifactId>
+            <version>0.1.1</version>
+        </dependency>
 
+        <dependency>
+            <groupId>com.github.akarnokd</groupId>
+            <artifactId>rxjava2-interop</artifactId>
+            <version>0.9.2</version>
+        </dependency>
+    </dependencies>
 </project>

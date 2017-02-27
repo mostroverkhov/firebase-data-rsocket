@@ -12,6 +12,50 @@
         <module>firebase-rsocket-client</module>
         <module>firebase-rsocket-server</module>
     </modules>
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.reactivestreams/reactive-streams -->
+        <dependency>
+            <groupId>org.reactivestreams</groupId>
+            <artifactId>reactive-streams</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.reactivex.rxjava2/rxjava -->
+        <dependency>
+            <groupId>io.reactivex.rxjava2</groupId>
+            <artifactId>rxjava</artifactId>
+            <version>2.0.6</version>
+        </dependency>
 
+        <dependency>
+            <groupId>io.reactivesocket</groupId>
+            <artifactId>reactivesocket-core</artifactId>
+            <version>0.5.3-SNAPSHOT</version>
+        </dependency>
 
+        <dependency>
+            <groupId>io.reactivesocket</groupId>
+            <artifactId>reactivesocket-transport-tcp</artifactId>
+            <version>0.5.3-SNAPSHOT</version>
+        </dependency>
+
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.6.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <repositories>
+        <repository>
+            <id>jfrog</id>
+            <url>https://oss.jfrog.org/libs-snapshot</url>
+        </repository>
+    </repositories>
 </project>
