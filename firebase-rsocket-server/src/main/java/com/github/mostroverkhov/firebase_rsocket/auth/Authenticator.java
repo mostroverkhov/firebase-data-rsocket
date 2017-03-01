@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket_server.auth;
+package com.github.mostroverkhov.firebase_rsocket.auth;
 
 import io.reactivex.Completable;
 

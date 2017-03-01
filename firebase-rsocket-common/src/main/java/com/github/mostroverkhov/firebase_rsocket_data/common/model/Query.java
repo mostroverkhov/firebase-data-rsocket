@@ -1,10 +1,10 @@
-package com.github.mostroverkhov.firebase_rsocket_server.model;
+package com.github.mostroverkhov.firebase_rsocket_data.common.model;
 
 /**
  * Created by Maksym Ostroverkhov on 27.02.17.
  */
 public class Query {
-    private final String operation;
+    private volatile String operation;
     private final Path path;
     private final int windowSize;
     private final OrderDir orderDir;
@@ -26,6 +26,11 @@ public class Query {
         this.orderBy = orderBy;
         this.orderByChildKey = orderByChildKey;
         this.windowStartWith = windowStartWith;
+    }
+
+    public Query setOperation(String operation) {
+        this.operation = operation;
+        return this;
     }
 
     public String getOperation() {

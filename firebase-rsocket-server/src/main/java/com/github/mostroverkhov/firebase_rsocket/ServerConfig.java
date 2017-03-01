@@ -1,6 +1,6 @@
-package com.github.mostroverkhov.firebase_rsocket_server;
+package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket_server.auth.Authenticator;
+import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
 
 import java.net.SocketAddress;
 
