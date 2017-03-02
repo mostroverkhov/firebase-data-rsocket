@@ -8,22 +8,18 @@ import com.google.gson.Gson;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
-import org.junit.Assert;
+import io.reactivex.subscribers.TestSubscriber;
 import org.junit.Test;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Maksym Ostroverkhov on 28.02.17.
  */
 public class RequestStreamFuncTest {
+
+    private static final int SAMPLE_ITEM_COUNT = 10;
 
     @Test
     public void requestStream() throws Exception {
@@ -48,48 +44,30 @@ public class RequestStreamFuncTest {
                 .build();
 
         Server server = new Server(serverConfig, serverContext);
-        Completable stopHandle = server.start();
+        Completable serverStop = server.start();
 
+        int requestN = 1;
         Flowable<DataWindow<Data>> dataWindowFlow = client.dataWindow(query, Data.class);
+        TestSubscriber<DataWindow<Data>> testSubscriber
+                = new TestSubscriber<DataWindow<Data>>(requestN) {
 
-        CountDownLatch latch = new CountDownLatch(1);
+            @Override
+            public void onNext(DataWindow<Data> o) {
+                super.onNext(o);
+                request(requestN);
+            }
+        };
 
         dataWindowFlow
                 .observeOn(Schedulers.io())
-                .subscribe(new Subscriber<DataWindow<Data>>() {
+                .subscribe(testSubscriber);
 
-                    private volatile Subscription subscription;
-                    private final List<Data> items = Collections.synchronizedList(
-                            new ArrayList<>());
-
-                    @Override
-                    public void onSubscribe(Subscription subscription) {
-                        this.subscription = subscription;
-                        this.subscription.request(1);
-                    }
-
-                    @Override
-                    public void onNext(DataWindow<Data> objectDataWindow) {
-                        Assert.assertNotNull(objectDataWindow);
-                        items.addAll(objectDataWindow.getData());
-                        subscription.request(1);
-                    }
-
-                    @Override
-                    public void onError(Throwable throwable) {
-                        latch.countDown();
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        Assert.assertEquals(10, items.size());
-                        latch.countDown();
-                    }
-                });
-
-        boolean success = latch.await(10, TimeUnit.SECONDS);
-        Assert.assertTrue("Test should not timeout", success);
-
-        stopHandle.subscribe();
+        testSubscriber.awaitDone(10, TimeUnit.SECONDS);
+        testSubscriber
+                .assertNoErrors()
+                .assertValueCount(1)
+                .assertValue(
+                        v -> v.getData().size() == SAMPLE_ITEM_COUNT);
+        serverStop.subscribe();
     }
 }

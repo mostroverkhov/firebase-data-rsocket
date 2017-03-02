@@ -7,6 +7,14 @@ public class Data {
     private String data;
     private String id;
 
+    public Data(String data, String id) {
+        this.data = data;
+        this.id = id;
+    }
+
+    public Data() {
+    }
+
     public String getData() {
         return data;
     }
