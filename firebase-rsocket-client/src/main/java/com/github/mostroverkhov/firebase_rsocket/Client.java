@@ -1,9 +1,11 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.gson.GsonUtil;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.DataWindow;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.ReadQuery;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteResponse;
 import com.google.gson.*;
 import io.reactivesocket.Frame;
 import io.reactivesocket.FrameType;
@@ -34,32 +36,66 @@ public class Client {
         this.clientContext = clientContext;
     }
 
-    public static QueryBuilder query(String... childPaths) {
-        return new QueryBuilder(childPaths);
+    public static class Requests {
+
+        public static ReadRequestBuilder readRequest(String... childPaths) {
+            return new ReadRequestBuilder(childPaths);
+        }
+
+        public static <T> WriteRequestBuilder<T> writeRequest(String... childPaths) {
+            return new WriteRequestBuilder<>(childPaths);
+        }
     }
 
-    public <T> Flowable<DataWindow<T>> dataWindow(ReadQuery readQuery, Class<T> clazz) {
-        readQuery.setOperation(Op.DATA_WINDOW.code());
+    public <T> Flowable<ReadResponse<T>> dataWindow(ReadRequest readRequest, Class<T> clazz) {
+        return dataWindowFlow(readRequest, clazz);
+    }
 
-        SocketAddress address = clientConfig.getSocketAddress();
-        Flowable<ReactiveSocket> socketFlow = Flowable.fromPublisher(
-                ReactiveSocketClient.create(TcpTransportClient.create(address),
-                        keepAlive(never()).disableLease())
-                        .connect());
-
-        Flowable<DataWindow<T>> dataWindowFlow = socketFlow
+    public <T> Flowable<WriteResponse> write(WriteRequest<T> writeRequest) {
+        Flowable<ReactiveSocket> socketFlow = rsocketFlow();
+        Flowable<WriteResponse> writeResponseFlow = socketFlow
                 .flatMap(socket -> socket
                         .requestStream(
                                 toPayload(
                                         clientContext.gson(),
-                                        readQuery)))
+                                        writeRequest)))
                 .filter(requestStreamDataFrames())
-                .map(payload -> toDataWindow(
+                .map(payload -> toWriteResponse(
+                        clientContext.gson(),
+                        payload));
+
+        return writeResponseFlow;
+    }
+
+    private <T> Flowable<ReadResponse<T>> dataWindowFlow(
+            ReadRequest readRequest,
+            Class<T> clazz) {
+
+        readRequest.setOp(Op.DATA_WINDOW.code());
+
+        Flowable<ReactiveSocket> socketFlow = rsocketFlow();
+
+        Flowable<ReadResponse<T>> readResponseFlow = socketFlow
+                .flatMap(socket -> socket
+                        .requestStream(
+                                toPayload(
+                                        clientContext.gson(),
+                                        readRequest)))
+                .filter(requestStreamDataFrames())
+                .map(payload -> toReadResponse(
                         clientContext.gson(),
                         payload,
                         clazz));
 
-        return dataWindowFlow;
+        return readResponseFlow;
+    }
+
+    private Flowable<ReactiveSocket> rsocketFlow() {
+        SocketAddress address = clientConfig.getSocketAddress();
+        return Flowable.fromPublisher(
+                ReactiveSocketClient.create(TcpTransportClient.create(address),
+                        keepAlive(never()).disableLease())
+                        .connect());
     }
 
     /*workaround for https://github.com/ReactiveSocket/reactivesocket-java/issues/226*/
@@ -68,15 +104,21 @@ public class Client {
                 && (((Frame) payload).getType() != FrameType.NEXT_COMPLETE);
     }
 
-    private <T> DataWindow<T> toDataWindow(Gson gson,
-                                           Payload payload,
-                                           Class<T> itemType) {
+    private static <T> ReadResponse<T> toReadResponse(Gson gson,
+                                                      Payload payload,
+                                                      Class<T> itemType) {
         String dataStr = ByteBufferUtil.toUtf8String(payload.getData());
-        return GsonUtil.parseDataWindow(gson, dataStr, itemType);
+        return GsonUtil.mapReadResponse(gson, dataStr, itemType);
     }
 
-    private Payload toPayload(Gson gson, ReadQuery readQuery) {
-        return new PayloadImpl(gson.toJson(readQuery));
+    private static WriteResponse toWriteResponse(Gson gson,
+                                                 Payload payload) {
+        String dataStr = ByteBufferUtil.toUtf8String(payload.getData());
+        return GsonUtil.mapWriteResponse(gson, dataStr);
+    }
+
+    private Payload toPayload(Gson gson, Object request) {
+        return new PayloadImpl(gson.toJson(request));
     }
 
 }

@@ -3,10 +3,15 @@ package com.github.mostroverkhov.firebase_rsocket;
 import com.github.mostroverkhov.datawindowsource.model.DataQuery;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.model.Window;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.DataWindow;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.ReadQuery;
+import com.github.mostroverkhov.firebase_data_rxjava.rx.model.WriteResult;
 import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
+import com.github.mostroverkhov.firebase_rsocket.handlers.DefaultHandlerAdapter;
+import com.github.mostroverkhov.firebase_rsocket.handlers.RequestHandlerAdapter;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.*;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteResponse;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.Gson;
@@ -26,10 +31,9 @@ import io.reactivex.Flowable;
 import org.reactivestreams.Publisher;
 import rx.Observable;
 
-import java.io.Reader;
-import java.io.StringReader;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 /**
@@ -38,7 +42,7 @@ import java.util.concurrent.Callable;
 public class Server {
 
     private final ServerConfig serverConfig;
-    private ServerContext serverContext;
+    private final ServerContext serverContext;
 
     public Server(ServerConfig serverConfig,
                   ServerContext serverContext) {
@@ -77,50 +81,60 @@ public class Server {
         public LeaseEnforcingSocket accept(ConnectionSetupPayload setupPayload,
                                            ReactiveSocket reactiveSocket) {
             return new DisabledLeaseAcceptingSocket(
-                    new FrdDataReactiveSocket(
-                            new SocketContext(authenticator, gson)));
+                    new FirebaseReactiveSocket(
+                            new SocketContext(authenticator, gson),
+                            new DefaultHandlerAdapter(gson)));
         }
 
         private static Callable<Throwable> unknownOperationError(String operation) {
             String msg = operation.isEmpty() ? " empty" : operation;
             return () -> new FirebaseRsocketMessageFormatException(
-                    "Unknown operation: " + msg);
+                    "No handler for operation: " + msg);
         }
 
-        private ReadQuery query(Payload payload) {
-            ByteBuffer bb = payload.getData();
-            byte[] b = new byte[bb.remaining()];
-            bb.get(b);
-            Reader reader = new StringReader(new String(b));
-            try {
-                ReadQuery readQuery = getQuery(reader);
-                return readQuery;
-            } catch (Exception e) {
-                throw new FirebaseRsocketMessageFormatException("Payload is not a Query", e);
-            }
-        }
-
-        private ReadQuery getQuery(Reader reader) {
-            return gson.fromJson(reader, ReadQuery.class);
-        }
-
-        private class FrdDataReactiveSocket extends AbstractReactiveSocket {
+        private static class FirebaseReactiveSocket extends AbstractReactiveSocket {
 
             private final SocketContext context;
+            private RequestHandlerAdapter<?> requestHandlerAdapter;
 
-            public FrdDataReactiveSocket(SocketContext context) {
+            public FirebaseReactiveSocket(SocketContext context,
+                                          RequestHandlerAdapter<?> requestHandlerAdapter) {
                 this.context = context;
+                this.requestHandlerAdapter = requestHandlerAdapter;
             }
 
             @Override
             public Publisher<Payload> requestStream(Payload payload) {
                 Completable authSignal = context.authenticator().authenticate();
-                ReadQuery readQuery = query(payload);
-
-                return authSignal
-                        .andThen(Flowable.defer(
-                                () -> QueryHandler.handler(readQuery).handle(context, readQuery)));
+                String request = request(payload);
+                Optional<?> maybeRequest = requestHandlerAdapter.adapt(request);
+                if (!maybeRequest.isPresent()) {
+                    return Flowable.error(requestMissingHandlerAdapter(request));
+                } else {
+                    Operation adaptedRequest = (Operation) maybeRequest.get();
+                    return authSignal
+                            .andThen(Flowable.defer(
+                                    () -> {
+                                        RequestHandler handler = RequestHandler
+                                                .handler(adaptedRequest);
+                                        return handler
+                                                .handle(context, adaptedRequest);
+                                    }));
+                }
             }
+
+            private static String request(Payload payload) {
+                ByteBuffer bb = payload.getData();
+                byte[] b = new byte[bb.remaining()];
+                bb.get(b);
+                return new String(b);
+            }
+        }
+
+        private static FirebaseRsocketMessageFormatException
+        requestMissingHandlerAdapter(String request) {
+            return new FirebaseRsocketMessageFormatException(
+                    "No handler adapter for request: " + request);
         }
 
         private static class SocketContext {
@@ -141,31 +155,80 @@ public class Server {
             }
         }
 
-        private enum QueryHandler {
+        private enum RequestHandler {
 
-            DATA_WINDOW {
+            WRITE_PUSH {
                 @Override
-                boolean canHandle(ReadQuery readQuery) {
-                    return readQuery.getOperation().equals("data_window");
+                boolean canHandle(Operation op) {
+                    return op.getOp().equals("write_push");
                 }
 
                 @Override
-                Publisher<Payload> handle(final SocketContext context, final ReadQuery readQuery) {
+                Publisher<Payload> handle(final SocketContext context,
+                                          final Operation op) {
 
-                    DataQuery dataQuery = toDataQuery(readQuery);
+                    WriteRequest writeRequest = (WriteRequest) op;
+
+                    Path path = writeRequest.getPath();
+                    DatabaseReference dbRef = getReference(path);
+                    DatabaseReference newKeyRef = dbRef.push();
+
+                    Object data = writeRequest.getData();
+                    Observable<WriteResult>
+                            writeResultO = new FirebaseDatabaseManager(newKeyRef)
+                            .data()
+                            .setValue(data);
+
+                    Flowable<WriteResult> writeResultFlow = RxJavaInterop
+                            .toV2Flowable(writeResultO);
+                    Flowable<Payload> payloadFlow = writeResultFlow
+                            .map(writeResult -> writeResponse(path, newKeyRef))
+                            .map(resp -> toPayload(context.gson(), resp));
+
+                    return payloadFlow;
+                }
+
+                private WriteResponse writeResponse(Path path,
+                                                    DatabaseReference newKeyRef) {
+                    return new WriteResponse(newKeyRef.getKey(),
+                            path.getChildPaths());
+                }
+
+                private Payload toPayload(Gson gson, Object dw) {
+                    String data = gson.toJson(dw);
+                    return new PayloadImpl(data);
+                }
+            },
+
+            DATA_WINDOW {
+                @Override
+                boolean canHandle(Operation op) {
+                    return op.getOp().equals("data_window");
+                }
+
+                @Override
+                Publisher<Payload> handle(final SocketContext context,
+                                          final Operation op) {
+
+                    ReadRequest readRequest = (ReadRequest) op;
+                    DataQuery dataQuery = toDataQuery(readRequest);
                     Observable<Window<Object>> windowStream =
                             new FirebaseDatabaseManager(dataQuery.getDbRef())
                                     .data()
                                     .window(dataQuery);
-                    Flowable<Window<Object>> windowFlow = RxJavaInterop.toV2Flowable(windowStream);
+                    Flowable<Window<Object>> windowFlow = RxJavaInterop
+                            .toV2Flowable(windowStream);
                     Flowable<Payload> payloadFlow = windowFlow
-                            .map(window -> new DataWindow<>(readQuery, window.dataWindow()))
+                            .map(window -> new ReadResponse<>(
+                                    readRequest,
+                                    window.dataWindow()))
                             .map(dw -> toPayload(context.gson(), dw));
 
                     return payloadFlow;
                 }
 
-                private Payload toPayload(Gson gson, DataWindow<Object> dw) {
+                private Payload toPayload(Gson gson,
+                                          ReadResponse<Object> dw) {
                     String data = gson.toJson(dw);
                     return new PayloadImpl(data);
                 }
@@ -173,52 +236,61 @@ public class Server {
 
             UNKNOWN {
                 @Override
-                boolean canHandle(ReadQuery readQuery) {
+                boolean canHandle(Operation readQuery) {
                     return true;
                 }
 
                 @Override
-                Publisher<Payload> handle(SocketContext context, ReadQuery readQuery) {
-                    return Flowable.error(unknownOperationError(readQuery.getOperation()));
+                Publisher<Payload> handle(SocketContext context,
+                                          Operation op) {
+                    return Flowable.error(unknownOperationError(op.getOp()));
                 }
             };
 
-            abstract boolean canHandle(ReadQuery readQuery);
-
-            abstract Publisher<Payload> handle(SocketContext context, ReadQuery readQuery);
-
-            public static QueryHandler handler(ReadQuery readQuery) {
-                return Arrays.stream(values())
-                        .filter(h -> h.canHandle(readQuery))
-                        .findFirst().orElseThrow(() ->
-                                new AssertionError("Handlers chain is not exhaustive"));
-
-            }
-
-            private static DataQuery toDataQuery(ReadQuery readQuery) {
-
-                Path path = readQuery.getPath();
+            private static DatabaseReference getReference(Path path) {
                 DatabaseReference dataRef = FirebaseDatabase.getInstance()
                         .getReference();
                 for (String s : Arrays.asList(path.getChildPaths())) {
                     dataRef = dataRef.child(s);
                 }
+                return dataRef;
+            }
+
+            abstract boolean canHandle(Operation operation);
+
+            abstract Publisher<Payload> handle(SocketContext context,
+                                               Operation operation);
+
+            public static RequestHandler handler(Operation request) {
+                return Arrays.stream(values())
+                        .filter(h -> h.canHandle(request))
+                        .findFirst().orElseThrow(() ->
+                                new AssertionError(
+                                        "Handlers chain is not exhaustive"));
+
+            }
+
+            private static DataQuery toDataQuery(ReadRequest readRequest) {
+
+                Path path = readRequest.getPath();
+                DatabaseReference dataRef = getReference(path);
 
                 DataQuery.Builder builder = new DataQuery.Builder(dataRef);
-                builder.windowWithSize(readQuery.getWindowSize());
-                if (readQuery.isAsc()) {
+                builder.windowWithSize(readRequest.getWindowSize());
+                if (readRequest.isAsc()) {
                     builder.asc();
                 } else {
                     builder.desc();
                 }
-                ReadQuery.OrderBy orderBy = readQuery.getOrderBy();
-                if (orderBy == ReadQuery.OrderBy.KEY) {
+                ReadRequest.OrderBy orderBy = readRequest.getOrderBy();
+                if (orderBy == ReadRequest.OrderBy.KEY) {
                     builder.orderByKey();
-                } else if (orderBy == ReadQuery.OrderBy.VALUE) {
+                } else if (orderBy == ReadRequest.OrderBy.VALUE) {
                     builder.orderByValue();
-                } else if (orderBy == ReadQuery.OrderBy.CHILD && readQuery.getOrderByChildKey() != null) {
-                    builder.orderByChild(readQuery.getOrderByChildKey());
-                } else throw new IllegalStateException("Wrong order by: " + readQuery);
+                } else if (orderBy == ReadRequest.OrderBy.CHILD
+                        && readRequest.getOrderByChildKey() != null) {
+                    builder.orderByChild(readRequest.getOrderByChildKey());
+                } else throw new IllegalStateException("Wrong order by: " + readRequest);
 
                 return builder.build();
             }

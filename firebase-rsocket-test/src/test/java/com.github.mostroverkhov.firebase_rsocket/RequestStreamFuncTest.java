@@ -2,8 +2,8 @@ package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.auth.PropsCredentialsFactory;
 import com.github.mostroverkhov.firebase_rsocket.auth.ServerAuthenticator;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.DataWindow;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.ReadQuery;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import com.google.gson.Gson;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -39,8 +39,8 @@ public class RequestStreamFuncTest {
         ClientContext clientContext = new ClientContext(gson);
         Client client = new Client(clientConfig, clientContext);
 
-        ReadQuery readQuery = Client
-                .query("test", "read")
+        ReadRequest readRequest = Client.Requests
+                .readRequest("test", "read")
                 .asc()
                 .windowWithSize(WINDOW_SIZE)
                 .orderByKey()
@@ -49,12 +49,13 @@ public class RequestStreamFuncTest {
         Server server = new Server(serverConfig, serverContext);
         Completable serverStop = server.start();
 
-        Flowable<DataWindow<Data>> dataWindowFlow = client.dataWindow(readQuery, Data.class);
-        TestSubscriber<DataWindow<Data>> testSubscriber
-                = new TestSubscriber<DataWindow<Data>>(REQUEST_N) {
+        Flowable<ReadResponse<Data>> dataWindowFlow = client
+                .dataWindow(readRequest, Data.class);
+        TestSubscriber<ReadResponse<Data>> testSubscriber
+                = new TestSubscriber<ReadResponse<Data>>(REQUEST_N) {
 
             @Override
-            public void onNext(DataWindow<Data> o) {
+            public void onNext(ReadResponse<Data> o) {
                 super.onNext(o);
                 request(REQUEST_N);
             }
@@ -80,7 +81,7 @@ public class RequestStreamFuncTest {
         serverStop.subscribe();
     }
 
-    private boolean assertWindowContent(DataWindow<Data> window, int index) {
+    private boolean assertWindowContent(ReadResponse<Data> window, int index) {
         int doubledIndex = index * 2;
         for (Data data : window.getData()) {
             if (!String.valueOf(doubledIndex).equals(data.getId())) {

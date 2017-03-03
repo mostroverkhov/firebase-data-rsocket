@@ -1,9 +1,12 @@
-package com.github.mostroverkhov.firebase_rsocket_data.common.model;
+package com.github.mostroverkhov.firebase_rsocket_data.common.model.read;
+
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 
 /**
  * Created by Maksym Ostroverkhov on 27.02.17.
  */
-public class ReadQuery {
+public class ReadRequest implements Operation {
     private volatile String operation;
     private final Path path;
     private final int windowSize;
@@ -12,13 +15,13 @@ public class ReadQuery {
     private final String orderByChildKey;
     private final String windowStartWith;
 
-    public ReadQuery(String operation,
-                     Path path,
-                     int windowSize,
-                     OrderDir orderDir,
-                     OrderBy orderBy,
-                     String orderByChildKey,
-                     String windowStartWith) {
+    public ReadRequest(String operation,
+                       Path path,
+                       int windowSize,
+                       OrderDir orderDir,
+                       OrderBy orderBy,
+                       String orderByChildKey,
+                       String windowStartWith) {
         this.operation = operation;
         this.path = path;
         this.windowSize = windowSize;
@@ -28,12 +31,13 @@ public class ReadQuery {
         this.windowStartWith = windowStartWith;
     }
 
-    public ReadQuery setOperation(String operation) {
+    public ReadRequest setOp(String operation) {
         this.operation = operation;
         return this;
     }
 
-    public String getOperation() {
+    @Override
+    public String getOp() {
         return operation;
     }
 

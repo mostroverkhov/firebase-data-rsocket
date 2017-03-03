@@ -1,28 +1,28 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.ReadQuery;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 
-import static com.github.mostroverkhov.firebase_rsocket_data.common.model.ReadQuery.OrderBy.*;
+import static com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest.OrderBy.*;
 
 /**
  * Created by Maksym Ostroverkhov on 28.02.17.
  */
-public class QueryBuilder {
+public class ReadRequestBuilder {
 
     private String operation = "";
     private int windowSize = 25;
-    private ReadQuery.OrderDir orderDir = ReadQuery.OrderDir.ASC;
-    private ReadQuery.OrderBy orderBy = KEY;
+    private ReadRequest.OrderDir orderDir = ReadRequest.OrderDir.ASC;
+    private ReadRequest.OrderBy orderBy = KEY;
     private String key;
     private final Path path;
 
-    public QueryBuilder(String... childPaths) {
+    public ReadRequestBuilder(String... childPaths) {
         this.path = new Path(childPaths);
 
     }
 
-    public QueryBuilder windowWithSize(int size) {
+    public ReadRequestBuilder windowWithSize(int size) {
         if (size < 1) {
             throw new IllegalArgumentException("Size should be positive");
         }
@@ -30,12 +30,12 @@ public class QueryBuilder {
         return this;
     }
 
-    public QueryBuilder op(String operation) {
+    public ReadRequestBuilder op(String operation) {
         this.operation = operation;
         return this;
     }
 
-    public QueryBuilder orderByChild(String key) {
+    public ReadRequestBuilder orderByChild(String key) {
         if (key == null) {
             throw new IllegalArgumentException("key should not be null");
         }
@@ -44,31 +44,31 @@ public class QueryBuilder {
         return this;
     }
 
-    public QueryBuilder orderByKey() {
+    public ReadRequestBuilder orderByKey() {
         orderBy = KEY;
         this.key = null;
         return this;
     }
 
-    public QueryBuilder orderByValue() {
+    public ReadRequestBuilder orderByValue() {
         orderBy = VALUE;
         this.key = null;
         return this;
     }
 
-    public QueryBuilder asc() {
-        orderDir = ReadQuery.OrderDir.ASC;
+    public ReadRequestBuilder asc() {
+        orderDir = ReadRequest.OrderDir.ASC;
         return this;
     }
 
-    public QueryBuilder desc() {
-        orderDir = ReadQuery.OrderDir.DESC;
+    public ReadRequestBuilder desc() {
+        orderDir = ReadRequest.OrderDir.DESC;
         return this;
     }
 
-    public ReadQuery build() {
+    public ReadRequest build() {
 
-        return new ReadQuery(operation,
+        return new ReadRequest(operation,
                 path,
                 windowSize,
                 orderDir,

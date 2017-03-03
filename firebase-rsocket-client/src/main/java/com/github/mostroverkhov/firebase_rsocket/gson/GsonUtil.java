@@ -1,7 +1,8 @@
 package com.github.mostroverkhov.firebase_rsocket.gson;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.DataWindow;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.ReadQuery;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteResponse;
 import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
 
@@ -16,9 +17,9 @@ import java.util.List;
  */
 public class GsonUtil {
 
-    public static <T> DataWindow<T> parseDataWindow(Gson gson,
-                                                    String jsonStr,
-                                                    Class<T> itemType) {
+    public static <T> ReadResponse<T> mapReadResponse(Gson gson,
+                                                      String jsonStr,
+                                                      Class<T> itemType) {
         JsonReader jsonReader = gson.newJsonReader(
                 new BufferedReader(
                         new StringReader(jsonStr)));
@@ -27,17 +28,21 @@ public class GsonUtil {
         JsonElement root = getRoot(jsonStr, jsonReader, adapter);
 
         JsonObject rootObject = root.getAsJsonObject();
-        ReadQuery readQuery = getQuery(gson, rootObject);
+        ReadRequest readRequest = getQuery(gson, rootObject);
         List<T> data = getData(gson, itemType, rootObject);
 
-        return new DataWindow<>(readQuery, data);
+        return new ReadResponse<>(readRequest, data);
     }
 
-    private static ReadQuery getQuery(Gson gson,
-                                      JsonObject rootObject) {
+    public static WriteResponse mapWriteResponse(Gson gson, String jsonStr) {
+        return gson.fromJson(jsonStr, WriteResponse.class);
+    }
+
+    private static ReadRequest getQuery(Gson gson,
+                                        JsonObject rootObject) {
         return gson.fromJson(
                 rootObject.get("query").getAsJsonObject(),
-                ReadQuery.class);
+                ReadRequest.class);
     }
 
     private static <T> List<T> getData(Gson gson,
