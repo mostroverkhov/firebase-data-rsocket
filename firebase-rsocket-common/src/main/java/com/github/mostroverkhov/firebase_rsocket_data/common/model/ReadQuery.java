@@ -3,7 +3,7 @@ package com.github.mostroverkhov.firebase_rsocket_data.common.model;
 /**
  * Created by Maksym Ostroverkhov on 27.02.17.
  */
-public class Query {
+public class ReadQuery {
     private volatile String operation;
     private final Path path;
     private final int windowSize;
@@ -12,13 +12,13 @@ public class Query {
     private final String orderByChildKey;
     private final String windowStartWith;
 
-    public Query(String operation,
-                 Path path,
-                 int windowSize,
-                 OrderDir orderDir,
-                 OrderBy orderBy,
-                 String orderByChildKey,
-                 String windowStartWith) {
+    public ReadQuery(String operation,
+                     Path path,
+                     int windowSize,
+                     OrderDir orderDir,
+                     OrderBy orderBy,
+                     String orderByChildKey,
+                     String windowStartWith) {
         this.operation = operation;
         this.path = path;
         this.windowSize = windowSize;
@@ -28,7 +28,7 @@ public class Query {
         this.windowStartWith = windowStartWith;
     }
 
-    public Query setOperation(String operation) {
+    public ReadQuery setOperation(String operation) {
         this.operation = operation;
         return this;
     }

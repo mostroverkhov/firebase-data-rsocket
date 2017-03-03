@@ -6,16 +6,16 @@ import java.util.List;
  * Created by Maksym Ostroverkhov on 28.02.17.
  */
 public final class DataWindow<T> {
-    private final Query query;
+    private final ReadQuery readQuery;
     private final List<T> data;
 
-    public DataWindow(Query query, List<T> data) {
-        this.query = query;
+    public DataWindow(ReadQuery readQuery, List<T> data) {
+        this.readQuery = readQuery;
         this.data = data;
     }
 
-    public Query getQuery() {
-        return query;
+    public ReadQuery getReadQuery() {
+        return readQuery;
     }
 
     public List<T> getData() {

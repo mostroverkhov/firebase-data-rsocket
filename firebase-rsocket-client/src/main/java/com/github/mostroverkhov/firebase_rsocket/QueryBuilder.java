@@ -1,9 +1,9 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Query;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.ReadQuery;
 
-import static com.github.mostroverkhov.firebase_rsocket_data.common.model.Query.OrderBy.*;
+import static com.github.mostroverkhov.firebase_rsocket_data.common.model.ReadQuery.OrderBy.*;
 
 /**
  * Created by Maksym Ostroverkhov on 28.02.17.
@@ -12,8 +12,8 @@ public class QueryBuilder {
 
     private String operation = "";
     private int windowSize = 25;
-    private Query.OrderDir orderDir = Query.OrderDir.ASC;
-    private Query.OrderBy orderBy = KEY;
+    private ReadQuery.OrderDir orderDir = ReadQuery.OrderDir.ASC;
+    private ReadQuery.OrderBy orderBy = KEY;
     private String key;
     private final Path path;
 
@@ -57,18 +57,18 @@ public class QueryBuilder {
     }
 
     public QueryBuilder asc() {
-        orderDir = Query.OrderDir.ASC;
+        orderDir = ReadQuery.OrderDir.ASC;
         return this;
     }
 
     public QueryBuilder desc() {
-        orderDir = Query.OrderDir.DESC;
+        orderDir = ReadQuery.OrderDir.DESC;
         return this;
     }
 
-    public Query build() {
+    public ReadQuery build() {
 
-        return new Query(operation,
+        return new ReadQuery(operation,
                 path,
                 windowSize,
                 orderDir,

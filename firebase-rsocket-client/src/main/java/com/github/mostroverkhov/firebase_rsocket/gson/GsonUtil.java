@@ -1,7 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket.gson;
 
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.DataWindow;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Query;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.ReadQuery;
 import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
 
@@ -27,17 +27,17 @@ public class GsonUtil {
         JsonElement root = getRoot(jsonStr, jsonReader, adapter);
 
         JsonObject rootObject = root.getAsJsonObject();
-        Query query = getQuery(gson, rootObject);
+        ReadQuery readQuery = getQuery(gson, rootObject);
         List<T> data = getData(gson, itemType, rootObject);
 
-        return new DataWindow<>(query, data);
+        return new DataWindow<>(readQuery, data);
     }
 
-    private static Query getQuery(Gson gson,
-                                  JsonObject rootObject) {
+    private static ReadQuery getQuery(Gson gson,
+                                      JsonObject rootObject) {
         return gson.fromJson(
                 rootObject.get("query").getAsJsonObject(),
-                Query.class);
+                ReadQuery.class);
     }
 
     private static <T> List<T> getData(Gson gson,

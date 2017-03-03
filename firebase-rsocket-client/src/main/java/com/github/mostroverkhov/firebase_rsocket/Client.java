@@ -3,7 +3,7 @@ package com.github.mostroverkhov.firebase_rsocket;
 import com.github.mostroverkhov.firebase_rsocket.gson.GsonUtil;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.DataWindow;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Query;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.ReadQuery;
 import com.google.gson.*;
 import io.reactivesocket.Frame;
 import io.reactivesocket.FrameType;
@@ -38,8 +38,8 @@ public class Client {
         return new QueryBuilder(childPaths);
     }
 
-    public <T> Flowable<DataWindow<T>> dataWindow(Query query, Class<T> clazz) {
-        query.setOperation(Op.DATA_WINDOW.code());
+    public <T> Flowable<DataWindow<T>> dataWindow(ReadQuery readQuery, Class<T> clazz) {
+        readQuery.setOperation(Op.DATA_WINDOW.code());
 
         SocketAddress address = clientConfig.getSocketAddress();
         Flowable<ReactiveSocket> socketFlow = Flowable.fromPublisher(
@@ -52,7 +52,7 @@ public class Client {
                         .requestStream(
                                 toPayload(
                                         clientContext.gson(),
-                                        query)))
+                                        readQuery)))
                 .filter(requestStreamDataFrames())
                 .map(payload -> toDataWindow(
                         clientContext.gson(),
@@ -75,8 +75,8 @@ public class Client {
         return GsonUtil.parseDataWindow(gson, dataStr, itemType);
     }
 
-    private Payload toPayload(Gson gson, Query query) {
-        return new PayloadImpl(gson.toJson(query));
+    private Payload toPayload(Gson gson, ReadQuery readQuery) {
+        return new PayloadImpl(gson.toJson(readQuery));
     }
 
 }

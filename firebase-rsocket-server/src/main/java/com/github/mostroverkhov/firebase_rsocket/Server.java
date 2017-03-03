@@ -5,7 +5,7 @@ import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.model.Window;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.DataWindow;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Query;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.ReadQuery;
 import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -87,21 +87,21 @@ public class Server {
                     "Unknown operation: " + msg);
         }
 
-        private Query query(Payload payload) {
+        private ReadQuery query(Payload payload) {
             ByteBuffer bb = payload.getData();
             byte[] b = new byte[bb.remaining()];
             bb.get(b);
             Reader reader = new StringReader(new String(b));
             try {
-                Query query = getQuery(reader);
-                return query;
+                ReadQuery readQuery = getQuery(reader);
+                return readQuery;
             } catch (Exception e) {
                 throw new FirebaseRsocketMessageFormatException("Payload is not a Query", e);
             }
         }
 
-        private Query getQuery(Reader reader) {
-            return gson.fromJson(reader, Query.class);
+        private ReadQuery getQuery(Reader reader) {
+            return gson.fromJson(reader, ReadQuery.class);
         }
 
         private class FrdDataReactiveSocket extends AbstractReactiveSocket {
@@ -115,11 +115,11 @@ public class Server {
             @Override
             public Publisher<Payload> requestStream(Payload payload) {
                 Completable authSignal = context.authenticator().authenticate();
-                Query query = query(payload);
+                ReadQuery readQuery = query(payload);
 
                 return authSignal
                         .andThen(Flowable.defer(
-                                () -> QueryHandler.handler(query).handle(context, query)));
+                                () -> QueryHandler.handler(readQuery).handle(context, readQuery)));
             }
         }
 
@@ -145,21 +145,21 @@ public class Server {
 
             DATA_WINDOW {
                 @Override
-                boolean canHandle(Query query) {
-                    return query.getOperation().equals("data_window");
+                boolean canHandle(ReadQuery readQuery) {
+                    return readQuery.getOperation().equals("data_window");
                 }
 
                 @Override
-                Publisher<Payload> handle(final SocketContext context, final Query query) {
+                Publisher<Payload> handle(final SocketContext context, final ReadQuery readQuery) {
 
-                    DataQuery dataQuery = toDataQuery(query);
+                    DataQuery dataQuery = toDataQuery(readQuery);
                     Observable<Window<Object>> windowStream =
                             new FirebaseDatabaseManager(dataQuery.getDbRef())
                                     .data()
                                     .window(dataQuery);
                     Flowable<Window<Object>> windowFlow = RxJavaInterop.toV2Flowable(windowStream);
                     Flowable<Payload> payloadFlow = windowFlow
-                            .map(window -> new DataWindow<>(query, window.dataWindow()))
+                            .map(window -> new DataWindow<>(readQuery, window.dataWindow()))
                             .map(dw -> toPayload(context.gson(), dw));
 
                     return payloadFlow;
@@ -173,31 +173,31 @@ public class Server {
 
             UNKNOWN {
                 @Override
-                boolean canHandle(Query query) {
+                boolean canHandle(ReadQuery readQuery) {
                     return true;
                 }
 
                 @Override
-                Publisher<Payload> handle(SocketContext context, Query query) {
-                    return Flowable.error(unknownOperationError(query.getOperation()));
+                Publisher<Payload> handle(SocketContext context, ReadQuery readQuery) {
+                    return Flowable.error(unknownOperationError(readQuery.getOperation()));
                 }
             };
 
-            abstract boolean canHandle(Query query);
+            abstract boolean canHandle(ReadQuery readQuery);
 
-            abstract Publisher<Payload> handle(SocketContext context, Query query);
+            abstract Publisher<Payload> handle(SocketContext context, ReadQuery readQuery);
 
-            public static QueryHandler handler(Query query) {
+            public static QueryHandler handler(ReadQuery readQuery) {
                 return Arrays.stream(values())
-                        .filter(h -> h.canHandle(query))
+                        .filter(h -> h.canHandle(readQuery))
                         .findFirst().orElseThrow(() ->
                                 new AssertionError("Handlers chain is not exhaustive"));
 
             }
 
-            private static DataQuery toDataQuery(Query query) {
+            private static DataQuery toDataQuery(ReadQuery readQuery) {
 
-                Path path = query.getPath();
+                Path path = readQuery.getPath();
                 DatabaseReference dataRef = FirebaseDatabase.getInstance()
                         .getReference();
                 for (String s : Arrays.asList(path.getChildPaths())) {
@@ -205,20 +205,20 @@ public class Server {
                 }
 
                 DataQuery.Builder builder = new DataQuery.Builder(dataRef);
-                builder.windowWithSize(query.getWindowSize());
-                if (query.isAsc()) {
+                builder.windowWithSize(readQuery.getWindowSize());
+                if (readQuery.isAsc()) {
                     builder.asc();
                 } else {
                     builder.desc();
                 }
-                Query.OrderBy orderBy = query.getOrderBy();
-                if (orderBy == Query.OrderBy.KEY) {
+                ReadQuery.OrderBy orderBy = readQuery.getOrderBy();
+                if (orderBy == ReadQuery.OrderBy.KEY) {
                     builder.orderByKey();
-                } else if (orderBy == Query.OrderBy.VALUE) {
+                } else if (orderBy == ReadQuery.OrderBy.VALUE) {
                     builder.orderByValue();
-                } else if (orderBy == Query.OrderBy.CHILD && query.getOrderByChildKey() != null) {
-                    builder.orderByChild(query.getOrderByChildKey());
-                } else throw new IllegalStateException("Wrong order by: " + query);
+                } else if (orderBy == ReadQuery.OrderBy.CHILD && readQuery.getOrderByChildKey() != null) {
+                    builder.orderByChild(readQuery.getOrderByChildKey());
+                } else throw new IllegalStateException("Wrong order by: " + readQuery);
 
                 return builder.build();
             }

@@ -3,18 +3,15 @@ package com.github.mostroverkhov.firebase_rsocket;
 import com.github.mostroverkhov.firebase_rsocket.auth.PropsCredentialsFactory;
 import com.github.mostroverkhov.firebase_rsocket.auth.ServerAuthenticator;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.DataWindow;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Query;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.ReadQuery;
 import com.google.gson.Gson;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.reactivex.annotations.NonNull;
-import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subscribers.TestSubscriber;
 import org.junit.Test;
 
 import java.net.InetSocketAddress;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -42,7 +39,7 @@ public class RequestStreamFuncTest {
         ClientContext clientContext = new ClientContext(gson);
         Client client = new Client(clientConfig, clientContext);
 
-        Query query = Client
+        ReadQuery readQuery = Client
                 .query("test", "read")
                 .asc()
                 .windowWithSize(WINDOW_SIZE)
@@ -52,7 +49,7 @@ public class RequestStreamFuncTest {
         Server server = new Server(serverConfig, serverContext);
         Completable serverStop = server.start();
 
-        Flowable<DataWindow<Data>> dataWindowFlow = client.dataWindow(query, Data.class);
+        Flowable<DataWindow<Data>> dataWindowFlow = client.dataWindow(readQuery, Data.class);
         TestSubscriber<DataWindow<Data>> testSubscriber
                 = new TestSubscriber<DataWindow<Data>>(REQUEST_N) {
 
