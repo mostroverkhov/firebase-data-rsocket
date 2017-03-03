@@ -30,4 +30,12 @@ public class Data {
     public void setId(String id) {
         this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return "Data{" +
+                "data='" + data + '\'' +
+                ", id='" + id + '\'' +
+                '}';
+    }
 }

@@ -31,13 +31,13 @@
         <dependency>
             <groupId>io.reactivesocket</groupId>
             <artifactId>reactivesocket-core</artifactId>
-            <version>0.5.3-SNAPSHOT</version>
+            <version>0.5.2</version>
         </dependency>
 
         <dependency>
             <groupId>io.reactivesocket</groupId>
             <artifactId>reactivesocket-transport-tcp</artifactId>
-            <version>0.5.3-SNAPSHOT</version>
+            <version>0.5.2</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/io.reactivex/rxnetty-tcp -->
         <dependency>
