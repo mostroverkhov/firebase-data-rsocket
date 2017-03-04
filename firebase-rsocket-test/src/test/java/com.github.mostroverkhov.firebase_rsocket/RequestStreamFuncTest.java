@@ -39,7 +39,7 @@ public class RequestStreamFuncTest {
         ClientContext clientContext = new ClientContext(gson);
         Client client = new Client(clientConfig, clientContext);
 
-        ReadRequest readRequest = Client.Requests
+        ReadRequest readRequest = Requests
                 .readRequest("test", "read")
                 .asc()
                 .windowWithSize(WINDOW_SIZE)

@@ -1,5 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.handlers;
 
+import javax.swing.text.html.Option;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
@@ -17,21 +18,18 @@ public class DelegatingRequestHandlerAdapter implements RequestHandlerAdapter {
         delegateAdapters.addAll(Arrays.asList(adapters));
     }
 
-    private void assertAdapters(RequestHandlerAdapter<?>[] adapters) {
-        if (adapters == null) {
-            throw new IllegalArgumentException("Adapters should not be null");
-        }
-    }
-
     @Override
     public Optional<?> adapt(String request) {
         return delegateAdapters.stream()
-                .filter(canHandleRequest(request))
-                .findFirst()
-                .flatMap(adapter -> adapter.adapt(request));
+                .map(adapter -> adapter.adapt(request))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .findFirst();
     }
 
-    private Predicate<RequestHandlerAdapter> canHandleRequest(String request) {
-        return delegate -> delegate.adapt(request) != null;
+    private static void assertAdapters(RequestHandlerAdapter<?>[] adapters) {
+        if (adapters == null) {
+            throw new IllegalArgumentException("Adapters should not be null");
+        }
     }
 }

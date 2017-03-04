@@ -28,8 +28,8 @@ public class GsonUtil {
         JsonElement root = getRoot(jsonStr, jsonReader, adapter);
 
         JsonObject rootObject = root.getAsJsonObject();
-        ReadRequest readRequest = getQuery(gson, rootObject);
-        List<T> data = getData(gson, itemType, rootObject);
+        ReadRequest readRequest = readResponseRequest(gson, rootObject);
+        List<T> data = readResponseData(gson, itemType, rootObject);
 
         return new ReadResponse<>(readRequest, data);
     }
@@ -38,16 +38,16 @@ public class GsonUtil {
         return gson.fromJson(jsonStr, WriteResponse.class);
     }
 
-    private static ReadRequest getQuery(Gson gson,
-                                        JsonObject rootObject) {
+    private static ReadRequest readResponseRequest(Gson gson,
+                                                   JsonObject rootObject) {
         return gson.fromJson(
-                rootObject.get("query").getAsJsonObject(),
+                rootObject.get("readRequest").getAsJsonObject(),
                 ReadRequest.class);
     }
 
-    private static <T> List<T> getData(Gson gson,
-                                       Class<T> itemType,
-                                       JsonObject rootObject) {
+    private static <T> List<T> readResponseData(Gson gson,
+                                                Class<T> itemType,
+                                                JsonObject rootObject) {
 
         JsonArray dataListJson = rootObject
                 .get("data").getAsJsonArray();

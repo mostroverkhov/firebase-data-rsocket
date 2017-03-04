@@ -36,23 +36,13 @@ public class Client {
         this.clientContext = clientContext;
     }
 
-    public static class Requests {
-
-        public static ReadRequestBuilder readRequest(String... childPaths) {
-            return new ReadRequestBuilder(childPaths);
-        }
-
-        public static <T> WriteRequestBuilder<T> writeRequest(String... childPaths) {
-            return new WriteRequestBuilder<>(childPaths);
-        }
-    }
-
-    public <T> Flowable<ReadResponse<T>> dataWindow(ReadRequest readRequest, Class<T> clazz) {
+    public <T> Flowable<ReadResponse<T>> dataWindow(ReadRequest readRequest,
+                                                    Class<T> clazz) {
         return dataWindowFlow(readRequest, clazz);
     }
 
     public <T> Flowable<WriteResponse> write(WriteRequest<T> writeRequest) {
-        Flowable<ReactiveSocket> socketFlow = rsocketFlow();
+        Flowable<ReactiveSocket> socketFlow = rsocket();
         Flowable<WriteResponse> writeResponseFlow = socketFlow
                 .flatMap(socket -> socket
                         .requestStream(
@@ -73,7 +63,7 @@ public class Client {
 
         readRequest.setOp(Op.DATA_WINDOW.code());
 
-        Flowable<ReactiveSocket> socketFlow = rsocketFlow();
+        Flowable<ReactiveSocket> socketFlow = rsocket();
 
         Flowable<ReadResponse<T>> readResponseFlow = socketFlow
                 .flatMap(socket -> socket
@@ -90,7 +80,7 @@ public class Client {
         return readResponseFlow;
     }
 
-    private Flowable<ReactiveSocket> rsocketFlow() {
+    private Flowable<ReactiveSocket> rsocket() {
         SocketAddress address = clientConfig.getSocketAddress();
         return Flowable.fromPublisher(
                 ReactiveSocketClient.create(TcpTransportClient.create(address),
