@@ -15,7 +15,7 @@ public class WriteRequestBuilder<T> {
         this.childPaths = childPaths;
     }
 
-    public WriteRequestBuilder data(T data) {
+    public WriteRequestBuilder<T> data(T data) {
         this.data = data;
         return this;
     }

@@ -38,4 +38,22 @@ public class Data {
                 ", id='" + id + '\'' +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Data data1 = (Data) o;
+
+        if (data != null ? !data.equals(data1.data) : data1.data != null) return false;
+        return id != null ? id.equals(data1.id) : data1.id == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = data != null ? data.hashCode() : 0;
+        result = 31 * result + (id != null ? id.hashCode() : 0);
+        return result;
+    }
 }

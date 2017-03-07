@@ -30,11 +30,6 @@ public class ReadRequestBuilder {
         return this;
     }
 
-    public ReadRequestBuilder op(String operation) {
-        this.operation = operation;
-        return this;
-    }
-
     public ReadRequestBuilder orderByChild(String key) {
         if (key == null) {
             throw new IllegalArgumentException("key should not be null");

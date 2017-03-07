@@ -9,6 +9,8 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subscribers.TestSubscriber;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.net.InetSocketAddress;
@@ -17,15 +19,17 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by Maksym Ostroverkhov on 28.02.17.
  */
-public class RequestStreamFuncTest {
+public class ReadRequestFuncTest {
 
     private static final int SAMPLE_ITEM_COUNT = 10;
     private static final int WINDOW_SIZE = 2;
     private static final int REQUEST_N = 1;
+    private Completable serverStop;
+    private Client client;
 
-    @Test
-    public void requestStream() throws Exception {
-
+    @SuppressWarnings("Duplicates")
+    @Before
+    public void setUp() throws Exception {
         Gson gson = new Gson();
 
         InetSocketAddress socketAddress = new InetSocketAddress(8090);
@@ -37,7 +41,19 @@ public class RequestStreamFuncTest {
 
         ClientConfig clientConfig = new ClientConfig(socketAddress);
         ClientContext clientContext = new ClientContext(gson);
-        Client client = new Client(clientConfig, clientContext);
+        client = new Client(clientConfig, clientContext);
+
+        Server server = new Server(serverConfig, serverContext);
+        serverStop = server.start();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        stopServer();
+    }
+
+    @Test
+    public void requestStream() throws Exception {
 
         ReadRequest readRequest = Requests
                 .readRequest("test", "read")
@@ -45,9 +61,6 @@ public class RequestStreamFuncTest {
                 .windowWithSize(WINDOW_SIZE)
                 .orderByKey()
                 .build();
-
-        Server server = new Server(serverConfig, serverContext);
-        Completable serverStop = server.start();
 
         Flowable<ReadResponse<Data>> dataWindowFlow = client
                 .dataWindow(readRequest, Data.class);
@@ -78,7 +91,13 @@ public class RequestStreamFuncTest {
             testSubscriber.assertValueAt(i,
                     window -> assertWindowContent(window, c));
         }
-        serverStop.subscribe();
+    }
+
+    private void stopServer() {
+        if (serverStop != null) {
+            serverStop.subscribe();
+            serverStop = null;
+        }
     }
 
     private boolean assertWindowContent(ReadResponse<Data> window, int index) {
