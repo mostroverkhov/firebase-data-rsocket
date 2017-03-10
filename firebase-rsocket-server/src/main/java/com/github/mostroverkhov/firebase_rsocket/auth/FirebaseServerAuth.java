@@ -55,6 +55,8 @@ public class FirebaseServerAuth {
                                     "account file: "
                                     + serviceAccountFileName));
                         }
+                    } else {
+                        e.onComplete();
                     }
                 }
             }

@@ -12,11 +12,7 @@ public class ServerAuthenticator implements Authenticator {
     private final Flowable<Credentials> credsFlow;
 
     public ServerAuthenticator(CredentialsFactory credsFlow) {
-        this.credsFlow = credsFlow.getCreds().toFlowable()
-                .materialize()
-                .filter(Notification::isOnNext)
-                .cache()
-                .dematerialize();
+        this.credsFlow = credsFlow.getCreds().toFlowable();
     }
 
     @Override

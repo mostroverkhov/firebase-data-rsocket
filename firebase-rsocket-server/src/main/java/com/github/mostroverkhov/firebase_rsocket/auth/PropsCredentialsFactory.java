@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Created by Maksym Ostroverkhov on 15.02.2017.
@@ -15,6 +16,7 @@ import java.util.Properties;
 public class PropsCredentialsFactory implements CredentialsFactory {
 
     private final String propFile;
+    private final AtomicReference<Credentials> credsRef = new AtomicReference<>();
 
     public PropsCredentialsFactory(String propFile) {
         this.propFile = propFile;
@@ -26,7 +28,7 @@ public class PropsCredentialsFactory implements CredentialsFactory {
         return Single.create(e -> {
             if (!e.isDisposed()) {
                 try {
-                    Credentials creds = credentials();
+                    Credentials creds = setCredsOnceAndGet();
                     if (!e.isDisposed()) {
                         e.onSuccess(creds);
                     }
@@ -39,6 +41,15 @@ public class PropsCredentialsFactory implements CredentialsFactory {
                 }
             }
         });
+    }
+
+    private Credentials setCredsOnceAndGet() {
+        Credentials creds = credsRef.get();
+        if (creds == null) {
+            creds = credentials();
+            credsRef.compareAndSet(null, creds);
+        }
+        return credsRef.get();
     }
 
 

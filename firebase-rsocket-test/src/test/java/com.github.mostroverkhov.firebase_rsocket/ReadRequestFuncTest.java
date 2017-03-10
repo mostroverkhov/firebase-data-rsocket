@@ -12,73 +12,38 @@ import io.reactivex.subscribers.TestSubscriber;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by Maksym Ostroverkhov on 28.02.17.
  */
-public class ReadRequestFuncTest {
+public class ReadRequestFuncTest extends AbstractTest{
 
     private static final int SAMPLE_ITEM_COUNT = 10;
     private static final int WINDOW_SIZE = 2;
     private static final int REQUEST_N = 1;
-    private Completable serverStop;
-    private Client client;
-
-    @SuppressWarnings("Duplicates")
-    @Before
-    public void setUp() throws Exception {
-        Gson gson = new Gson();
-
-        InetSocketAddress socketAddress = new InetSocketAddress(8090);
-        ServerConfig serverConfig = new ServerConfig(
-                socketAddress,
-                new ServerAuthenticator(
-                        new PropsCredentialsFactory("creds.properties")));
-        ServerContext serverContext = new ServerContext(gson);
-
-        ClientConfig clientConfig = new ClientConfig(socketAddress);
-        ClientContext clientContext = new ClientContext(gson);
-        client = new Client(clientConfig, clientContext);
-
-        Server server = new Server(serverConfig, serverContext);
-        serverStop = server.start();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        stopServer();
-    }
+    private static final int READ_REPEAT_N = 3;
 
     @Test
     public void requestStream() throws Exception {
 
-        ReadRequest readRequest = Requests
-                .readRequest("test", "read")
-                .asc()
-                .windowWithSize(WINDOW_SIZE)
-                .orderByKey()
-                .build();
-
+        ReadRequest readRequest = requestStreamRequest();
         Flowable<ReadResponse<Data>> dataWindowFlow = client
                 .dataWindow(readRequest, Data.class);
         TestSubscriber<ReadResponse<Data>> testSubscriber
-                = new TestSubscriber<ReadResponse<Data>>(REQUEST_N) {
-
-            @Override
-            public void onNext(ReadResponse<Data> o) {
-                super.onNext(o);
-                request(REQUEST_N);
-            }
-        };
+                = requestStreamSubscriber();
 
         dataWindowFlow
                 .observeOn(Schedulers.io())
                 .subscribe(testSubscriber);
 
-        testSubscriber.awaitDone(10, TimeUnit.SECONDS);
+        testSubscriber.awaitDone(20, TimeUnit.SECONDS);
         int valueCount = SAMPLE_ITEM_COUNT / WINDOW_SIZE;
         testSubscriber
                 .assertNoErrors()
@@ -93,11 +58,45 @@ public class ReadRequestFuncTest {
         }
     }
 
-    private void stopServer() {
-        if (serverStop != null) {
-            serverStop.subscribe();
-            serverStop = null;
-        }
+    @Test
+    public void requestStreamRepeat() throws Exception {
+
+        ReadRequest readRequest = requestStreamRequest();
+        Flowable<ReadResponse<Data>> dataWindowFlow = client
+                .dataWindow(readRequest, Data.class);
+        TestSubscriber<ReadResponse<Data>> testSubscriber
+                = requestStreamSubscriber();
+
+        dataWindowFlow
+                .repeat(READ_REPEAT_N)
+                .observeOn(Schedulers.io())
+                .subscribe(testSubscriber);
+
+        testSubscriber.awaitDone(30, TimeUnit.SECONDS);
+        int valueCount = READ_REPEAT_N * SAMPLE_ITEM_COUNT / WINDOW_SIZE;
+        testSubscriber
+                .assertNoErrors()
+                .assertValueCount(valueCount);
+    }
+
+    private ReadRequest requestStreamRequest() {
+        return Requests
+                .readRequest("test", "read")
+                .asc()
+                .windowWithSize(WINDOW_SIZE)
+                .orderByKey()
+                .build();
+    }
+
+
+    private TestSubscriber<ReadResponse<Data>> requestStreamSubscriber() {
+        return new TestSubscriber<ReadResponse<Data>>(REQUEST_N) {
+            @Override
+            public void onNext(ReadResponse<Data> o) {
+                super.onNext(o);
+                request(REQUEST_N);
+            }
+        };
     }
 
     private boolean assertWindowContent(ReadResponse<Data> window, int index) {

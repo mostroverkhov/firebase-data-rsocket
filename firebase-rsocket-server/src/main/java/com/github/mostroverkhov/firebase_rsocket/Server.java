@@ -232,6 +232,31 @@ public class Server {
                     String data = gson.toJson(dw);
                     return new PayloadImpl(data);
                 }
+
+                private DataQuery toDataQuery(ReadRequest readRequest) {
+
+                    Path path = readRequest.getPath();
+                    DatabaseReference dataRef = getReference(path);
+
+                    DataQuery.Builder builder = new DataQuery.Builder(dataRef);
+                    builder.windowWithSize(readRequest.getWindowSize());
+                    if (readRequest.isAsc()) {
+                        builder.asc();
+                    } else {
+                        builder.desc();
+                    }
+                    ReadRequest.OrderBy orderBy = readRequest.getOrderBy();
+                    if (orderBy == ReadRequest.OrderBy.KEY) {
+                        builder.orderByKey();
+                    } else if (orderBy == ReadRequest.OrderBy.VALUE) {
+                        builder.orderByValue();
+                    } else if (orderBy == ReadRequest.OrderBy.CHILD
+                            && readRequest.getOrderByChildKey() != null) {
+                        builder.orderByChild(readRequest.getOrderByChildKey());
+                    } else throw new IllegalStateException("Wrong order by: " + readRequest);
+
+                    return builder.build();
+                }
             },
 
             UNKNOWN {
@@ -268,31 +293,6 @@ public class Server {
                                 new AssertionError(
                                         "Handlers chain is not exhaustive"));
 
-            }
-
-            private static DataQuery toDataQuery(ReadRequest readRequest) {
-
-                Path path = readRequest.getPath();
-                DatabaseReference dataRef = getReference(path);
-
-                DataQuery.Builder builder = new DataQuery.Builder(dataRef);
-                builder.windowWithSize(readRequest.getWindowSize());
-                if (readRequest.isAsc()) {
-                    builder.asc();
-                } else {
-                    builder.desc();
-                }
-                ReadRequest.OrderBy orderBy = readRequest.getOrderBy();
-                if (orderBy == ReadRequest.OrderBy.KEY) {
-                    builder.orderByKey();
-                } else if (orderBy == ReadRequest.OrderBy.VALUE) {
-                    builder.orderByValue();
-                } else if (orderBy == ReadRequest.OrderBy.CHILD
-                        && readRequest.getOrderByChildKey() != null) {
-                    builder.orderByChild(readRequest.getOrderByChildKey());
-                } else throw new IllegalStateException("Wrong order by: " + readRequest);
-
-                return builder.build();
             }
         }
     }
