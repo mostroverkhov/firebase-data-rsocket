@@ -1,24 +1,13 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.auth.PropsCredentialsFactory;
-import com.github.mostroverkhov.firebase_rsocket.auth.ServerAuthenticator;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
-import com.google.gson.Gson;
-import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subscribers.TestSubscriber;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by Maksym Ostroverkhov on 28.02.17.
@@ -31,9 +20,9 @@ public class ReadRequestFuncTest extends AbstractTest{
     private static final int READ_REPEAT_N = 3;
 
     @Test
-    public void requestStream() throws Exception {
+    public void presentRead() throws Exception {
 
-        ReadRequest readRequest = requestStreamRequest();
+        ReadRequest readRequest = presentReadRequest();
         Flowable<ReadResponse<Data>> dataWindowFlow = client
                 .dataWindow(readRequest, Data.class);
         TestSubscriber<ReadResponse<Data>> testSubscriber
@@ -59,9 +48,29 @@ public class ReadRequestFuncTest extends AbstractTest{
     }
 
     @Test
-    public void requestStreamRepeat() throws Exception {
+    public void missingRead() throws Exception {
 
-        ReadRequest readRequest = requestStreamRequest();
+        ReadRequest readRequest = missingReadRequest();
+        Flowable<ReadResponse<Data>> dataWindowFlow = client
+                .dataWindow(readRequest, Data.class);
+        TestSubscriber<ReadResponse<Data>> testSubscriber
+                = requestStreamSubscriber();
+
+        dataWindowFlow
+                .observeOn(Schedulers.io())
+                .subscribe(testSubscriber);
+
+        testSubscriber.awaitDone(10, TimeUnit.SECONDS);
+        testSubscriber
+                .assertNoErrors()
+                .assertComplete()
+                .assertValueCount(0);
+    }
+
+    @Test
+    public void presentReadRepeat() throws Exception {
+
+        ReadRequest readRequest = presentReadRequest();
         Flowable<ReadResponse<Data>> dataWindowFlow = client
                 .dataWindow(readRequest, Data.class);
         TestSubscriber<ReadResponse<Data>> testSubscriber
@@ -79,9 +88,18 @@ public class ReadRequestFuncTest extends AbstractTest{
                 .assertValueCount(valueCount);
     }
 
-    private ReadRequest requestStreamRequest() {
+    private ReadRequest presentReadRequest() {
         return Requests
                 .readRequest("test", "read")
+                .asc()
+                .windowWithSize(WINDOW_SIZE)
+                .orderByKey()
+                .build();
+    }
+
+    private ReadRequest missingReadRequest() {
+        return Requests
+                .readRequest("foo", "bar")
                 .asc()
                 .windowWithSize(WINDOW_SIZE)
                 .orderByKey()
