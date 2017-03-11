@@ -9,6 +9,7 @@ import io.reactivex.CompletableOnSubscribe;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by Maksym Ostroverkhov on 28.02.2017.
@@ -16,17 +17,32 @@ import java.util.Map;
 
 public class FirebaseServerAuth {
 
+    private static volatile FirebaseServerAuth instance;
+
     private final String serviceAccountFileName;
     private final String databaseUrl;
     private final String uid;
+    private final AtomicBoolean appInitSignal = new AtomicBoolean();
 
-
-    public FirebaseServerAuth(String serviceAccountFileName,
+    private FirebaseServerAuth(String serviceAccountFileName,
                               String databaseUrl,
                               String uid) {
         this.serviceAccountFileName = serviceAccountFileName;
         this.databaseUrl = databaseUrl;
         this.uid = uid;
+    }
+
+    public static FirebaseServerAuth getInstance(String serviceAccountFileName,
+                                                 String databaseUrl,
+                                                 String uid) {
+        if (instance == null) {
+            synchronized (FirebaseServerAuth.class) {
+                if (instance == null) {
+                    instance = new FirebaseServerAuth(serviceAccountFileName, databaseUrl, uid);
+                }
+            }
+        }
+        return instance;
     }
 
     public Completable authenticate() {
@@ -45,8 +61,9 @@ public class FirebaseServerAuth {
                                     .setDatabaseUrl(databaseUrl)
                                     .setDatabaseAuthVariableOverride(auth)
                                     .build();
-
-                            FirebaseApp.initializeApp(options);
+                            if (appInitSignal.compareAndSet(false, true)) {
+                                FirebaseApp.initializeApp(options);
+                            }
                             if (!e.isDisposed()) {
                                 e.onComplete();
                             }

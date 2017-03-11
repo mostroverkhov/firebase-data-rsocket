@@ -63,7 +63,7 @@ public class DataFixture {
                 WRITE_TIMEOUT_SEC);
 
         ServerAuthenticator testAuthenticator = new TestAutheticator();
-        testAuthenticator.authenticate().toFlowable().materialize().flatMap(
+        testAuthenticator.authenticate().toFlowable().flatMap(
                 __ -> dataFixture.fillSampleData().toFlowable()).blockingSubscribe();
     }
 

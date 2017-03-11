@@ -18,7 +18,7 @@ public class ServerAuthenticator implements Authenticator {
     @Override
     public Completable authenticate() {
         return credsFlow
-                .map(credentials -> new FirebaseServerAuth(
+                .map(credentials -> FirebaseServerAuth.getInstance(
                         credentials.getServiceFile(),
                         credentials.getDbUrl(),
                         credentials.getUserId()))

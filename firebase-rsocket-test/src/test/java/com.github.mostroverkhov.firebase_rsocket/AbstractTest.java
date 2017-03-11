@@ -33,7 +33,6 @@ public class AbstractTest {
         ClientConfig clientConfig = new ClientConfig(socketAddress);
         ClientContext clientContext = new ClientContext(gson);
         client = new Client(clientConfig, clientContext);
-
         Server server = new Server(serverConfig, serverContext);
         serverStop = server.start();
     }
