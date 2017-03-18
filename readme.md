@@ -1,14 +1,14 @@
 # firebase-rsocket-server
 
 Proof-of-concept for non-blocking backpressured interface to firebase database    
-Based on `reactive-socket-java` [[link]](https://github.com/ReactiveSocket/reactivesocket-java) and `firebase-data-rxjava` [[link]](https://github.com/mostroverkhov/firebase-data-rxjava) 
-####Supported transports
+Based on `reactive-socket-java` [[link]](https://github.com/ReactiveSocket/reactivesocket-java) and `firebase-data-rxjava` [[link]](https://github.com/mostroverkhov/firebase-data-rxjava)    
+#### Supported transports   
 Tcp only at the moment. Server relies on `reactive-socket-java`, which provides
 tcp, udp, websockets transports out of the box, some of those will be eventually 
 supported   
 
-####Usage
-######Setup
+#### Usage
+###### Setup
 Server
 ```
         InetSocketAddress socketAddress = new InetSocketAddress(8090);
@@ -30,7 +30,7 @@ Client
                 .socketAddress(socketAddress)
                 .build();  
 ```
-######Read
+###### Read
  
  ```
               ReadRequest readRequest =
@@ -44,7 +44,7 @@ Client
                  Flowable<ReadResponse<Data>> dataWindowFlow = client
                                      .dataWindow(readRequest, Data.class);
  ```
-######Write
+###### Write
 ```
              Data data = new Data("w", "w");
                    WriteRequest<Data> writeRequest = Requests
@@ -55,13 +55,13 @@ Client
              Flowable<WriteResponse> writeResponse = client
                            .write(writeRequest);
  ```
- ######Delete
+ ###### Delete
  ```
  Flowable<DeleteResponse> deleteFlow = client
                  .delete(Requests.deleteRequest("test", "delete")
                          .build());
  ```
-####Security
+#### Security
 Firebase rules are used for authorization, particularly, server setup requires authenticator, which
 sets credentials [(docs)](https://firebase.google.com/docs/database/admin/start) via `CredentialsFactory`.
  Currently there is one impl - `PropsCredentialsFactory` for property file based credentials setup, file is
@@ -71,13 +71,13 @@ sets credentials [(docs)](https://firebase.google.com/docs/database/admin/start)
    dbUrl=https://fir-rx-data-test.firebaseio.com/
    dbUserId=firebase_test 
  ```
-####Testing
+#### Testing
 Firebase database was not mocked out for pragmatic reasons, so all tests are performed against
  real database. Sample data for read operations testing is provided by runnable `DataFixture` of `firebase-rsocket-test`. It uses props based authenticator,
  credentials are expected to be in `resources/creds.properties`. Very rough latency estimation can be done with
  `LatencyCheck` test
    
-####LICENSE
+#### LICENSE
 Copyright 2017 Maksym Ostroverkhov
 
    Licensed under the Apache License, Version 2.0 (the "License");
