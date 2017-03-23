@@ -1,6 +1,6 @@
 # firebase-rsocket-server
 
-Provides non-blocking backpressured interface to firebase database    
+Provides non-blocking interface to firebase database    
 Based on `reactive-socket-java` [[link]](https://github.com/ReactiveSocket/reactivesocket-java) and `firebase-data-rxjava` [[link]](https://github.com/mostroverkhov/firebase-data-rxjava)    
 #### Supported transports   
 Tcp only at the moment. Server relies on `reactive-socket-java`, which provides
