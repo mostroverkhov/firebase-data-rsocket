@@ -1,32 +1,29 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
-import com.github.mostroverkhov.firebase_rsocket.handlers.cache.firebase.CacheDuration;
-import com.github.mostroverkhov.firebase_rsocket.handlers.cache.firebase.NativeCache;
 import com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers.RequestHandler;
+import com.github.mostroverkhov.firebase_rsocket.transport.ServerTransport;
 
-import java.net.SocketAddress;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Created by Maksym Ostroverkhov on 27.02.17.
  */
 class ServerConfig {
-    private final SocketAddress socketAddress;
+    private final ServerTransport transport;
     private final Authenticator authenticator;
     private final List<RequestHandler> handlers;
 
-    public ServerConfig(SocketAddress socketAddress,
+    public ServerConfig(ServerTransport transport,
                         Authenticator authenticator,
                         List<RequestHandler> handlers) {
-        this.socketAddress = socketAddress;
+        this.transport = transport;
         this.authenticator = authenticator;
         this.handlers = handlers;
     }
 
-    public SocketAddress getSocketAddress() {
-        return socketAddress;
+    public ServerTransport transport() {
+        return transport;
     }
 
     public Authenticator authenticator() {

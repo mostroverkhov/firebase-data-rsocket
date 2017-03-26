@@ -3,7 +3,6 @@ package com.github.mostroverkhov.firebase_rsocket;
 import com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers.HandlerManager;
 import io.reactivesocket.server.ReactiveSocketServer;
 import io.reactivesocket.transport.TransportServer;
-import io.reactivesocket.transport.tcp.server.TcpTransportServer;
 import io.reactivex.Completable;
 
 /**
@@ -23,7 +22,7 @@ public class Server {
     public Completable start() {
 
         TransportServer.StartedServer server = ReactiveSocketServer
-                .create(TcpTransportServer.create(serverConfig.getSocketAddress()))
+                .create(serverConfig.transport().transportServer())
                 .start(
                         new ServerSocketAcceptor(
                                 serverConfig.authenticator(),

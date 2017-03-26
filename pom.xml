@@ -7,7 +7,7 @@
     <groupId>com.github.mostroverkhov</groupId>
     <artifactId>firebase-rsocket-server-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.0</version>
+    <version>0.1.1-SNAPSHOT</version>
     <modules>
         <module>firebase-rsocket-client-java</module>
         <module>firebase-rsocket-server</module>
@@ -37,6 +37,11 @@
         <dependency>
             <groupId>io.reactivesocket</groupId>
             <artifactId>reactivesocket-transport-tcp</artifactId>
+            <version>0.5.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.reactivesocket</groupId>
+            <artifactId>reactivesocket-transport-aeron</artifactId>
             <version>0.5.2</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/io.reactivex/rxnetty-tcp -->

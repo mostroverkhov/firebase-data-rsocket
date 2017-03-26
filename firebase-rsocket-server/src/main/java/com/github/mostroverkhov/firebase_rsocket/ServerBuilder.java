@@ -1,9 +1,9 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
+import com.github.mostroverkhov.firebase_rsocket.auth.CredentialsAuthenticator;
 import com.github.mostroverkhov.firebase_rsocket.auth.PermitAllAuthenticator;
 import com.github.mostroverkhov.firebase_rsocket.auth.PropsCredentialsFactory;
-import com.github.mostroverkhov.firebase_rsocket.auth.CredentialsAuthenticator;
 import com.github.mostroverkhov.firebase_rsocket.handlers.cache.firebase.CacheDuration;
 import com.github.mostroverkhov.firebase_rsocket.handlers.cache.firebase.CacheDurationConstant;
 import com.github.mostroverkhov.firebase_rsocket.handlers.cache.firebase.DumbNativeCache;
@@ -13,10 +13,9 @@ import com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers.impl.D
 import com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers.impl.DeleteHandler;
 import com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers.impl.UnknownHandler;
 import com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers.impl.WritePushHandler;
+import com.github.mostroverkhov.firebase_rsocket.transport.ServerTransport;
 import com.google.gson.Gson;
 
-import java.lang.annotation.Native;
-import java.net.SocketAddress;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -32,17 +31,17 @@ public class ServerBuilder {
     private static final Authenticator PERMIT_ALL_AUTH = new PermitAllAuthenticator();
     private static final DataWindowHandler.Cache DEFAULT_CACHE = new DataWindowHandler.Cache(
             new DumbNativeCache(
-                    Executors.newSingleThreadScheduledExecutor()),
+                    Executors.newSingleThreadScheduledExecutor(
+                            ServerBuilder::newDaemonThread)),
             new CacheDurationConstant(5, TimeUnit.SECONDS));
 
-    private SocketAddress socketAddress;
+    private final ServerTransport transport;
     private Authenticator authenticator = PERMIT_ALL_AUTH;
+    private Optional<DataWindowHandler.Cache> cache = Optional.empty();
 
-    private Optional<DataWindowHandler.Cache> cache;
-
-    public ServerBuilder socketAddress(SocketAddress socketAddress) {
-        this.socketAddress = socketAddress;
-        return this;
+    public ServerBuilder(ServerTransport transport) {
+        assertTransport(transport);
+        this.transport = transport;
     }
 
     public ServerBuilder noAuth() {
@@ -75,17 +74,26 @@ public class ServerBuilder {
     }
 
     public Server build() {
-        if (socketAddress == null) {
-            throw new IllegalArgumentException("SocketAddress should be present");
-        }
         ServerConfig serverConfig = new ServerConfig(
-                socketAddress,
+                transport,
                 authenticator,
                 handlers());
 
         ServerContext serverContext = new ServerContext(new Gson());
 
         return new Server(serverConfig, serverContext);
+    }
+
+    private void assertTransport(ServerTransport transport) {
+        if (transport == null) {
+            throw new IllegalArgumentException("ServerTransport should be present");
+        }
+    }
+
+    private static Thread newDaemonThread(Runnable r) {
+        Thread thread = new Thread(r);
+        thread.setDaemon(true);
+        return thread;
     }
 
     private static void assertCredsFile(String credsFile) {

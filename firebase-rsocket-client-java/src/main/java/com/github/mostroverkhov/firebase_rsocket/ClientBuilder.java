@@ -1,8 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.transport.ClientTransport;
 import com.google.gson.Gson;
-
-import java.net.SocketAddress;
 
 /**
  * Created with IntelliJ IDEA.
@@ -10,19 +9,22 @@ import java.net.SocketAddress;
  */
 public class ClientBuilder {
 
-    private SocketAddress socketAddress;
+    private final ClientTransport transport;
 
-    public ClientBuilder socketAddress(SocketAddress socketAddress) {
-        this.socketAddress = socketAddress;
-        return this;
+    public ClientBuilder(ClientTransport transport) {
+        assertArg(transport);
+        this.transport = transport;
     }
 
     public Client build() {
+        ClientConfig clientConfig = new ClientConfig(transport);
+        ClientContext clientContext = new ClientContext(new Gson());
+        return new Client(clientConfig, clientContext);
+    }
+
+    private void assertArg(ClientTransport socketAddress) {
         if (socketAddress == null) {
             throw new IllegalArgumentException("SocketAddress should be present");
         }
-        ClientConfig clientConfig = new ClientConfig(socketAddress);
-        ClientContext clientContext = new ClientContext(new Gson());
-        return new Client(clientConfig, clientContext);
     }
 }

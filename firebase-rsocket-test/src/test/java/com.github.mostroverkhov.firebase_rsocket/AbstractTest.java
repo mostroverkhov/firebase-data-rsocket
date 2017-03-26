@@ -1,5 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.transport.tcp.ClientTransportTcp;
+import com.github.mostroverkhov.firebase_rsocket.transport.tcp.ServerTransportTcp;
 import io.reactivex.Completable;
 import org.junit.After;
 import org.junit.Before;
@@ -16,18 +18,17 @@ public class AbstractTest {
     protected Completable serverStop;
     protected Client client;
 
-    @SuppressWarnings("Duplicates")
     @Before
     public void setUp() throws Exception {
         InetSocketAddress socketAddress = new InetSocketAddress(8090);
-        Server server = new ServerBuilder()
-                .socketAddress(socketAddress)
+        Server server = new ServerBuilder(
+                new ServerTransportTcp(socketAddress))
                 .cacheReads()
                 .credentialsAuth("creds.properties")
                 .build();
 
-        Client client = new ClientBuilder()
-                .socketAddress(socketAddress)
+        Client client = new ClientBuilder(
+                new ClientTransportTcp(socketAddress))
                 .build();
         this.client = client;
 

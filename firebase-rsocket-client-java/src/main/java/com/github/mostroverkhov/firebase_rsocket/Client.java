@@ -1,26 +1,23 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.gson.GsonUtil;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteResponse;
-import com.google.gson.*;
+import com.google.gson.Gson;
 import io.reactivesocket.Frame;
 import io.reactivesocket.FrameType;
 import io.reactivesocket.Payload;
 import io.reactivesocket.ReactiveSocket;
 import io.reactivesocket.client.ReactiveSocketClient;
 import io.reactivesocket.frame.ByteBufferUtil;
-import io.reactivesocket.transport.tcp.client.TcpTransportClient;
 import io.reactivesocket.util.PayloadImpl;
 import io.reactivex.Flowable;
 import io.reactivex.functions.Predicate;
-
-import java.net.SocketAddress;
 
 import static io.reactivesocket.client.KeepAliveProvider.never;
 import static io.reactivesocket.client.SetupProvider.keepAlive;
@@ -29,7 +26,7 @@ import static io.reactivesocket.client.SetupProvider.keepAlive;
  * Created by Maksym Ostroverkhov on 28.02.17.
  */
 class Client {
-    private final ClientConfig clientConfig;
+    private ClientConfig clientConfig;
     private final ClientContext clientContext;
 
     public Client(ClientConfig clientConfig,
@@ -94,9 +91,8 @@ class Client {
     }
 
     private Flowable<ReactiveSocket> rsocket() {
-        SocketAddress address = clientConfig.getSocketAddress();
         return Flowable.fromPublisher(
-                ReactiveSocketClient.create(TcpTransportClient.create(address),
+                ReactiveSocketClient.create(clientConfig.transport().transportClient(),
                         keepAlive(never()).disableLease())
                         .connect());
     }
