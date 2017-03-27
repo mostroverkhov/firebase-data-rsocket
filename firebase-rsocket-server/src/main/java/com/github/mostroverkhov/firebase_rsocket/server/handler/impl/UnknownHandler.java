@@ -1,8 +1,8 @@
-package com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers.impl;
+package com.github.mostroverkhov.firebase_rsocket.server.handler.impl;
 
 import com.github.mostroverkhov.firebase_rsocket.FirebaseRsocketMessageFormatException;
 import com.github.mostroverkhov.firebase_rsocket.ServerSocketAcceptor;
-import com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers.RequestHandler;
+import com.github.mostroverkhov.firebase_rsocket.server.handler.RequestHandler;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import io.reactivesocket.Payload;
 import io.reactivex.Flowable;

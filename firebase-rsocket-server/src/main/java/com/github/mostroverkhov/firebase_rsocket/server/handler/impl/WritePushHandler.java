@@ -1,9 +1,9 @@
-package com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers.impl;
+package com.github.mostroverkhov.firebase_rsocket.server.handler.impl;
 
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.model.WriteResult;
 import com.github.mostroverkhov.firebase_rsocket.ServerSocketAcceptor;
-import com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers.RequestHandler;
+import com.github.mostroverkhov.firebase_rsocket.server.handler.RequestHandler;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
@@ -16,7 +16,7 @@ import io.reactivex.Flowable;
 import org.reactivestreams.Publisher;
 import rx.Observable;
 
-import static com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers.impl.HandlerCommon.payload;
+import static com.github.mostroverkhov.firebase_rsocket.server.handler.impl.HandlerCommon.payload;
 
 /**
  * Created with IntelliJ IDEA.

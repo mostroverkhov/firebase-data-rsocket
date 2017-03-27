@@ -1,9 +1,9 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
-import com.github.mostroverkhov.firebase_rsocket.handlers.adapters.DefaultHandlerAdapter;
-import com.github.mostroverkhov.firebase_rsocket.handlers.adapters.RequestHandlerAdapter;
-import com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers.HandlerManager;
+import com.github.mostroverkhov.firebase_rsocket.server.handler.HandlerManager;
+import com.github.mostroverkhov.firebase_rsocket.server.mapper.DefaultRequestMapper;
+import com.github.mostroverkhov.firebase_rsocket.server.mapper.RequestMapper;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import com.google.gson.Gson;
 import io.reactivesocket.AbstractReactiveSocket;
@@ -46,18 +46,18 @@ public class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor
                 new FirebaseReactiveSocket(
                         new SocketContext(authenticator, gson),
                         handlerManager,
-                        new DefaultHandlerAdapter(gson)));
+                        new DefaultRequestMapper(gson)));
     }
 
     private static class FirebaseReactiveSocket extends AbstractReactiveSocket {
 
         private final SocketContext context;
         private final HandlerManager handlerManager;
-        private final RequestHandlerAdapter<?> requestHandlerAdapter;
+        private final RequestMapper<?> requestHandlerAdapter;
 
         public FirebaseReactiveSocket(SocketContext context,
                                       HandlerManager handlerManager,
-                                      RequestHandlerAdapter<?> requestHandlerAdapter) {
+                                      RequestMapper<?> requestHandlerAdapter) {
             this.context = context;
             this.handlerManager = handlerManager;
             this.requestHandlerAdapter = requestHandlerAdapter;
@@ -74,7 +74,7 @@ public class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor
             Flowable<Optional<Publisher<Payload>>> responseFlow = requestFlow
                     .map(request ->
                             requestHandlerAdapter
-                                    .adapt(request)
+                                    .map(request)
                                     .map(this::handleRequest));
             Flowable<Publisher<Payload>> succFlow = responseFlow
                     .filter(Optional::isPresent)

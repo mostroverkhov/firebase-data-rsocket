@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers;
+package com.github.mostroverkhov.firebase_rsocket.server.handler;
 
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 

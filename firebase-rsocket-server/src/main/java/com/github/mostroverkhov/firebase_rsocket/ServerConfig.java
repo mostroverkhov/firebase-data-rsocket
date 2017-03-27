@@ -1,7 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
-import com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers.RequestHandler;
+import com.github.mostroverkhov.firebase_rsocket.server.handler.RequestHandler;
 import com.github.mostroverkhov.firebase_rsocket.transport.ServerTransport;
 
 import java.util.List;

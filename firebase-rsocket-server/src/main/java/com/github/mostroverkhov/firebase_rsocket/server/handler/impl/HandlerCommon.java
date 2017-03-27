@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers.impl;
+package com.github.mostroverkhov.firebase_rsocket.server.handler.impl;
 
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 import com.google.firebase.database.DatabaseReference;

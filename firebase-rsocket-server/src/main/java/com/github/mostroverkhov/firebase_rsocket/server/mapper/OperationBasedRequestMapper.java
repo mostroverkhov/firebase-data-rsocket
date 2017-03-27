@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket.handlers.adapters;
+package com.github.mostroverkhov.firebase_rsocket.server.mapper;
 
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import com.google.gson.Gson;
@@ -17,23 +17,23 @@ import java.util.Set;
 /**
  * Created by Maksym Ostroverkhov on 03.03.17.
  */
-public class OperationBasedHandlerAdapter<T extends Operation>
-        implements RequestHandlerAdapter<T> {
+public class OperationBasedRequestMapper<T extends Operation>
+        implements RequestMapper<T> {
 
     private final Gson gson;
     private final Class<T> targetType;
     private final Set<String> ops = new HashSet<>();
 
-    public OperationBasedHandlerAdapter(Gson gson,
-                                        Class<T> targetType,
-                                        String... ops) {
+    public OperationBasedRequestMapper(Gson gson,
+                                       Class<T> targetType,
+                                       String... ops) {
         this.gson = gson;
         this.targetType = targetType;
         this.ops.addAll(Arrays.asList(ops));
     }
 
     @Override
-    public Optional<T> adapt(String request) {
+    public Optional<T> map(String request) {
         BufferedReader reader = new BufferedReader(new StringReader(request));
         TypeAdapter<JsonElement> adapter = gson.getAdapter(JsonElement.class);
         JsonElement element = jsonElement(reader, adapter);

@@ -1,6 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers.HandlerManager;
+import com.github.mostroverkhov.firebase_rsocket.server.handler.HandlerManager;
 import io.reactivesocket.server.ReactiveSocketServer;
 import io.reactivesocket.transport.TransportServer;
 import io.reactivex.Completable;
