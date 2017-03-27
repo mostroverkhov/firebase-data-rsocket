@@ -6,9 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
@@ -33,23 +31,34 @@ public class OperationBasedRequestMapper<T extends Operation>
     }
 
     @Override
-    public Optional<T> map(String request) {
-        BufferedReader reader = new BufferedReader(new StringReader(request));
+    public Optional<T> map(byte[] request) {
+        BufferedReader reader = reader(request);
         TypeAdapter<JsonElement> adapter = gson.getAdapter(JsonElement.class);
         JsonElement element = jsonElement(reader, adapter);
         String op = element
                 .getAsJsonObject()
                 .get("operation").getAsString();
         if (ops.contains(op)) {
-            return Optional.of(gson.fromJson(request, targetType));
+            return Optional.of(gson.fromJson(element, targetType));
         } else {
             return Optional.empty();
         }
     }
 
-    private JsonElement jsonElement(BufferedReader reader,
+    private BufferedReader reader(byte[] request) {
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new InputStreamReader(
+                    new ByteArrayInputStream(request), "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("Request is not UTF-8 encoded", e);
+        }
+        return reader;
+    }
+
+    private JsonElement jsonElement(Reader reader,
                                     TypeAdapter<JsonElement> adapter) {
-        JsonElement element = null;
+        JsonElement element;
         try {
             element = adapter.read(new JsonReader(reader));
         } catch (IOException e) {

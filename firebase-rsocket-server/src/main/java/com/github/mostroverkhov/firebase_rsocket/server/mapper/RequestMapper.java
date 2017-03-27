@@ -8,5 +8,5 @@ import java.util.Optional;
  * Created by Maksym Ostroverkhov on 03.03.17.
  */
 public interface RequestMapper<T extends Operation> {
-    Optional<T> map(String request);
+    Optional<T> map(byte[] request);
 }

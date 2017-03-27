@@ -66,9 +66,8 @@ public class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor
         @Override
         public Publisher<Payload> requestStream(Payload payload) {
 
-            Flowable<String> requestFlow = Flowable.fromCallable(() -> bytes(payload))
+            Flowable<byte[]> requestFlow = Flowable.fromCallable(() -> bytes(payload))
                     .observeOn(Schedulers.io())
-                    .map(FirebaseReactiveSocket::bytesToString)
                     .cache();
 
             Flowable<Optional<Publisher<Payload>>> responseFlow = requestFlow
@@ -81,7 +80,7 @@ public class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor
                     .map(Optional::get);
             Flowable<Publisher<Payload>> succOrErrorFlow = succFlow
                     .switchIfEmpty(requestFlow
-                            .flatMap(r -> Flowable.error(requestMissingHandlerAdapter(r))));
+                            .flatMap(r -> Flowable.error(requestMissingHandlerAdapter(bytesToString(r)))));
 
             return succOrErrorFlow.flatMap(pub -> pub);
         }

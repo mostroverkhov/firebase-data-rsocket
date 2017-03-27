@@ -17,7 +17,7 @@ public class DelegatingRequestMapper implements RequestMapper {
     }
 
     @Override
-    public Optional<?> map(String request) {
+    public Optional<?> map(byte[] request) {
         return delegateAdapters.stream()
                 .map(adapter -> adapter.map(request))
                 .filter(Optional::isPresent)
