@@ -3,7 +3,7 @@ package com.github.mostroverkhov.firebase_rsocket;
 import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
 import com.github.mostroverkhov.firebase_rsocket.handlers.adapters.DefaultHandlerAdapter;
 import com.github.mostroverkhov.firebase_rsocket.handlers.adapters.RequestHandlerAdapter;
-import com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers.*;
+import com.github.mostroverkhov.firebase_rsocket.handlers.requesthandlers.HandlerManager;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import com.google.gson.Gson;
 import io.reactivesocket.AbstractReactiveSocket;
@@ -14,6 +14,7 @@ import io.reactivesocket.lease.DisabledLeaseAcceptingSocket;
 import io.reactivesocket.lease.LeaseEnforcingSocket;
 import io.reactivesocket.server.ReactiveSocketServer;
 import io.reactivex.Flowable;
+import io.reactivex.schedulers.Schedulers;
 import org.reactivestreams.Publisher;
 
 import java.io.UnsupportedEncodingException;
@@ -64,11 +65,25 @@ public class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor
 
         @Override
         public Publisher<Payload> requestStream(Payload payload) {
-            String request = string(payload);
-            return requestHandlerAdapter
-                    .adapt(request)
-                    .map(this::handleRequest)
-                    .orElseGet(() -> Flowable.error(requestMissingHandlerAdapter(request)));
+
+            Flowable<String> requestFlow = Flowable.fromCallable(() -> bytes(payload))
+                    .observeOn(Schedulers.io())
+                    .map(FirebaseReactiveSocket::bytesToString)
+                    .cache();
+
+            Flowable<Optional<Publisher<Payload>>> responseFlow = requestFlow
+                    .map(request ->
+                            requestHandlerAdapter
+                                    .adapt(request)
+                                    .map(this::handleRequest));
+            Flowable<Publisher<Payload>> succFlow = responseFlow
+                    .filter(Optional::isPresent)
+                    .map(Optional::get);
+            Flowable<Publisher<Payload>> succOrErrorFlow = succFlow
+                    .switchIfEmpty(requestFlow
+                            .flatMap(r -> Flowable.error(requestMissingHandlerAdapter(r))));
+
+            return succOrErrorFlow.flatMap(pub -> pub);
         }
 
         private Publisher<Payload> handleRequest(Operation adaptedRequest) {
@@ -79,12 +94,16 @@ public class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor
                                     .handle(context, adaptedRequest)));
         }
 
-        private static String string(Payload payload) {
+        private static byte[] bytes(Payload payload) {
             ByteBuffer bb = payload.getData();
             byte[] b = new byte[bb.remaining()];
             bb.get(b);
+            return b;
+        }
+
+        private static String bytesToString(byte[] bytes) {
             try {
-                return new String(b, "UTF-8");
+                return new String(bytes, "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 throw new RuntimeException("String encoding error", e);
             }
