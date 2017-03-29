@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by Maksym Ostroverkhov on 28.02.17.
  */
-public class ReadRequestFuncTest extends AbstractTest{
+public class ReadRequestFuncTest extends AbstractTest {
 
     private static final int SAMPLE_ITEM_COUNT = 10;
     private static final int WINDOW_SIZE = 2;
@@ -45,6 +45,56 @@ public class ReadRequestFuncTest extends AbstractTest{
             testSubscriber.assertValueAt(i,
                     window -> assertWindowContent(window, c));
         }
+    }
+
+    @Test
+    public void presentReadStartWith() throws Exception {
+
+        ReadRequest allRequest = presentReadRequest();
+        Flowable<ReadResponse<Data>> allDataWindowFlow = client
+                .dataWindow(allRequest, Data.class);
+        TestSubscriber<ReadResponse<Data>> allDatatestSubscriber
+                = requestStreamSubscriber();
+
+        allDataWindowFlow
+                .observeOn(Schedulers.io())
+                .subscribe(allDatatestSubscriber);
+
+        allDatatestSubscriber.awaitDone(20, TimeUnit.SECONDS);
+        int valueCount = SAMPLE_ITEM_COUNT / WINDOW_SIZE;
+
+        ReadRequest tailRequest = Requests
+                .readRequest("test", "read")
+                .asc()
+                .windowWithSize(WINDOW_SIZE)
+                .orderByKey()
+                .startWith(lastWindowStartKey(allDatatestSubscriber, valueCount))
+                .build();
+
+        Flowable<ReadResponse<Data>> tailDataWindowFlow = client
+                .dataWindow(tailRequest, Data.class);
+        TestSubscriber<ReadResponse<Data>> tailTestSubscriber
+                = requestStreamSubscriber();
+
+        tailDataWindowFlow
+                .observeOn(Schedulers.io())
+                .subscribe(tailTestSubscriber);
+
+        tailTestSubscriber.awaitDone(20, TimeUnit.SECONDS);
+        tailTestSubscriber
+                .assertNoErrors()
+                .assertValueCount(1);
+        tailTestSubscriber.assertValueAt(0,
+                window -> window.getData().size() == 2);
+    }
+
+    private String lastWindowStartKey(TestSubscriber<ReadResponse<Data>> testSubscriber,
+                                      int valueCount) {
+        return testSubscriber
+                .values()
+                .get(valueCount - 1)
+                .getReadRequest()
+                .getWindowStartWith();
     }
 
     @Test

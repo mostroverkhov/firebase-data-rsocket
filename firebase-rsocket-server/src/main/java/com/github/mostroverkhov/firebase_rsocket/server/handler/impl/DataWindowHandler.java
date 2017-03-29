@@ -62,13 +62,31 @@ public class DataWindowHandler implements RequestHandler {
         Flowable<Window<Object>> windowFlow = RxJavaInterop
                 .toV2Flowable(windowStream);
         Flowable<Payload> payloadFlow = windowFlow
-                .map(window -> new ReadResponse<>(
-                        readRequest,
-                        window.dataWindow()))
-                .map(dw -> payload(context.gson(), dw));
+                .map(window -> readResponse(readRequest, window))
+                .map(readResponse -> payload(context.gson(), readResponse));
 
         return payloadFlow;
 
+    }
+
+    private ReadResponse<Object> readResponse(ReadRequest readRequest,
+                                              Window<Object> window) {
+        return new ReadResponse<>(
+                withDataQuery(readRequest,
+                        window.getDataQuery()),
+                window.dataWindow());
+    }
+
+    private ReadRequest withDataQuery(ReadRequest readRequest,
+                                      DataQuery dataQuery) {
+        return new ReadRequest(readRequest.getOp(),
+                readRequest.getPath(),
+                readRequest.getWindowSize(),
+                readRequest.getOrderDir(),
+                readRequest.getOrderBy(),
+                readRequest.getOrderByChildKey(),
+                dataQuery.getWindowStartWith()
+        );
     }
 
     private void tryCache(ReadRequest readRequest, DatabaseReference dbRef) {
@@ -91,6 +109,10 @@ public class DataWindowHandler implements RequestHandler {
             builder.asc();
         } else {
             builder.desc();
+        }
+        String windowStartWith = readRequest.getWindowStartWith();
+        if (windowStartWith != null) {
+            builder.startWith(windowStartWith);
         }
         ReadRequest.OrderBy orderBy = readRequest.getOrderBy();
         if (orderBy == ReadRequest.OrderBy.KEY) {

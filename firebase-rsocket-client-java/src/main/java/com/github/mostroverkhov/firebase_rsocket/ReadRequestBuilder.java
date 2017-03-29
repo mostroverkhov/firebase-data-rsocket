@@ -15,6 +15,7 @@ public class ReadRequestBuilder {
     private ReadRequest.OrderDir orderDir = ReadRequest.OrderDir.ASC;
     private ReadRequest.OrderBy orderBy = KEY;
     private String key;
+    private String startWith;
     private final Path path;
 
     public ReadRequestBuilder(String... childPaths) {
@@ -32,9 +33,7 @@ public class ReadRequestBuilder {
     }
 
     public ReadRequestBuilder orderByChild(String key) {
-        if (key == null) {
-            throw new IllegalArgumentException("key should not be null");
-        }
+        assertNotNull(key);
         this.key = key;
         orderBy = CHILD;
         return this;
@@ -62,6 +61,17 @@ public class ReadRequestBuilder {
         return this;
     }
 
+    public ReadRequestBuilder startWith(String key) {
+        assertNotNull(key);
+        this.startWith = key;
+        return this;
+    }
+
+    public ReadRequestBuilder clearStartWith() {
+        this.startWith = null;
+        return this;
+    }
+
     public ReadRequest build() {
 
         return new ReadRequest(operation,
@@ -69,7 +79,14 @@ public class ReadRequestBuilder {
                 windowSize,
                 orderDir,
                 orderBy,
-                key, null);
+                key,
+                startWith);
+    }
+
+    static void assertNotNull(String key) {
+        if (key == null) {
+            throw new IllegalArgumentException("arg should not be null");
+        }
     }
 
     static void assertNotEmpty(String[] dataPath) {
