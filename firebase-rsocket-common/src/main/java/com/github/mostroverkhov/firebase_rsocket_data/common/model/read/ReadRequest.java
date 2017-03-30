@@ -6,8 +6,7 @@ import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 /**
  * Created by Maksym Ostroverkhov on 27.02.17.
  */
-public class ReadRequest implements Operation {
-    private volatile String operation;
+public class ReadRequest extends Operation {
     private final Path path;
     private final int windowSize;
     private final OrderDir orderDir;
@@ -22,23 +21,13 @@ public class ReadRequest implements Operation {
                        OrderBy orderBy,
                        String orderByChildKey,
                        String windowStartWith) {
-        this.operation = operation;
+        super(operation);
         this.path = path;
         this.windowSize = windowSize;
         this.orderDir = orderDir;
         this.orderBy = orderBy;
         this.orderByChildKey = orderByChildKey;
         this.windowStartWith = windowStartWith;
-    }
-
-    public ReadRequest setOp(String operation) {
-        this.operation = operation;
-        return this;
-    }
-
-    @Override
-    public String getOp() {
-        return operation;
     }
 
     public Path getPath() {
@@ -84,7 +73,7 @@ public class ReadRequest implements Operation {
     @Override
     public String toString() {
         return "Query{" +
-                "operation='" + operation + '\'' +
+                "operation='" + getOp() + '\'' +
                 ", path=" + path +
                 ", windowSize=" + windowSize +
                 ", orderDir=" + orderDir +

@@ -1,12 +1,9 @@
 package com.github.mostroverkhov.firebase_rsocket.server.handler.impl;
 
 import com.github.mostroverkhov.firebase_rsocket.FirebaseRsocketMessageFormatException;
-import com.github.mostroverkhov.firebase_rsocket.ServerSocketAcceptor;
 import com.github.mostroverkhov.firebase_rsocket.server.handler.RequestHandler;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
-import io.reactivesocket.Payload;
 import io.reactivex.Flowable;
-import org.reactivestreams.Publisher;
 
 import java.util.concurrent.Callable;
 
@@ -22,7 +19,7 @@ public class UnknownHandler implements RequestHandler {
     }
 
     @Override
-    public Publisher<Payload> handle(ServerSocketAcceptor.SocketContext context, Operation op) {
+    public Flowable handle(Operation op) {
         return Flowable.error(unknownOperationError(op.getOp()));
 
     }

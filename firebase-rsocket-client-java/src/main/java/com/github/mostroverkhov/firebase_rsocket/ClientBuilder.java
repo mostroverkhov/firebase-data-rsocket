@@ -17,9 +17,8 @@ public class ClientBuilder {
     }
 
     public Client build() {
-        ClientConfig clientConfig = new ClientConfig(transport);
-        ClientContext clientContext = new ClientContext(new Gson());
-        return new Client(clientConfig, clientContext);
+        ClientConfig clientConfig = new ClientConfig(transport, new Gson());
+        return new Client(clientConfig);
     }
 
     private void assertArg(ClientTransport socketAddress) {

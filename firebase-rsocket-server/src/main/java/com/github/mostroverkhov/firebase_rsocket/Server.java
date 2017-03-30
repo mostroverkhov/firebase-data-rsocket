@@ -11,12 +11,9 @@ import io.reactivex.Completable;
 public class Server {
 
     private final ServerConfig serverConfig;
-    private final ServerContext serverContext;
 
-    public Server(ServerConfig serverConfig,
-                  ServerContext serverContext) {
+    public Server(ServerConfig serverConfig) {
         this.serverConfig = serverConfig;
-        this.serverContext = serverContext;
     }
 
     public Completable start() {
@@ -25,9 +22,8 @@ public class Server {
                 .create(serverConfig.transport().transportServer())
                 .start(
                         new ServerSocketAcceptor(
-                                serverConfig.authenticator(),
-                                new HandlerManager(serverConfig.handlers()),
-                                serverContext.gson()));
+                                serverConfig,
+                                new HandlerManager(serverConfig.handlers())));
 
         return Completable.create(e -> {
             if (!e.isDisposed()) {

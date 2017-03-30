@@ -13,7 +13,7 @@ import java.util.Arrays;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-class HandlerCommon {
+public class HandlerCommon {
     static DatabaseReference reference(Path path) {
         DatabaseReference dataRef = FirebaseDatabase.getInstance()
                 .getReference();
@@ -23,7 +23,7 @@ class HandlerCommon {
         return dataRef;
     }
 
-    static Payload payload(Gson gson, Object dw) {
+    public static Payload payload(Gson gson, Object dw) {
         String data = gson.toJson(dw);
         return new PayloadImpl(data);
     }

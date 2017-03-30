@@ -2,36 +2,27 @@ package com.github.mostroverkhov.firebase_rsocket.server.handler.impl;
 
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.model.WriteResult;
-import com.github.mostroverkhov.firebase_rsocket.ServerSocketAcceptor;
-import com.github.mostroverkhov.firebase_rsocket.server.handler.RequestHandler;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteResponse;
 import com.google.firebase.database.DatabaseReference;
 import hu.akarnokd.rxjava.interop.RxJavaInterop;
-import io.reactivesocket.Payload;
 import io.reactivex.Flowable;
-import org.reactivestreams.Publisher;
 import rx.Observable;
-
-import static com.github.mostroverkhov.firebase_rsocket.server.handler.impl.HandlerCommon.payload;
 
 /**
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class WritePushHandler implements RequestHandler {
+public class WritePushHandler extends BaseRequestHandler<WriteRequest<?>, WriteResponse> {
 
-    @Override
-    public boolean canHandle(Operation op) {
-        return Op.WRITE_PUSH.code().equals(op.getOp());
+    public WritePushHandler() {
+        super(Op.WRITE_PUSH);
     }
 
     @Override
-    public Publisher<Payload> handle(ServerSocketAcceptor.SocketContext context, Operation op) {
-        WriteRequest writeRequest = (WriteRequest) op;
+    public Flowable<WriteResponse> handle(WriteRequest<?> writeRequest) {
 
         Path path = writeRequest.getPath();
         DatabaseReference dbRef = HandlerCommon.reference(path);
@@ -45,9 +36,8 @@ public class WritePushHandler implements RequestHandler {
 
         Flowable<WriteResult> writeResultFlow = RxJavaInterop
                 .toV2Flowable(writeResultO);
-        Flowable<Payload> payloadFlow = writeResultFlow
-                .map(writeResult -> writeResponse(path, newKeyRef))
-                .map(resp -> payload(context.gson(), resp));
+        Flowable<WriteResponse> payloadFlow = writeResultFlow
+                .map(writeResult -> writeResponse(path, newKeyRef));
 
         return payloadFlow;
     }

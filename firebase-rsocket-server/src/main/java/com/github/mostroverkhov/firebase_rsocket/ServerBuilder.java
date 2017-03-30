@@ -75,13 +75,12 @@ public class ServerBuilder {
 
     public Server build() {
         ServerConfig serverConfig = new ServerConfig(
+                new Gson(),
                 transport,
                 authenticator,
                 handlers());
 
-        ServerContext serverContext = new ServerContext(new Gson());
-
-        return new Server(serverConfig, serverContext);
+        return new Server(serverConfig);
     }
 
     private void assertTransport(ServerTransport transport) {
@@ -110,7 +109,7 @@ public class ServerBuilder {
         }
     }
 
-    private List<RequestHandler> handlers() {
+    private List<RequestHandler<?, ?>> handlers() {
 
         DataWindowHandler dataWindowHandler = cache
                 .map(DataWindowHandler::new)

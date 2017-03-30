@@ -2,6 +2,7 @@ package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
 import com.github.mostroverkhov.firebase_rsocket.server.handler.HandlerManager;
+import com.github.mostroverkhov.firebase_rsocket.server.handler.impl.HandlerCommon;
 import com.github.mostroverkhov.firebase_rsocket.server.mapper.DefaultRequestMapper;
 import com.github.mostroverkhov.firebase_rsocket.server.mapper.RequestMapper;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
@@ -17,9 +18,10 @@ import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
 import org.reactivestreams.Publisher;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
 import java.util.Optional;
+
+import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.bytes;
+import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.bytesToString;
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,16 +29,13 @@ import java.util.Optional;
  */
 public class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor {
 
-    private Authenticator authenticator;
-    private HandlerManager handlerManager;
-    private final Gson gson;
+    private ServerConfig serverConfig;
+    private final HandlerManager handlerManager;
 
-    ServerSocketAcceptor(Authenticator authenticator,
-                         HandlerManager handlerManager,
-                         Gson gson) {
-        this.authenticator = authenticator;
+    ServerSocketAcceptor(ServerConfig serverConfig,
+                         HandlerManager handlerManager) {
+        this.serverConfig = serverConfig;
         this.handlerManager = handlerManager;
-        this.gson = gson;
     }
 
     @Override
@@ -44,23 +43,22 @@ public class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor
                                        ReactiveSocket reactiveSocket) {
         return new DisabledLeaseAcceptingSocket(
                 new FirebaseReactiveSocket(
-                        new SocketContext(authenticator, gson),
-                        handlerManager,
-                        new DefaultRequestMapper(gson)));
+                        new RsocketContext(new DefaultRequestMapper(serverConfig.gson()),
+                                handlerManager,
+                                serverConfig.authenticator(),
+                                serverConfig.gson())
+                        ));
     }
 
     private static class FirebaseReactiveSocket extends AbstractReactiveSocket {
-
-        private final SocketContext context;
+        private final RsocketContext context;
         private final HandlerManager handlerManager;
-        private final RequestMapper<?> requestHandlerAdapter;
+        private final RequestMapper<?> requestMapper;
 
-        public FirebaseReactiveSocket(SocketContext context,
-                                      HandlerManager handlerManager,
-                                      RequestMapper<?> requestHandlerAdapter) {
+        public FirebaseReactiveSocket(RsocketContext context) {
             this.context = context;
-            this.handlerManager = handlerManager;
-            this.requestHandlerAdapter = requestHandlerAdapter;
+            this.handlerManager = context.getHandlerManager();
+            this.requestMapper = context.getRequestMapper();
         }
 
         @Override
@@ -72,7 +70,7 @@ public class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor
 
             Flowable<Optional<Publisher<Payload>>> responseFlow = requestFlow
                     .map(request ->
-                            requestHandlerAdapter
+                            requestMapper
                                     .map(request)
                                     .map(this::handleRequest));
             Flowable<Publisher<Payload>> succFlow = responseFlow
@@ -80,48 +78,48 @@ public class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor
                     .map(Optional::get);
             Flowable<Publisher<Payload>> succOrErrorFlow = succFlow
                     .switchIfEmpty(requestFlow
-                            .flatMap(r -> Flowable.error(requestMissingHandlerAdapter(bytesToString(r)))));
+                            .flatMap(r -> Flowable
+                                    .error(missingHandlerMapper(bytesToString(r)))));
 
             return succOrErrorFlow.flatMap(pub -> pub);
         }
 
-        private Publisher<Payload> handleRequest(Operation adaptedRequest) {
+        private Publisher<Payload> handleRequest(Operation operation) {
             return context.authenticator().authenticate()
                     .andThen(Flowable.defer(
                             () -> handlerManager
-                                    .handler(adaptedRequest)
-                                    .handle(context, adaptedRequest)));
+                                    .handler(operation)
+                                    .handleOp(operation)
+                                    .map(this::payload)));
         }
 
-        private static byte[] bytes(Payload payload) {
-            ByteBuffer bb = payload.getData();
-            byte[] b = new byte[bb.remaining()];
-            bb.get(b);
-            return b;
+        private Payload payload(Object resp) {
+            return HandlerCommon.payload(context.gson(), resp);
         }
 
-        private static String bytesToString(byte[] bytes) {
-            try {
-                return new String(bytes, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException("String encoding error", e);
-            }
-        }
     }
 
     private static FirebaseRsocketMessageFormatException
-    requestMissingHandlerAdapter(String request) {
+    missingHandlerMapper(String request) {
         return new FirebaseRsocketMessageFormatException(
-                "No handler adapter for request: " + request);
+                "No handler mapper for request: " + request);
     }
 
-    public static class SocketContext {
+    public static class RsocketContext {
         private Authenticator authenticator;
         private final Gson gson;
+        private final HandlerManager handlerManager;
+        private final RequestMapper<?> requestMapper;
 
-        public SocketContext(Authenticator authenticator, Gson gson) {
+
+        public RsocketContext(RequestMapper<?> requestMapper,
+                              HandlerManager handlerManager,
+                              Authenticator authenticator,
+                              Gson gson) {
             this.authenticator = authenticator;
             this.gson = gson;
+            this.handlerManager = handlerManager;
+            this.requestMapper = requestMapper;
         }
 
         public Authenticator authenticator() {
@@ -130,6 +128,14 @@ public class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor
 
         public Gson gson() {
             return gson;
+        }
+
+        public HandlerManager getHandlerManager() {
+            return handlerManager;
+        }
+
+        public RequestMapper<?> getRequestMapper() {
+            return requestMapper;
         }
     }
 
