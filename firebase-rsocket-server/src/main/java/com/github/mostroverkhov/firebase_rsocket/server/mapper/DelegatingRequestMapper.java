@@ -1,15 +1,15 @@
 package com.github.mostroverkhov.firebase_rsocket.server.mapper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Created by Maksym Ostroverkhov on 03.03.17.
  */
 public class DelegatingRequestMapper implements RequestMapper {
-    private final Set<RequestMapper> delegateAdapters = new HashSet<>();
+    private final List<RequestMapper> delegateAdapters = new ArrayList<>();
 
     public DelegatingRequestMapper(RequestMapper<?>... adapters) {
         assertAdapters(adapters);
