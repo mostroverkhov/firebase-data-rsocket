@@ -13,6 +13,7 @@ public class DefaultRequestMapper extends DelegatingRequestMapper {
 
     public DefaultRequestMapper(Gson gson) {
         super(new OperationBasedRequestMapper<>(gson, ReadRequest.class, Op.DATA_WINDOW.code()),
+                new OperationBasedRequestMapper<>(gson, ReadRequest.class, Op.DATA_WINDOW_NOTIF.code()),
                 new OperationBasedRequestMapper<>(gson, WriteRequest.class, Op.WRITE_PUSH.code()),
                 new OperationBasedRequestMapper<>(gson, DeleteRequest.class, Op.DELETE.code()));
     }

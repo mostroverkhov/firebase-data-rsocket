@@ -13,18 +13,17 @@ import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class WritePushMarshallMap<T> extends BaseMarshallMap<WriteRequest<T>, WriteResponse> {
+public class WritePushClientMapper<T> extends BaseClientMapper<WriteRequest<T>, WriteResponse> {
 
-    public WritePushMarshallMap(Gson gson) {
+    public WritePushClientMapper(Gson gson) {
         super(gson);
     }
 
     @Override
     public Publisher<WriteResponse> mapResponse(Payload response) {
-        WriteResponse writeResponse = mapWrite(
+        return Flowable.fromCallable(() -> mapWrite(
                 gson(),
-                response);
-        return Flowable.just(writeResponse)
+                response))
                 .onErrorResumeNext(mappingError("Error while mapping Write response"));
     }
 

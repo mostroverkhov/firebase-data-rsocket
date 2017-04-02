@@ -4,15 +4,13 @@ import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
 import com.github.mostroverkhov.firebase_rsocket.auth.CredentialsAuthenticator;
 import com.github.mostroverkhov.firebase_rsocket.auth.PermitAllAuthenticator;
 import com.github.mostroverkhov.firebase_rsocket.auth.PropsCredentialsFactory;
-import com.github.mostroverkhov.firebase_rsocket.server.cache.firebase.CacheDuration;
-import com.github.mostroverkhov.firebase_rsocket.server.cache.firebase.CacheDurationConstant;
-import com.github.mostroverkhov.firebase_rsocket.server.cache.firebase.DumbNativeCache;
-import com.github.mostroverkhov.firebase_rsocket.server.cache.firebase.NativeCache;
 import com.github.mostroverkhov.firebase_rsocket.server.handler.RequestHandler;
-import com.github.mostroverkhov.firebase_rsocket.server.handler.impl.DataWindowHandler;
-import com.github.mostroverkhov.firebase_rsocket.server.handler.impl.DeleteHandler;
 import com.github.mostroverkhov.firebase_rsocket.server.handler.impl.UnknownHandler;
-import com.github.mostroverkhov.firebase_rsocket.server.handler.impl.WritePushHandler;
+import com.github.mostroverkhov.firebase_rsocket.server.handler.impl.delete.DeleteHandler;
+import com.github.mostroverkhov.firebase_rsocket.server.handler.impl.read.DataWindowHandler;
+import com.github.mostroverkhov.firebase_rsocket.server.handler.impl.read.NotifRequestHandler;
+import com.github.mostroverkhov.firebase_rsocket.server.handler.impl.read.cache.firebase.*;
+import com.github.mostroverkhov.firebase_rsocket.server.handler.impl.write.WritePushHandler;
 import com.github.mostroverkhov.firebase_rsocket.transport.ServerTransport;
 import com.google.gson.Gson;
 
@@ -29,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 public class ServerBuilder {
 
     private static final Authenticator PERMIT_ALL_AUTH = new PermitAllAuthenticator();
-    private static final DataWindowHandler.Cache DEFAULT_CACHE = new DataWindowHandler.Cache(
+    private static final Cache DEFAULT_CACHE = new Cache(
             new DumbNativeCache(
                     Executors.newSingleThreadScheduledExecutor(
                             ServerBuilder::newDaemonThread)),
@@ -37,7 +35,7 @@ public class ServerBuilder {
 
     private final ServerTransport transport;
     private Authenticator authenticator = PERMIT_ALL_AUTH;
-    private Optional<DataWindowHandler.Cache> cache = Optional.empty();
+    private Optional<Cache> cache = Optional.empty();
 
     public ServerBuilder(ServerTransport transport) {
         assertTransport(transport);
@@ -64,7 +62,7 @@ public class ServerBuilder {
     public ServerBuilder cacheReads(NativeCache nativeCache,
                                     CacheDuration cacheDuration) {
         assertNotNull(nativeCache, cacheDuration);
-        cache = Optional.of(new DataWindowHandler.Cache(nativeCache, cacheDuration));
+        cache = Optional.of(new Cache(nativeCache, cacheDuration));
         return this;
     }
 
@@ -115,8 +113,13 @@ public class ServerBuilder {
                 .map(DataWindowHandler::new)
                 .orElseGet(DataWindowHandler::new);
 
+        NotifRequestHandler notifHandler = cache
+                .map(NotifRequestHandler::new)
+                .orElseGet(NotifRequestHandler::new);
+
         return Arrays.asList(
                 dataWindowHandler,
+                notifHandler,
                 new WritePushHandler(),
                 new DeleteHandler(),
                 new UnknownHandler());

@@ -1,11 +1,10 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.request.DataWindowMarshallMap;
-import com.github.mostroverkhov.firebase_rsocket.request.DeleteMarshallMap;
-import com.github.mostroverkhov.firebase_rsocket.request.MarshallMap;
-import com.github.mostroverkhov.firebase_rsocket.request.WritePushMarshallMap;
+import com.github.mostroverkhov.firebase_rsocket.request.*;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
@@ -17,6 +16,7 @@ import io.reactivesocket.ReactiveSocket;
 import io.reactivesocket.client.ReactiveSocketClient;
 import io.reactivex.Flowable;
 import io.reactivex.functions.Predicate;
+import io.reactivex.schedulers.Schedulers;
 
 import static io.reactivesocket.client.KeepAliveProvider.never;
 import static io.reactivesocket.client.SetupProvider.keepAlive;
@@ -36,6 +36,11 @@ class Client {
         return dataWindowFlow(readRequest, clazz);
     }
 
+    public <T> Flowable<NotifResponse> dataWindowNotifications(ReadRequest readRequest,
+                                                                 Class<T> clazz) {
+        return dataWindowNotificationsFlow(readRequest, clazz);
+    }
+
     public <T> Flowable<WriteResponse> write(WriteRequest<T> writeRequest) {
         return writeFlow(writeRequest);
     }
@@ -45,30 +50,38 @@ class Client {
     }
 
     private Flowable<DeleteResponse> deleteFlow(DeleteRequest deleteRequest) {
-        DeleteMarshallMap deleteReqResp = new DeleteMarshallMap(
+        DeleteClientMapper deleteReqResp = new DeleteClientMapper(
                 clientConfig.gson());
         return requestResponseFlow(deleteReqResp, deleteRequest);
     }
 
     private <T> Flowable<WriteResponse> writeFlow(WriteRequest<T> writeRequest) {
-        WritePushMarshallMap<T> reqResp = new WritePushMarshallMap<>(
+        WritePushClientMapper<T> reqResp = new WritePushClientMapper<>(
                 clientConfig.gson());
         return requestResponseFlow(reqResp, writeRequest);
     }
 
     private <T> Flowable<ReadResponse<T>> dataWindowFlow(ReadRequest readRequest,
                                                          Class<T> clazz) {
-        DataWindowMarshallMap<T> reqResp = new DataWindowMarshallMap<>(
+        DataWindowClientMapper<T> reqResp = new DataWindowClientMapper<>(
                 clientConfig.gson(),
                 clazz);
         return requestResponseFlow(reqResp, readRequest);
     }
 
-    private <Req, Resp> Flowable<Resp> requestResponseFlow(
-            MarshallMap<Req, Resp> requestResponse,
-            Req request) {
+    private <T> Flowable<NotifResponse> dataWindowNotificationsFlow(ReadRequest readRequest,
+                                                                    Class<T> clazz) {
+        NotificationClientMapper<T> reqResp = new NotificationClientMapper<>(
+                clientConfig.gson(),
+                clazz);
+        return requestResponseFlow(reqResp, readRequest);
+    }
+
+    private <Req extends Operation, Resp> Flowable<Resp> requestResponseFlow(
+            ClientMapper<Req, Resp> requestResponse, Req request) {
 
         Flowable<Resp> readResponseFlow = rsocket()
+                .observeOn(Schedulers.io())
                 .flatMap(socket -> socket
                         .requestStream(requestResponse.marshallRequest(request)))
                 .filter(requestStreamDataFrames())

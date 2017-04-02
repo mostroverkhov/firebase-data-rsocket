@@ -8,7 +8,7 @@ import org.reactivestreams.Publisher;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public interface MarshallMap<Req extends Operation, Resp> {
+public interface ClientMapper<Req extends Operation, Resp> {
 
     Payload marshallRequest(Req request);
 

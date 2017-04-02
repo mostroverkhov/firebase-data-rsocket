@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket.server.cache.firebase;
+package com.github.mostroverkhov.firebase_rsocket.server.handler.impl.read.cache.firebase;
 
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 

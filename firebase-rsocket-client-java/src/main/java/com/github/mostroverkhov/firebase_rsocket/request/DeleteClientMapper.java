@@ -13,18 +13,17 @@ import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class DeleteMarshallMap extends BaseMarshallMap<DeleteRequest, DeleteResponse> {
+public class DeleteClientMapper extends BaseClientMapper<DeleteRequest, DeleteResponse> {
 
-    public DeleteMarshallMap(Gson gson) {
+    public DeleteClientMapper(Gson gson) {
         super(gson);
     }
 
     @Override
     public Publisher<DeleteResponse> mapResponse(Payload response) {
-        DeleteResponse deleteResponse = mapDelete(
+        return Flowable.fromCallable(() -> mapDelete(
                 gson(),
-                response);
-        return Flowable.just(deleteResponse)
+                response))
                 .onErrorResumeNext(mappingError("Error while mapping Delete response"));
     }
 

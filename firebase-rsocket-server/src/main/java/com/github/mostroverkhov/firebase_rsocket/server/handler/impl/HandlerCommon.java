@@ -14,7 +14,7 @@ import java.util.Arrays;
  * Author: mostroverkhov
  */
 public class HandlerCommon {
-    static DatabaseReference reference(Path path) {
+    public static DatabaseReference reference(Path path) {
         DatabaseReference dataRef = FirebaseDatabase.getInstance()
                 .getReference();
         for (String s : Arrays.asList(path.getChildPaths())) {

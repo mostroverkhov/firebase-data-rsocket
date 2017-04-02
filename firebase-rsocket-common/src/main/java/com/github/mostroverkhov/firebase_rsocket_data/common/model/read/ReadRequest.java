@@ -30,6 +30,20 @@ public class ReadRequest extends Operation {
         this.windowStartWith = windowStartWith;
     }
 
+    public ReadRequest(Path path,
+                       int windowSize,
+                       OrderDir orderDir,
+                       OrderBy orderBy,
+                       String orderByChildKey,
+                       String windowStartWith) {
+        this.path = path;
+        this.windowSize = windowSize;
+        this.orderDir = orderDir;
+        this.orderBy = orderBy;
+        this.orderByChildKey = orderByChildKey;
+        this.windowStartWith = windowStartWith;
+    }
+
     public Path getPath() {
         return path;
     }

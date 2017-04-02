@@ -12,10 +12,10 @@ import org.reactivestreams.Publisher;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public abstract class BaseMarshallMap<Req extends Operation, Resp> implements MarshallMap<Req, Resp> {
+public abstract class BaseClientMapper<Req extends Operation, Resp> implements ClientMapper<Req, Resp> {
     private final Gson gson;
 
-    public BaseMarshallMap(Gson gson) {
+    public BaseClientMapper(Gson gson) {
         this.gson = gson;
     }
 

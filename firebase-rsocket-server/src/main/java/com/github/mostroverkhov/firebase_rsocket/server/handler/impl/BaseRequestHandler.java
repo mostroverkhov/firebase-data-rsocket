@@ -19,4 +19,8 @@ public abstract class BaseRequestHandler<Req extends Operation, Resp> implements
     public boolean canHandle(Operation op) {
         return this.op.code().equals(op.getOp());
     }
+
+    public Op getOp() {
+        return op;
+    }
 }

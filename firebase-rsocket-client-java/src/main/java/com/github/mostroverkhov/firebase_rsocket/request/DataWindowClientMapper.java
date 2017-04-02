@@ -1,5 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.request;
 
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import com.google.gson.*;
@@ -19,23 +20,28 @@ import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class DataWindowMarshallMap<T> extends BaseMarshallMap<ReadRequest, ReadResponse<T>> {
+public class DataWindowClientMapper<T> extends BaseClientMapper<ReadRequest, ReadResponse<T>> {
 
     private final Class<T> responseType;
 
-    public DataWindowMarshallMap(Gson gson, Class<T> responseType) {
+    public DataWindowClientMapper(Gson gson, Class<T> responseType) {
         super(gson);
         this.responseType = responseType;
     }
 
     @Override
+    public Payload marshallRequest(ReadRequest request) {
+        request.setOperation(Op.DATA_WINDOW);
+        return super.marshallRequest(request);
+    }
+
+    @Override
     public Publisher<ReadResponse<T>> mapResponse(Payload response) {
-        ReadResponse<T> readResponse = mapRead(
+
+        return Flowable.fromCallable(() -> mapRead(
                 gson(),
                 response,
-                responseType);
-
-        return Flowable.just(readResponse)
+                responseType))
                 .onErrorResumeNext(mappingError("Error while mapping DataWindow response"));
     }
 

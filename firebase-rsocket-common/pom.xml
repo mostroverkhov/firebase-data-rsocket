@@ -18,6 +18,5 @@
             <version>1.0.1</version>
             <optional>true</optional>
         </dependency>
-
     </dependencies>
 </project>
