@@ -1,5 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.request;
 
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import com.google.gson.Gson;
 import io.reactivesocket.Payload;
 import io.reactivesocket.util.PayloadImpl;
@@ -11,7 +12,7 @@ import org.reactivestreams.Publisher;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public abstract class BaseMarshallMap<Req, Resp> implements MarshallMap<Req, Resp> {
+public abstract class BaseMarshallMap<Req extends Operation, Resp> implements MarshallMap<Req, Resp> {
     private final Gson gson;
 
     public BaseMarshallMap(Gson gson) {
