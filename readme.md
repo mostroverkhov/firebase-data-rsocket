@@ -1,37 +1,36 @@
 # firebase-rsocket-server
 
 Provides non-blocking interface to firebase database    
-Based on `reactive-socket-java` [[link]](https://github.com/ReactiveSocket/reactivesocket-java) and `firebase-data-rxjava` [[link]](https://github.com/mostroverkhov/firebase-data-rxjava)    
+Based on [reactivesocket-java](https://github.com/ReactiveSocket/reactivesocket-java) and [firebase-data-rxjava](https://github.com/mostroverkhov/firebase-data-rxjava)    
 #### Supported transports   
-Tcp only at the moment. Server relies on `reactive-socket-java`, which provides
-tcp, udp, websockets transports out of the box, some of those will be eventually 
-supported   
+Tcp and udp at the moment. Server relies on `reactivesocket-java`, which also provides
+websockets transport out of the box. This one is not implemented yet, but can be added trivially by providing
+`ClientTransport` and `ServerTransport` implementations 
 
 #### Usage
 ###### Setup
 Server
 ```
-        InetSocketAddress socketAddress = new InetSocketAddress(8090);
-         Server server = new ServerBuilder()
-                 .socketAddress(socketAddress)
-                 .credsFile("creds.properties")
-                 .build();
-         Completable serverStop = server.start();
+     InetSocketAddress socketAddress = new InetSocketAddress(8090);
+          Server server = new ServerBuilder(
+                 new ServerTransportTcp(socketAddress))
+                .cacheReads()
+                .credentialsAuth("creds.properties")
+                .build();
 ```
 
-Server supports reads caching by leveraging database in-memory caching capabilities (`DatabaseReference.keepSynced`).
-Builtin implementation provides caching of every data window query for
+This server caches reads by leveraging firebase database in-memory caching capabilities (`DatabaseReference.keepSynced`).
+Builtin implementation provides simple caching of every data window query for
 5 seconds, and is enabled by default. To disable, use `ServerBuilder.noCacheReads()`, to customize - 
 `ServerBuilder.cacheReads(NativeCache nativeCache,CacheDuration cacheDuration)`
 
 Client
 ```
-        Client client = new ClientBuilder()
-                .socketAddress(socketAddress)
-                .build();  
+        Client client = new ClientBuilder(
+                new ClientTransportTcp(socketAddress))
+                .build();
 ```
 ###### Read
- 
  ```
               ReadRequest readRequest =
                  Requests
@@ -44,6 +43,10 @@ Client
                  Flowable<ReadResponse<Data>> dataWindowFlow = client
                                      .dataWindow(readRequest, Data.class);
  ```
+ Reads data windows of size `2` on path `\test\read`, ordered by item key in ascending manner.  
+ No window change notifications.
+ Data windows respect backpressure
+ 
 ###### Write
 ```
              Data data = new Data("w", "w");
@@ -55,13 +58,18 @@ Client
              Flowable<WriteResponse> writeResponse = client
                            .write(writeRequest);
  ```
+ Pushes data onto path `test\write`. Response contains created key 
+ 
  ###### Delete
  ```
  Flowable<DeleteResponse> deleteFlow = client
                  .delete(Requests.deleteRequest("test", "delete")
                          .build());
  ```
+ Removes data on path `test\delete`
+ 
 #### Security
+
 Firebase rules are used for authorization, particularly, server setup requires authenticator, which
 sets credentials [(docs)](https://firebase.google.com/docs/database/admin/start) via `CredentialsFactory`.
  Currently there is one impl - `PropsCredentialsFactory` for property file based credentials setup, file is
@@ -71,7 +79,10 @@ sets credentials [(docs)](https://firebase.google.com/docs/database/admin/start)
    dbUrl=https://fir-rx-data-test.firebaseio.com/
    dbUserId=firebase_test 
  ```
+For testing purposes one can use non-protected database, in that case `ServerBuilder.noAuth()` should be used
+
 #### Testing
+
 Firebase database was not mocked out for pragmatic reasons, so all tests are performed against
  real database. Sample data for read operations testing is provided by runnable `DataFixture` of `firebase-rsocket-test`. It uses props based authenticator,
  credentials are expected to be in `resources/creds.properties`. Very rough latency estimation can be done with
