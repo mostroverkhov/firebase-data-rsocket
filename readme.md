@@ -1,6 +1,6 @@
 # firebase-rsocket-server
 
-Provides non-blocking interface to firebase database    
+Provides non-blocking interface to firebase database using [rsocket](https://github.com/rsocket/rsocket)  protocol
 Based on [reactivesocket-java](https://github.com/ReactiveSocket/reactivesocket-java) and [firebase-data-rxjava](https://github.com/mostroverkhov/firebase-data-rxjava)    
 #### Supported transports   
 Tcp and udp at the moment. Server relies on `reactivesocket-java`, which also provides
