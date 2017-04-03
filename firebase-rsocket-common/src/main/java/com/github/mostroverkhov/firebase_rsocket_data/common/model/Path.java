@@ -1,5 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket_data.common.model;
 
+import java.util.Arrays;
+
 /**
  * Created by Maksym Ostroverkhov on 27.02.17.
  */
@@ -12,5 +14,13 @@ public class Path {
 
     public String[] getChildPaths() {
         return childPaths;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Path{");
+        sb.append("children=").append(Arrays.toString(childPaths));
+        sb.append('}');
+        return sb.toString();
     }
 }

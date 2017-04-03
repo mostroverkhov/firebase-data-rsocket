@@ -3,7 +3,6 @@ package com.github.mostroverkhov.firebase_rsocket;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import io.reactivex.Flowable;
-import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subscribers.TestSubscriber;
 import org.HdrHistogram.ConcurrentHistogram;

@@ -1,6 +1,5 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.server.handler.HandlerManager;
 import io.reactivesocket.server.ReactiveSocketServer;
 import io.reactivesocket.transport.TransportServer;
 import io.reactivex.Completable;
@@ -20,10 +19,7 @@ public class Server {
 
         TransportServer.StartedServer server = ReactiveSocketServer
                 .create(serverConfig.transport().transportServer())
-                .start(
-                        new ServerSocketAcceptor(
-                                serverConfig,
-                                new HandlerManager(serverConfig.handlers())));
+                .start(new ServerSocketAcceptor(serverConfig));
 
         return Completable.create(e -> {
             if (!e.isDisposed()) {

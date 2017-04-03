@@ -4,13 +4,14 @@ import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
 import com.github.mostroverkhov.firebase_rsocket.auth.CredentialsAuthenticator;
 import com.github.mostroverkhov.firebase_rsocket.auth.PermitAllAuthenticator;
 import com.github.mostroverkhov.firebase_rsocket.auth.PropsCredentialsFactory;
-import com.github.mostroverkhov.firebase_rsocket.server.handler.RequestHandler;
-import com.github.mostroverkhov.firebase_rsocket.server.handler.impl.UnknownHandler;
-import com.github.mostroverkhov.firebase_rsocket.server.handler.impl.delete.DeleteHandler;
-import com.github.mostroverkhov.firebase_rsocket.server.handler.impl.read.DataWindowHandler;
-import com.github.mostroverkhov.firebase_rsocket.server.handler.impl.read.NotifRequestHandler;
-import com.github.mostroverkhov.firebase_rsocket.server.handler.impl.read.cache.firebase.*;
-import com.github.mostroverkhov.firebase_rsocket.server.handler.impl.write.WritePushHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.RequestHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.UnknownHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.delete.DeleteHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.DataWindowHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.NotifRequestHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.*;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.write.WritePushHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.mapper.DefaultRequestMapper;
 import com.github.mostroverkhov.firebase_rsocket.transport.ServerTransport;
 import com.google.gson.Gson;
 
@@ -32,10 +33,12 @@ public class ServerBuilder {
                     Executors.newSingleThreadScheduledExecutor(
                             ServerBuilder::newDaemonThread)),
             new CacheDurationConstant(5, TimeUnit.SECONDS));
+    private static final Gson GSON = new Gson();
 
     private final ServerTransport transport;
     private Authenticator authenticator = PERMIT_ALL_AUTH;
     private Optional<Cache> cache = Optional.empty();
+    private Optional<LogConfig> logConfig = Optional.empty();
 
     public ServerBuilder(ServerTransport transport) {
         assertTransport(transport);
@@ -71,14 +74,25 @@ public class ServerBuilder {
         return this;
     }
 
+    public ServerBuilder logging(Logger logger, LogConfig.Deployment deployment) {
+        assertNotNull(logger, deployment);
+        logConfig = Optional.of(new LogConfig(logger, deployment));
+        return this;
+    }
+
     public Server build() {
         ServerConfig serverConfig = new ServerConfig(
-                new Gson(),
                 transport,
                 authenticator,
-                handlers());
+                new DefaultRequestMapper(gson()),
+                handlers(),
+                logConfig);
 
         return new Server(serverConfig);
+    }
+
+    private static Gson gson() {
+        return GSON;
     }
 
     private void assertTransport(ServerTransport transport) {

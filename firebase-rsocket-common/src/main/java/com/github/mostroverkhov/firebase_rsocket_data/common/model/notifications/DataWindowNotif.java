@@ -11,8 +11,8 @@ public class DataWindowNotif {
         this.notifKind = notifKind.name();
     }
 
-    public String getNotifKind() {
-        return notifKind;
+    public NotifKind getNotifKind() {
+        return NotifKind.valueOf(notifKind);
     }
 }
 
