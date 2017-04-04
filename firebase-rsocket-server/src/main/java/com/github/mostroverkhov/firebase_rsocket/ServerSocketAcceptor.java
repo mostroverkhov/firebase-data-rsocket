@@ -2,10 +2,10 @@ package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.HandlerManager;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.HandlerCommon;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.Logging;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.ServerFlowLogger;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.RequestMapper;
+import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import io.reactivesocket.AbstractReactiveSocket;
 import io.reactivesocket.ConnectionSetupPayload;
@@ -120,7 +120,7 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
         }
 
         private Payload payload(Object resp) {
-            return HandlerCommon.payload(requestMapper.marshall(resp));
+            return Conversions.payload(requestMapper.marshall(resp));
         }
 
     }

@@ -1,6 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket_data.common;
 
 import io.reactivesocket.Payload;
+import io.reactivesocket.util.PayloadImpl;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -29,5 +30,9 @@ public final class Conversions {
     public static Reader payloadReader(Payload payload) {
         byte[] bytes = Conversions.bytes(payload);
         return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes)));
+    }
+
+    public static Payload payload(byte[] pl) {
+        return new PayloadImpl(pl);
     }
 }

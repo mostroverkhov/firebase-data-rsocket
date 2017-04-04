@@ -7,8 +7,6 @@ import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.google.firebase.database.DatabaseReference;
 
-import static com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.HandlerCommon.reference;
-
 /**
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
@@ -19,7 +17,7 @@ public abstract class BaseDataWindowHandler<Resp> extends BaseRequestHandler<Rea
         super(op);
     }
 
-    static DataQuery toDataQuery(ReadRequest readRequest) {
+    protected DataQuery toDataQuery(ReadRequest readRequest) {
 
         Path path = readRequest.getPath();
         DatabaseReference dataRef = reference(path);

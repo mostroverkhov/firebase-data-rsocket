@@ -3,7 +3,6 @@ package com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.delete;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.model.WriteResult;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.BaseRequestHandler;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.HandlerCommon;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
@@ -26,7 +25,7 @@ public class DeleteHandler extends BaseRequestHandler<DeleteRequest, DeleteRespo
     @Override
     public Flowable<DeleteResponse> handle(DeleteRequest deleteRequest) {
         Path path = deleteRequest.getPath();
-        DatabaseReference dbRef = HandlerCommon.reference(path);
+        DatabaseReference dbRef = reference(path);
         Observable<WriteResult> deleteO = new FirebaseDatabaseManager(dbRef)
                 .data().removeValue();
         Flowable<WriteResult> deleteFlow = RxJavaInterop

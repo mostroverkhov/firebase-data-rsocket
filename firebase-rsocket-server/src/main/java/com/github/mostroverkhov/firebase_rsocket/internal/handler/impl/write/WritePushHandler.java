@@ -3,7 +3,6 @@ package com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.write;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.model.WriteResult;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.BaseRequestHandler;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.HandlerCommon;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
@@ -27,7 +26,7 @@ public class WritePushHandler extends BaseRequestHandler<WriteRequest<?>, WriteR
     public Flowable<WriteResponse> handle(WriteRequest<?> writeRequest) {
 
         Path path = writeRequest.getPath();
-        DatabaseReference dbRef = HandlerCommon.reference(path);
+        DatabaseReference dbRef = reference(path);
         DatabaseReference newKeyRef = dbRef.push();
 
         Object data = writeRequest.getData();
