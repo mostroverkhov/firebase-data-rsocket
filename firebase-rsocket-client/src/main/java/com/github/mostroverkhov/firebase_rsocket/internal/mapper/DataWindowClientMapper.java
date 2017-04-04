@@ -5,7 +5,6 @@ import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequ
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
-import io.reactivesocket.Payload;
 import io.reactivex.Flowable;
 import org.reactivestreams.Publisher;
 
@@ -14,7 +13,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.payloadReader;
+import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.bytesToReader;
 
 /**
  * Created with IntelliJ IDEA.
@@ -30,13 +29,13 @@ public class DataWindowClientMapper<T> extends BaseClientMapper<ReadRequest, Rea
     }
 
     @Override
-    public Payload marshallRequest(ReadRequest request) {
+    public byte[] marshall(ReadRequest request) {
         request.setOperation(Op.DATA_WINDOW);
-        return super.marshallRequest(request);
+        return super.marshall(request);
     }
 
     @Override
-    public Publisher<ReadResponse<T>> mapResponse(Payload response) {
+    public Publisher<ReadResponse<T>> map(byte[] response) {
 
         return Flowable.fromCallable(() -> mapRead(
                 gson(),
@@ -46,9 +45,9 @@ public class DataWindowClientMapper<T> extends BaseClientMapper<ReadRequest, Rea
     }
 
     private static <T> ReadResponse<T> mapRead(Gson gson,
-                                               Payload payload,
+                                               byte[] payload,
                                                Class<T> itemType) {
-        Reader reader = payloadReader(payload);
+        Reader reader = bytesToReader(payload);
 
         TypeAdapter<JsonElement> adapter = gson.getAdapter(JsonElement.class);
         JsonElement root = getRoot(new JsonReader(reader), adapter);

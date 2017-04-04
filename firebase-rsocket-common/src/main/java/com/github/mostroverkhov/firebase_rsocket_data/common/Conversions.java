@@ -3,7 +3,10 @@ package com.github.mostroverkhov.firebase_rsocket_data.common;
 import io.reactivesocket.Payload;
 import io.reactivesocket.util.PayloadImpl;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 /**
@@ -20,19 +23,26 @@ public final class Conversions {
         }
     }
 
-    public static byte[] bytes(Payload payload) {
+    public static byte[] stringToBytes(String str) {
+        try {
+            return str.getBytes("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("String encoding error", e);
+        }
+    }
+
+    public static byte[] payloadToBytes(Payload payload) {
         ByteBuffer bb = payload.getData();
         byte[] b = new byte[bb.remaining()];
         bb.get(b);
         return b;
     }
 
-    public static Reader payloadReader(Payload payload) {
-        byte[] bytes = Conversions.bytes(payload);
-        return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes)));
+    public static Payload bytesToPayload(byte[] bytes) {
+        return new PayloadImpl(bytes);
     }
 
-    public static Payload payload(byte[] pl) {
-        return new PayloadImpl(pl);
+    public static BufferedReader bytesToReader(byte[] bytes) {
+        return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes)));
     }
 }

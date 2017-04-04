@@ -8,10 +8,10 @@ import java.util.Optional;
 /**
  * Created by Maksym Ostroverkhov on 03.03.17.
  */
-public class DelegatingRequestMapper implements RequestMapper {
-    private final List<RequestMapper> delegateAdapters = new ArrayList<>();
+public class DelegatingRequestMapper implements ServerRequestMapper {
+    private final List<ServerRequestMapper> delegateAdapters = new ArrayList<>();
 
-    public DelegatingRequestMapper(RequestMapper<?>... adapters) {
+    public DelegatingRequestMapper(ServerRequestMapper<?>... adapters) {
         assertAdapters(adapters);
         delegateAdapters.addAll(Arrays.asList(adapters));
     }
@@ -30,7 +30,7 @@ public class DelegatingRequestMapper implements RequestMapper {
         return delegateAdapters.get(0).marshall(response);
     }
 
-    private static void assertAdapters(RequestMapper<?>[] adapters) {
+    private static void assertAdapters(ServerRequestMapper<?>[] adapters) {
         if (adapters == null) {
             throw new IllegalArgumentException("Adapters should not be null");
         }

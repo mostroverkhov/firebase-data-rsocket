@@ -1,7 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.mapper;
 
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
-import io.reactivesocket.Payload;
 import org.reactivestreams.Publisher;
 
 /**
@@ -10,7 +9,7 @@ import org.reactivestreams.Publisher;
  */
 public interface ClientMapper<Req extends Operation, Resp> {
 
-    Payload marshallRequest(Req request);
+    byte[] marshall(Req request);
 
-    Publisher<Resp> mapResponse(Payload response);
+    Publisher<Resp> map(byte[] response);
 }

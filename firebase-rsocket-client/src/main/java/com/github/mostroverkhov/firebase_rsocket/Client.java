@@ -1,6 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.*;
+import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteResponse;
@@ -17,6 +18,7 @@ import io.reactivesocket.client.ReactiveSocketClient;
 import io.reactivex.Flowable;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
+import org.reactivestreams.Publisher;
 
 import static io.reactivesocket.client.KeepAliveProvider.never;
 import static io.reactivesocket.client.SetupProvider.keepAlive;
@@ -37,7 +39,7 @@ class Client {
     }
 
     public <T> Flowable<NotifResponse> dataWindowNotifications(ReadRequest readRequest,
-                                                                 Class<T> clazz) {
+                                                               Class<T> clazz) {
         return dataWindowNotificationsFlow(readRequest, clazz);
     }
 
@@ -78,14 +80,21 @@ class Client {
     }
 
     private <Req extends Operation, Resp> Flowable<Resp> requestResponseFlow(
-            ClientMapper<Req, Resp> requestResponse, Req request) {
+            ClientMapper<Req, Resp> clientMapper, Req request) {
 
         Flowable<Resp> readResponseFlow = rsocket()
                 .observeOn(Schedulers.io())
-                .flatMap(socket -> socket
-                        .requestStream(requestResponse.marshallRequest(request)))
+                .flatMap(socket -> {
+                    Payload requestPayload = Conversions.bytesToPayload(
+                            clientMapper.marshall(request));
+                    return socket.requestStream(requestPayload);
+                })
                 .filter(requestStreamDataFrames())
-                .flatMap(requestResponse::mapResponse);
+                .flatMap(response -> {
+                    Publisher<Resp> responseFlow = clientMapper
+                            .map(Conversions.payloadToBytes(response));
+                    return responseFlow;
+                });
 
         return readResponseFlow;
     }

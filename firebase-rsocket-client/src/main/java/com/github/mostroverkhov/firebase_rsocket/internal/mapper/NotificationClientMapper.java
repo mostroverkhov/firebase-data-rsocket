@@ -11,14 +11,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
-import io.reactivesocket.Payload;
 import io.reactivex.Flowable;
 import org.reactivestreams.Publisher;
 
 import java.io.IOException;
 import java.io.Reader;
 
-import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.payloadReader;
+import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.bytesToReader;
 
 /**
  * Created with IntelliJ IDEA.
@@ -34,20 +33,20 @@ public class NotificationClientMapper<T> extends BaseClientMapper<ReadRequest, N
     }
 
     @Override
-    public Payload marshallRequest(ReadRequest request) {
+    public byte[] marshall(ReadRequest request) {
         request.setOperation(Op.DATA_WINDOW_NOTIF);
-        return super.marshallRequest(request);
+        return super.marshall(request);
     }
 
     @Override
-    public Publisher<NotifResponse> mapResponse(Payload response) {
+    public Publisher<NotifResponse> map(byte[] response) {
         return Flowable.fromCallable(() -> mapResponse(gson(), response))
                 .onErrorResumeNext(mappingError("Error while mapping DataWindow notification response"));
     }
 
     private NotifResponse mapResponse(Gson gson,
-                                      Payload payload) {
-        Reader reader = payloadReader(payload);
+                                      byte[] payload) {
+        Reader reader = bytesToReader(payload);
 
         TypeAdapter<JsonElement> adapter = gson.getAdapter(JsonElement.class);
         JsonObject rootObject = getRoot(new JsonReader(reader), adapter).getAsJsonObject();

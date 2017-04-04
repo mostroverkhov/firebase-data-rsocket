@@ -4,7 +4,7 @@ import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.HandlerManager;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.Logging;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.ServerFlowLogger;
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.RequestMapper;
+import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerRequestMapper;
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import io.reactivesocket.AbstractReactiveSocket;
@@ -21,8 +21,8 @@ import org.reactivestreams.Publisher;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.bytes;
 import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.bytesToString;
+import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.payloadToBytes;
 
 /**
  * Created with IntelliJ IDEA.
@@ -54,7 +54,7 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
     private static class ServerReactiveSocket extends AbstractReactiveSocket {
         private final ServerContext context;
         private final HandlerManager handlerManager;
-        private final RequestMapper<?> requestMapper;
+        private final ServerRequestMapper<?> requestMapper;
         private final Optional<Logging> logging;
 
         public ServerReactiveSocket(ServerContext context) {
@@ -70,7 +70,7 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
             Optional<UUID> uid = logging.map(__ -> UUID.randomUUID());
             ServerFlowLogger serverFlowLogger = new ServerFlowLogger(uid, logging);
 
-            Flowable<byte[]> requestFlow = Flowable.fromCallable(() -> bytes(payload))
+            Flowable<byte[]> requestFlow = Flowable.fromCallable(() -> payloadToBytes(payload))
                     .observeOn(Schedulers.io())
                     .cache();
 
@@ -120,7 +120,7 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
         }
 
         private Payload payload(Object resp) {
-            return Conversions.payload(requestMapper.marshall(resp));
+            return Conversions.bytesToPayload(requestMapper.marshall(resp));
         }
 
     }
@@ -132,10 +132,10 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
     public static class ServerContext {
         private final Authenticator authenticator;
         private final HandlerManager handlerManager;
-        private final RequestMapper<?> requestMapper;
+        private final ServerRequestMapper<?> requestMapper;
         private final Optional<LogConfig> logConfig;
 
-        public ServerContext(RequestMapper<?> requestMapper,
+        public ServerContext(ServerRequestMapper<?> requestMapper,
                              HandlerManager handlerManager,
                              Authenticator authenticator,
                              Optional<LogConfig> logConfig) {
@@ -154,7 +154,7 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
             return handlerManager;
         }
 
-        public RequestMapper<?> getRequestMapper() {
+        public ServerRequestMapper<?> getRequestMapper() {
             return requestMapper;
         }
 

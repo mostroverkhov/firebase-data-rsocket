@@ -3,11 +3,10 @@ package com.github.mostroverkhov.firebase_rsocket.internal.mapper;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteResponse;
 import com.google.gson.Gson;
-import io.reactivesocket.Payload;
 import io.reactivex.Flowable;
 import org.reactivestreams.Publisher;
 
-import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.payloadReader;
+import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.bytesToReader;
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,7 +19,7 @@ public class DeleteClientMapper extends BaseClientMapper<DeleteRequest, DeleteRe
     }
 
     @Override
-    public Publisher<DeleteResponse> mapResponse(Payload response) {
+    public Publisher<DeleteResponse> map(byte[] response) {
         return Flowable.fromCallable(() -> mapDelete(
                 gson(),
                 response))
@@ -28,7 +27,7 @@ public class DeleteClientMapper extends BaseClientMapper<DeleteRequest, DeleteRe
     }
 
     private static DeleteResponse mapDelete(Gson gson,
-                                            Payload payload) {
-        return gson.fromJson(payloadReader(payload), DeleteResponse.class);
+                                            byte[] payload) {
+        return gson.fromJson(bytesToReader(payload), DeleteResponse.class);
     }
 }

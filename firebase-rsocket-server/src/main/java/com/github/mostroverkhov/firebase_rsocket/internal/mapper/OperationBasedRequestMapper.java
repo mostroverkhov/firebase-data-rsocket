@@ -1,12 +1,15 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.mapper;
 
+import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
@@ -15,8 +18,7 @@ import java.util.Set;
 /**
  * Created by Maksym Ostroverkhov on 03.03.17.
  */
-public class OperationBasedRequestMapper<T extends Operation>
-        implements RequestMapper<T> {
+public class OperationBasedRequestMapper<T extends Operation> implements ServerRequestMapper<T> {
 
     private final Gson gson;
     private final Class<T> targetType;
@@ -32,7 +34,7 @@ public class OperationBasedRequestMapper<T extends Operation>
 
     @Override
     public Optional<T> map(byte[] request) {
-        BufferedReader reader = reader(request);
+        BufferedReader reader = Conversions.bytesToReader(request);
         TypeAdapter<JsonElement> adapter = gson.getAdapter(JsonElement.class);
         JsonElement element = jsonElement(reader, adapter);
         String op = element
@@ -47,23 +49,8 @@ public class OperationBasedRequestMapper<T extends Operation>
 
     @Override
     public byte[] marshall(Object response) {
-        String json = gson.toJson(response);
-        try {
-            return json.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("Non UTF-8 encoding: " + json);
-        }
-    }
-
-    private BufferedReader reader(byte[] request) {
-        BufferedReader reader;
-        try {
-            reader = new BufferedReader(new InputStreamReader(
-                    new ByteArrayInputStream(request), "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("Request is not UTF-8 encoded", e);
-        }
-        return reader;
+        String responseStr = gson.toJson(response);
+        return Conversions.stringToBytes(responseStr);
     }
 
     private JsonElement jsonElement(Reader reader,
