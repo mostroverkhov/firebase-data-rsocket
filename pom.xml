@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
     <version>0.1.1-SNAPSHOT</version>
     <modules>
-        <module>firebase-rsocket-client-java</module>
+        <module>firebase-rsocket-client</module>
         <module>firebase-rsocket-server</module>
         <module>firebase-rsocket-common</module>
         <module>firebase-rsocket-test</module>
