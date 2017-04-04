@@ -11,7 +11,7 @@ import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.Delete
 public class DeleteRequestBuilder {
     private final String[] childrenPath;
 
-    public DeleteRequestBuilder(String[] childrenPath) {
+    DeleteRequestBuilder(String[] childrenPath) {
         this.childrenPath = childrenPath;
     }
 

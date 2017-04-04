@@ -1,6 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.request.*;
+import com.github.mostroverkhov.firebase_rsocket.internal.mapper.*;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteResponse;

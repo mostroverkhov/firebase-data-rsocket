@@ -3,7 +3,9 @@ package com.github.mostroverkhov.firebase_rsocket;
 /**
  * Created by Maksym Ostroverkhov on 03.03.17.
  */
-public class Requests {
+public final class Requests {
+    private Requests() {
+    }
 
     public static ReadRequestBuilder readRequest(String... childPaths) {
         return new ReadRequestBuilder(childPaths);

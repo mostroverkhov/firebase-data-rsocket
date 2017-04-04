@@ -10,7 +10,7 @@ class ClientConfig {
     private final ClientTransport transport;
     private final Gson gson;
 
-    public ClientConfig(ClientTransport transport, Gson gson) {
+    ClientConfig(ClientTransport transport, Gson gson) {
         this.transport = transport;
         this.gson = gson;
     }

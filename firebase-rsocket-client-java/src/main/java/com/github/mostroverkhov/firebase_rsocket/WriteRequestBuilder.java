@@ -11,7 +11,7 @@ public class WriteRequestBuilder<T> {
     private final String[] childPaths;
     private T data;
 
-    public WriteRequestBuilder(String[] childPaths) {
+    WriteRequestBuilder(String[] childPaths) {
         this.childPaths = childPaths;
     }
 

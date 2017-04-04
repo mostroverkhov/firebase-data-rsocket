@@ -19,7 +19,7 @@ public class ReadRequestBuilder {
     private String startWith;
     private final Path path;
 
-    public ReadRequestBuilder(String... childPaths) {
+    ReadRequestBuilder(String... childPaths) {
         assertNotEmpty(childPaths);
         this.path = new Path(childPaths);
 

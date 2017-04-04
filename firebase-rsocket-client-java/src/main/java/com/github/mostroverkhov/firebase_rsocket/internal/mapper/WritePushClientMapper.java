@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket.request;
+package com.github.mostroverkhov.firebase_rsocket.internal.mapper;
 
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteResponse;
