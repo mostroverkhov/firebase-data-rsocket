@@ -1,6 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.transport.aeron;
 
-import com.github.mostroverkhov.firebase_rsocket.transport.ClientTransport;
+import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ClientTransport;
 import io.reactivesocket.aeron.client.AeronTransportClient;
 import io.reactivesocket.aeron.internal.Constants;
 import io.reactivesocket.aeron.internal.DefaultAeronWrapper;

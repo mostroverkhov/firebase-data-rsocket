@@ -12,7 +12,7 @@ import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.Noti
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.*;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.write.WritePushHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.DefaultRequestMapper;
-import com.github.mostroverkhov.firebase_rsocket.transport.ServerTransport;
+import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ServerTransport;
 import com.google.gson.Gson;
 
 import java.util.Arrays;

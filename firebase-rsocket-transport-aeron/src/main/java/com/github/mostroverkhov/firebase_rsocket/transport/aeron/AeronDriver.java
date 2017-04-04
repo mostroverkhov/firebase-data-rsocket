@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket_data.common.transport.aeron;
+package com.github.mostroverkhov.firebase_rsocket.transport.aeron;
 
 /**
  * Created with IntelliJ IDEA.

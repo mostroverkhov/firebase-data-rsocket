@@ -1,10 +1,10 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.transport.aeron.AeronDriver;
 import com.github.mostroverkhov.firebase_rsocket.transport.aeron.ClientTransportAeron;
 import com.github.mostroverkhov.firebase_rsocket.transport.aeron.ServerTransportAeron;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
-import com.github.mostroverkhov.firebase_rsocket_data.common.transport.aeron.AeronDriver;
 import io.reactivesocket.aeron.internal.reactivestreams.AeronSocketAddress;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;

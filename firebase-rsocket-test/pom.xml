@@ -25,6 +25,20 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.mostroverkhov</groupId>
+            <artifactId>firebase-rsocket-transport-tcp</artifactId>
+            <version>0.1.1-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.mostroverkhov</groupId>
+            <artifactId>firebase-rsocket-transport-aeron</artifactId>
+            <version>0.1.1-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+
+
         <!-- https://mvnrepository.com/artifact/junit/junit -->
         <dependency>
             <groupId>junit</groupId>

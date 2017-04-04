@@ -3,7 +3,7 @@ package com.github.mostroverkhov.firebase_rsocket;
 import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.RequestHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.RequestMapper;
-import com.github.mostroverkhov.firebase_rsocket.transport.ServerTransport;
+import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ServerTransport;
 
 import java.util.List;
 import java.util.Optional;

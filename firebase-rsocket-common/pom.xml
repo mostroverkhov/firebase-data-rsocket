@@ -10,13 +10,4 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>firebase-rsocket-common</artifactId>
     <version>0.1.1-SNAPSHOT</version>
-
-    <dependencies>
-        <dependency>
-            <groupId>io.aeron</groupId>
-            <artifactId>aeron-all</artifactId>
-            <version>1.0.1</version>
-            <optional>true</optional>
-        </dependency>
-    </dependencies>
 </project>

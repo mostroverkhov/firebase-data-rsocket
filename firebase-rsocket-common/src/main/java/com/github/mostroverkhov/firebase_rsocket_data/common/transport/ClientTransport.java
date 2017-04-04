@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket.transport;
+package com.github.mostroverkhov.firebase_rsocket_data.common.transport;
 
 import io.reactivesocket.transport.TransportClient;
 

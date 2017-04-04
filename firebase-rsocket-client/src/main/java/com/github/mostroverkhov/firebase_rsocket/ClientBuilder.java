@@ -1,6 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.transport.ClientTransport;
+import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ClientTransport;
 import com.google.gson.Gson;
 
 /**

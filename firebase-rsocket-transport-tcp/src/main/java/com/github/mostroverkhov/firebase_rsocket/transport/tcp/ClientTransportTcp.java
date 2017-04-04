@@ -1,6 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.transport.tcp;
 
-import com.github.mostroverkhov.firebase_rsocket.transport.ClientTransport;
+import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ClientTransport;
 import io.reactivesocket.transport.TransportClient;
 import io.reactivesocket.transport.tcp.client.TcpTransportClient;
 

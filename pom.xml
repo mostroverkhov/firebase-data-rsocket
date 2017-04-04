@@ -13,6 +13,8 @@
         <module>firebase-rsocket-server</module>
         <module>firebase-rsocket-common</module>
         <module>firebase-rsocket-test</module>
+        <module>firebase-rsocket-transport-tcp</module>
+        <module>firebase-rsocket-transport-aeron</module>
     </modules>
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.reactivestreams/reactive-streams -->
@@ -33,33 +35,6 @@
             <artifactId>reactivesocket-core</artifactId>
             <version>0.5.2</version>
         </dependency>
-
-        <dependency>
-            <groupId>io.reactivesocket</groupId>
-            <artifactId>reactivesocket-transport-tcp</artifactId>
-            <version>0.5.2</version>
-        </dependency>
-        <dependency>
-            <groupId>io.reactivesocket</groupId>
-            <artifactId>reactivesocket-transport-aeron</artifactId>
-            <version>0.5.2</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/io.reactivex/rxnetty-tcp -->
-        <dependency>
-            <groupId>io.reactivex</groupId>
-            <artifactId>rxnetty-tcp</artifactId>
-            <version>0.5.2-rc.5</version>
-        </dependency>
-
-
-        <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.8.0</version>
-        </dependency>
-
-
     </dependencies>
     <build>
         <plugins>
