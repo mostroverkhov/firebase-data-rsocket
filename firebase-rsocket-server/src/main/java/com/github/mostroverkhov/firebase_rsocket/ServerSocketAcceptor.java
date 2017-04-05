@@ -101,14 +101,12 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
         }
 
         private static Optional<Logging> logging(ServerContext context) {
-            return context.getLogConfig().map(config -> {
-                LogConfig.Deployment d = config.getDeployment();
-                return new Logging(
-                        config,
-                        new LogConfig.LogFormatter(d.getVersion(),
-                                d.getHost(),
-                                d.getPort()));
-            });
+            return context
+                    .getLogConfig()
+                    .map(config ->
+                            new Logging(
+                                    config,
+                                    new LogConfig.LogFormatter()));
         }
 
         private Flowable<Object> handleRequest(Operation operation) {

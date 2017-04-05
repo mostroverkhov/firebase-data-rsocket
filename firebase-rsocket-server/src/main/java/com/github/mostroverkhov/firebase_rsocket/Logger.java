@@ -1,75 +1,54 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import io.reactivex.Flowable;
-
 /**
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
 public interface Logger {
 
-    void log(Log.Row row);
+    void log(Row row);
 
-    Log log();
+    class Row {
+        private final String type;
+        private final String uuid;
+        private final Object payload;
+        private final long timeStamp;
 
-    interface Log {
-
-        default Flowable<Row> logFlow() {
-            return Flowable.empty();
+        public Row(String type,
+                   String uuid,
+                   Object payload,
+                   long timeStamp) {
+            this.type = type;
+            this.payload = payload;
+            this.uuid = uuid;
+            this.timeStamp = timeStamp;
         }
 
-        class Row {
-            private final String type;
-            private final String uuid;
-            private final Object payload;
-            private final long timeStamp;
-            private final String version;
-            private final String host;
-            private final int port;
+        public String getType() {
+            return type;
+        }
 
-            public Row(String type, String uuid,
-                       Object payload,
-                       long timeStamp,
-                       String version,
-                       String host,
-                       int port) {
-                this.type = type;
-                this.payload = payload;
-                this.uuid = uuid;
-                this.timeStamp = timeStamp;
-                this.version = version;
-                this.host = host;
-                this.port = port;
-            }
+        public String getUuid() {
+            return uuid;
+        }
 
-            public String getType() {
-                return type;
-            }
+        public Object payload() {
+            return payload;
+        }
 
-            public String getUuid() {
-                return uuid;
-            }
+        public long getTimeStamp() {
+            return timeStamp;
+        }
 
-            public Object payload() {
-                return payload;
-            }
-
-
-            public long timeStamp() {
-                return timeStamp;
-            }
-
-            public String version() {
-                return version;
-            }
-
-            public String host() {
-                return host;
-            }
-
-            public int port() {
-                return port;
-            }
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("Row{");
+            sb.append("type='").append(type).append('\'');
+            sb.append(", uuid='").append(uuid).append('\'');
+            sb.append(", payload=").append(payload);
+            sb.append(", timeStamp=").append(timeStamp);
+            sb.append('}');
+            return sb.toString();
         }
     }
 }

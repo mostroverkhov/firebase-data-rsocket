@@ -4,7 +4,6 @@ import com.github.mostroverkhov.firebase_rsocket.transport.tcp.ClientTransportTc
 import com.github.mostroverkhov.firebase_rsocket.transport.tcp.ServerTransportTcp;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
-import io.reactivex.BackpressureStrategy;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
@@ -15,7 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.net.InetSocketAddress;
-import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -38,7 +37,7 @@ public class LoggerTest {
                 new ServerTransportTcp(socketAddress))
                 .cacheReads()
                 .credentialsAuth("creds.properties")
-                .logging(logger, new LogConfig.Deployment("localhost", 8090, "1"))
+                .logging(logger)
                 .build();
 
         Client client = new ClientBuilder(
@@ -60,11 +59,8 @@ public class LoggerTest {
         TestSubscriber<ReadResponse<Data>> testSubscriber = new TestSubscriber<>();
         dataWindow.observeOn(Schedulers.io()).subscribe(testSubscriber);
         testSubscriber.awaitDone(10, TimeUnit.SECONDS);
-        TestSubscriber<Logger.Log.Row> logsTestSubscriber = new TestSubscriber<>();
-        logger.log().logFlow().subscribe(logsTestSubscriber);
-        logsTestSubscriber.awaitDone(10, TimeUnit.SECONDS);
-        List<Logger.Log.Row> values = logsTestSubscriber.values();
-        Assert.assertFalse(values.isEmpty());
+        Queue<Logger.Row> logRows = logger.rows();
+        Assert.assertFalse(logRows.isEmpty());
     }
 
     @After
@@ -81,7 +77,7 @@ public class LoggerTest {
 
     public static class TestLogger implements Logger {
 
-        private final ConcurrentLinkedQueue<Log.Row> rows = new ConcurrentLinkedQueue<>();
+        private final Queue<Row> rows = new ConcurrentLinkedQueue<>();
         private final int limit;
         private final AtomicBoolean wip = new AtomicBoolean();
         private final AtomicInteger size = new AtomicInteger();
@@ -91,7 +87,7 @@ public class LoggerTest {
         }
 
         @Override
-        public void log(Log.Row row) {
+        public void log(Row row) {
             rows.offer(row);
             int newSize = size.incrementAndGet();
             if (newSize > limit) {
@@ -105,21 +101,8 @@ public class LoggerTest {
             }
         }
 
-        @Override
-        public Log log() {
-            return new Log() {
-                @Override
-                public Flowable<Row> logFlow() {
-                    return Flowable.create(emitter -> {
-                        for (Row row : rows) {
-                            if (!emitter.isCancelled()) {
-                                emitter.onNext(row);
-                            }
-                        }
-                        emitter.onComplete();
-                    }, BackpressureStrategy.BUFFER);
-                }
-            };
+        public Queue<Row> rows() {
+            return rows;
         }
     }
 }

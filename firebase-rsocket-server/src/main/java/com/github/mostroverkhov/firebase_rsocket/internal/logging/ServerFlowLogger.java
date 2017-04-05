@@ -22,11 +22,11 @@ public class ServerFlowLogger {
         this.logging = logging;
     }
 
-    public Optional<Logger.Log.Row> logError(Throwable err) {
+    public Optional<Logger.Row> logError(Throwable err) {
         return log(uid, logging, (lf, uid) -> lf.responseErrorRow(uid.toString(), err));
     }
 
-    public Optional<Logger.Log.Row> logResponse(Object response) {
+    public Optional<Logger.Row> logResponse(Object response) {
         return log(uid, logging, (formatter, uidV) -> formatter.responseRow(uidV.toString(), response));
     }
 
@@ -35,14 +35,14 @@ public class ServerFlowLogger {
         return op;
     }
 
-    private static Optional<Logger.Log.Row> log(Optional<UUID> uid,
-                                                Optional<Logging> logging,
-                                                BiFunction<LogConfig.LogFormatter, UUID, Logger.Log.Row> mapper) {
+    private static Optional<Logger.Row> log(Optional<UUID> uid,
+                                            Optional<Logging> logging,
+                                            BiFunction<LogConfig.LogFormatter, UUID, Logger.Row> mapper) {
         return logging.flatMap(l -> {
             Logger logger = l.getLogConfig().getLogger();
             LogConfig.LogFormatter logFormatter = l.getLogFormatter();
             return uid.map(uidV -> {
-                Logger.Log.Row row = mapper.apply(logFormatter, uidV);
+                Logger.Row row = mapper.apply(logFormatter, uidV);
                 logger.log(row);
                 return row;
             });

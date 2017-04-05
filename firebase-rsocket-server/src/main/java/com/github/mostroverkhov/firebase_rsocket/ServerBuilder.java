@@ -74,9 +74,9 @@ public class ServerBuilder {
         return this;
     }
 
-    public ServerBuilder logging(Logger logger, LogConfig.Deployment deployment) {
-        assertNotNull(logger, deployment);
-        logConfig = Optional.of(new LogConfig(logger, deployment));
+    public ServerBuilder logging(Logger logger) {
+        assertNotNull(logger);
+        logConfig = Optional.of(new LogConfig(logger));
         return this;
     }
 

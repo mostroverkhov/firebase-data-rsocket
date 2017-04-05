@@ -8,58 +8,43 @@ import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
  */
 public class LogConfig {
     private final Logger logger;
-    private final Deployment deployment;
 
-   public LogConfig(Logger logger, Deployment deployment) {
+    public LogConfig(Logger logger) {
         this.logger = logger;
-        this.deployment = deployment;
     }
 
     public Logger getLogger() {
         return logger;
     }
 
-    public Deployment getDeployment() {
-        return deployment;
-    }
-
     public static class LogFormatter {
-        private final String version;
-        private final String host;
-        private final int port;
 
-        public LogFormatter(String version, String host, int port) {
-            this.version = version;
-            this.host = host;
-            this.port = port;
+        public LogFormatter() {
         }
 
-        public Logger.Log.Row requestRow(String uuid, Operation request) {
-            return new Logger.Log.Row("request", uuid,
+        public Logger.Row requestRow(String uuid, Operation request) {
+            return new Logger.Row(
+                    Kind.REQUEST.code(),
+                    uuid,
                     request,
-                    System.currentTimeMillis(),
-                    version,
-                    host,
-                    port);
+                    System.currentTimeMillis());
         }
 
-        public Logger.Log.Row responseRow(String uuid, Object response) {
-            return new Logger.Log.Row("response", uuid,
+        public Logger.Row responseRow(String uuid, Object response) {
+            return new Logger.Row(
+                    Kind.RESPONSE_SUCCESS.code(),
+                    uuid,
                     response,
-                    System.currentTimeMillis(),
-                    version,
-                    host,
-                    port);
+                    System.currentTimeMillis());
 
         }
 
-        public Logger.Log.Row responseErrorRow(String uuid, Throwable error) {
-            return new Logger.Log.Row("response_error", uuid,
+        public Logger.Row responseErrorRow(String uuid, Throwable error) {
+            return new Logger.Row(
+                    Kind.RESPONSE_ERROR.code(),
+                    uuid,
                     errorMsg(error),
-                    System.currentTimeMillis(),
-                    version,
-                    host,
-                    port);
+                    System.currentTimeMillis());
 
         }
 
@@ -77,30 +62,21 @@ public class LogConfig {
 
             return errMsg;
         }
-    }
 
-    public static class Deployment {
+        private enum Kind {
+            REQUEST("request"),
+            RESPONSE_SUCCESS("response"),
+            RESPONSE_ERROR("response_error");
 
-        private final String host;
-        private final int port;
-        private final String version;
+            private final String code;
 
-        public Deployment(String host, int port, String version) {
-            this.host = host;
-            this.port = port;
-            this.version = version;
-        }
+            Kind(String code) {
+                this.code = code;
+            }
 
-        public String getHost() {
-            return host;
-        }
-
-        public int getPort() {
-            return port;
-        }
-
-        public String getVersion() {
-            return version;
+            public String code() {
+                return code;
+            }
         }
     }
 }
