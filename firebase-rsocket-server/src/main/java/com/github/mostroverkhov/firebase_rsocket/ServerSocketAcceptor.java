@@ -2,6 +2,7 @@ package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.HandlerManager;
+import com.github.mostroverkhov.firebase_rsocket.internal.logging.LogFormatter;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.Logging;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.ServerFlowLogger;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerRequestMapper;
@@ -105,8 +106,8 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
                     .getLogConfig()
                     .map(config ->
                             new Logging(
-                                    config,
-                                    new LogConfig.LogFormatter()));
+                                    config.getLogger(),
+                                    new LogFormatter()));
         }
 
         private Flowable<Object> handleRequest(Operation operation) {

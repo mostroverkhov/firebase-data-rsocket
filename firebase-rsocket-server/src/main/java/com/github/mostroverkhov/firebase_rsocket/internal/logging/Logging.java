@@ -1,26 +1,26 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.logging;
 
-import com.github.mostroverkhov.firebase_rsocket.LogConfig;
+import com.github.mostroverkhov.firebase_rsocket.Logger;
 
 /**
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
 public class Logging {
-    private final LogConfig logConfig;
-    private final LogConfig.LogFormatter logFormatter;
+    private Logger logger;
+    private final LogFormatter logFormatter;
 
-    public Logging(LogConfig logConfig,
-                   LogConfig.LogFormatter logFormatter) {
-        this.logConfig = logConfig;
+    public Logging(Logger logger,
+                   LogFormatter logFormatter) {
+        this.logger = logger;
         this.logFormatter = logFormatter;
     }
 
-    public LogConfig getLogConfig() {
-        return logConfig;
+    public Logger getLogger() {
+        return logger;
     }
 
-    public LogConfig.LogFormatter getLogFormatter() {
+    public LogFormatter getLogFormatter() {
         return logFormatter;
     }
 }

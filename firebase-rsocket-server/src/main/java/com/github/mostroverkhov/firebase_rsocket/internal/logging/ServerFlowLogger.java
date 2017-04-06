@@ -1,6 +1,5 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.logging;
 
-import com.github.mostroverkhov.firebase_rsocket.LogConfig;
 import com.github.mostroverkhov.firebase_rsocket.Logger;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 
@@ -37,10 +36,10 @@ public class ServerFlowLogger {
 
     private static Optional<Logger.Row> log(Optional<UUID> uid,
                                             Optional<Logging> logging,
-                                            BiFunction<LogConfig.LogFormatter, UUID, Logger.Row> mapper) {
+                                            BiFunction<LogFormatter, UUID, Logger.Row> mapper) {
         return logging.flatMap(l -> {
-            Logger logger = l.getLogConfig().getLogger();
-            LogConfig.LogFormatter logFormatter = l.getLogFormatter();
+            Logger logger = l.getLogger();
+            LogFormatter logFormatter = l.getLogFormatter();
             return uid.map(uidV -> {
                 Logger.Row row = mapper.apply(logFormatter, uidV);
                 logger.log(row);
