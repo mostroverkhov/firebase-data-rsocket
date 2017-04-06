@@ -47,6 +47,20 @@ Client
  No window change notifications.
  Data windows respect backpressure
  
+ ```
+ ReadRequest readRequest = 
+                Requests
+                .readRequest("test", "read")
+                .asc()
+                .windowWithSize(2)
+                .orderByKey()
+                .build();
+                
+                Flowable<NotifResponse> notificationsFlow = client
+                                      .dataWindowNotifications(readRequest, Data.class);
+ ```
+ Reads data windows of size `2` on path `\test\read`, ordered by item key in ascending manner, as stream of `DataWindowChangeEvent`    interleaved with `NextWindow` item for next window query. Not consumed items are buffered on server.
+ 
 ###### Write
 ```
              Data data = new Data("w", "w");
