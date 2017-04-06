@@ -59,7 +59,9 @@ Client
                 Flowable<NotifResponse> notificationsFlow = client
                                       .dataWindowNotifications(readRequest, Data.class);
  ```
- Reads data windows of size `2` on path `\test\read`, ordered by item key in ascending manner, as stream of `DataWindowChangeEvent`    interleaved with `NextWindow` item for next window query. Not consumed items are buffered on server.
+ Reads data windows of size `2` on path `\test\read`, ordered by item key in ascending manner, as stream   
+ of `DataWindowChangeEvent`    interleaved with `NextWindow` item for next window query. 
+ Not yet consumed items are buffered on server.
  
 ###### Write
 ```
@@ -81,6 +83,11 @@ Client
                          .build());
  ```
  Removes data on path `test\delete`
+
+ #### Logging
+
+Minimal insights about server processing can be obtained with `Logger` implementation set   
+as `ServerBuilder.logging(Logger logger)`. Server will report started, served and error requests.   
  
 #### Security
 
@@ -97,10 +104,10 @@ For testing purposes one can use non-protected database, in that case `ServerBui
 
 #### Testing
 
-Firebase database was not mocked out for pragmatic reasons, so all tests are performed against
- real database. Sample data for read operations testing is provided by runnable `DataFixture` of `firebase-rsocket-test`. It uses props based authenticator,
- credentials are expected to be in `resources/creds.properties`. Very rough latency estimation can be done with
- `LatencyCheck` test
+Firebase database was not mocked out for pragmatic reasons, so all tests are performed against   
+ real database. Sample data for read operations testing is provided by runnable `DataFixture` of `firebase-rsocket-test`.    
+ It uses props based authenticator, credentials are expected to be in `resources/creds.properties`.    
+ Very rough latency estimation can be done with `LatencyCheck` test
    
 #### LICENSE
 Copyright 2017 Maksym Ostroverkhov
