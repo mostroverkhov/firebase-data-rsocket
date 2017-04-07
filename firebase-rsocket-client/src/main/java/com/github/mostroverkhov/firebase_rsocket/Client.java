@@ -28,9 +28,11 @@ import static io.reactivesocket.client.SetupProvider.keepAlive;
  */
 class Client {
     private final ClientConfig clientConfig;
+    private final Flowable<ReactiveSocket> rsocket;
 
     public Client(ClientConfig clientConfig) {
         this.clientConfig = clientConfig;
+        this.rsocket = rsocket();
     }
 
     public <T> Flowable<ReadResponse<T>> dataWindow(ReadRequest readRequest,
@@ -82,7 +84,7 @@ class Client {
     private <Req extends Operation, Resp> Flowable<Resp> requestResponseFlow(
             ClientMapper<Req, Resp> clientMapper, Req request) {
 
-        Flowable<Resp> readResponseFlow = rsocket()
+        Flowable<Resp> readResponseFlow = rsocket
                 .observeOn(Schedulers.io())
                 .flatMap(socket -> {
                     Payload requestPayload = Conversions.bytesToPayload(
