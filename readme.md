@@ -1,14 +1,12 @@
 # firebase-rsocket-server
 
-Provides non-blocking interface to firebase database using [rsocket](https://github.com/rsocket/rsocket)  protocol   
+Provides non-blocking interface to firebase database over network using [rsocket](https://github.com/rsocket/rsocket)  protocol   
 Based on [reactivesocket-java](https://github.com/ReactiveSocket/reactivesocket-java) and [firebase-data-rxjava](https://github.com/mostroverkhov/firebase-data-rxjava)    
 
 #### Motivations
-* Firebase database maintains non-single-use query results in memory. Querying large data pages or ones with large values may
-  negatively impact host application, and this impact is largely out of  developer control
-* Every service becomes aware of firebase authentication
-* Native API is callback-based, callbacks threading is controlled by firebase - composing data of different queries is painful
-* Firebase stack is useful for quick prototyping of offline aware mobile apps, but falls behind for jvm based server side processing 
+* Firebase database maintains data for queried paths in memory, this may cause unpredictable memory usage by service host process
+* Every database client becomes aware of firebase authentication
+* Native APIs are callback based, with threading controlled by firebase, this makes composing results of different queries hard 
 
 #### Supported transports   
 Tcp and udp at the moment. Server relies on `reactivesocket-java`, which also provides
