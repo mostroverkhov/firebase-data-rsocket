@@ -9,7 +9,9 @@ import java.util.Optional;
  */
 public interface ServerRequestMapper<T extends Operation> {
 
-    Optional<T> map(byte[] request);
+    boolean accepts(byte[] metaData);
+
+    Optional<T> map(byte[] metadata, byte[] data);
 
     byte[] marshall(Object response);
 }

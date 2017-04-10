@@ -6,6 +6,7 @@ import com.github.mostroverkhov.firebase_rsocket.internal.logging.LogFormatter;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.Logging;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.ServerFlowLogger;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerRequestMapper;
+import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import io.reactivesocket.AbstractReactiveSocket;
@@ -22,8 +23,7 @@ import org.reactivestreams.Publisher;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.bytesToString;
-import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.payloadToBytes;
+import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -71,13 +71,13 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
             Optional<UUID> uid = logging.map(__ -> UUID.randomUUID());
             ServerFlowLogger serverFlowLogger = new ServerFlowLogger(uid, logging);
 
-            Flowable<byte[]> requestFlow = Flowable.fromCallable(() -> payloadToBytes(payload))
+            Flowable<BytePayload> payloadBytesFlow = Flowable.fromCallable(() -> payloadBytes(payload))
                     .observeOn(Schedulers.io())
                     .cache();
 
-            Flowable<Optional<Publisher<Payload>>> responseFlow = requestFlow
-                    .map(request -> {
-                        Optional<? extends Operation> operation = requestMapper.map(request);
+            Flowable<Optional<Publisher<Payload>>> responseFlow = payloadBytesFlow
+                    .map(plBytes -> {
+                        Optional<? extends Operation> operation = mapRequest(plBytes);
                         return operation
                                 .map(serverFlowLogger::logRequest)
                                 .map(op -> {
@@ -91,14 +91,28 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
                     .filter(Optional::isPresent)
                     .map(Optional::get);
             Flowable<Publisher<Payload>> succOrErrorFlow = succFlow
-                    .switchIfEmpty(requestFlow
+                    .switchIfEmpty(payloadBytesFlow
                             .flatMap(r -> {
-                                String request = bytesToString(r);
+                                String request = bytesToString(r.getData());
                                 return Flowable
                                         .<Publisher<Payload>>error(missingHandlerMapper(request))
                                         .doOnError(serverFlowLogger::logError);
                             }));
             return succOrErrorFlow.flatMap(pub -> pub);
+        }
+
+        private Optional<? extends Operation> mapRequest(BytePayload plBytes) {
+            byte[] metadata = plBytes.getMetaData();
+            byte[] data = plBytes.getData();
+            return requestMapper.map(
+                    metadata,
+                    data);
+        }
+
+        private static BytePayload payloadBytes(Payload pl) {
+            byte[] metadata = metadataToBytes(pl);
+            byte[] data = dataToBytes(pl);
+            return new BytePayload(metadata, data);
         }
 
         private static Optional<Logging> logging(ServerContext context) {
@@ -161,5 +175,4 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
             return logConfig;
         }
     }
-
 }

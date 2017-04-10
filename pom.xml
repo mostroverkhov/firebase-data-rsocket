@@ -35,6 +35,13 @@
             <artifactId>reactivesocket-core</artifactId>
             <version>0.5.2</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.reactivesocket</groupId>
+            <artifactId>reactivesocket-core</artifactId>
+            <version>0.5.2</version>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>

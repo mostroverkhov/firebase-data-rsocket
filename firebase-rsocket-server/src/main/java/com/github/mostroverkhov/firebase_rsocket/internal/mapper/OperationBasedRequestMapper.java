@@ -3,13 +3,11 @@ package com.github.mostroverkhov.firebase_rsocket.internal.mapper;
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
+import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
@@ -19,7 +17,6 @@ import java.util.Set;
  * Created by Maksym Ostroverkhov on 03.03.17.
  */
 public class OperationBasedRequestMapper<T extends Operation> implements ServerRequestMapper<T> {
-
     private final Gson gson;
     private final Class<T> targetType;
     private final Set<String> ops = new HashSet<>();
@@ -33,18 +30,19 @@ public class OperationBasedRequestMapper<T extends Operation> implements ServerR
     }
 
     @Override
-    public Optional<T> map(byte[] request) {
-        BufferedReader reader = Conversions.bytesToReader(request);
-        TypeAdapter<JsonElement> adapter = gson.getAdapter(JsonElement.class);
-        JsonElement element = jsonElement(reader, adapter);
-        String op = element
-                .getAsJsonObject()
-                .get("operation").getAsString();
-        if (ops.contains(op)) {
-            return Optional.of(gson.fromJson(element, targetType));
-        } else {
-            return Optional.empty();
+    public boolean accepts(byte[] metaData) {
+        Optional<String> op = metadataOp(metaData);
+        return op.map(ops::contains).orElse(false);
+    }
+
+    @Override
+    public Optional<T> map(byte[] metadata, byte[] data) {
+        BufferedReader reader = Conversions.bytesToReader(data);
+        T val = gson.fromJson(reader, targetType);
+        if (val == null) {
+            throw mapDataError(data);
         }
+        return Optional.of(val);
     }
 
     @Override
@@ -53,14 +51,35 @@ public class OperationBasedRequestMapper<T extends Operation> implements ServerR
         return Conversions.stringToBytes(responseStr);
     }
 
-    private JsonElement jsonElement(Reader reader,
-                                    TypeAdapter<JsonElement> adapter) {
-        JsonElement element;
-        try {
-            element = adapter.read(new JsonReader(reader));
+    private Optional<String> metadataOp(byte[] metaData) {
+        try (JsonReader reader = new JsonReader(Conversions.bytesToReader(metaData))) {
+            reader.beginObject();
+            String name = reader.nextName();
+            if ("operation".equals(name)) {
+                String op = reader.nextString();
+                return Optional.of(op);
+            }
         } catch (IOException e) {
-            throw new RuntimeException("Error while reading request json", e);
+            throw mapMetadataError(metaData);
         }
-        return element;
+        return Optional.empty();
+    }
+
+    private static String bytesToMessage(byte[] data) {
+        String s;
+        try {
+            s = IOUtils.toString(data, "UTF-8");
+        } catch (IOException e) {
+            s = "(error reading message as UTF-8 string)";
+        }
+        return s;
+    }
+
+    private static IllegalArgumentException mapDataError(byte[] data) {
+        return new IllegalArgumentException("Error mapping data: " + bytesToMessage(data));
+    }
+
+    private static IllegalStateException mapMetadataError(byte[] metaData) {
+        return new IllegalStateException("Error reading metadata op: " + bytesToMessage(metaData));
     }
 }

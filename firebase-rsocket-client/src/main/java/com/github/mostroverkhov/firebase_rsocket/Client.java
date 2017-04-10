@@ -1,6 +1,8 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.*;
+import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
+import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
@@ -37,49 +39,36 @@ class Client {
 
     public <T> Flowable<ReadResponse<T>> dataWindow(ReadRequest readRequest,
                                                     Class<T> clazz) {
-        return dataWindowFlow(readRequest, clazz);
+        return requestResponseFlow(
+                new DataWindowClientMapper<>(
+                        clientConfig.gson(),
+                        clazz),
+                readRequest);
     }
 
     public <T> Flowable<NotifResponse> dataWindowNotifications(ReadRequest readRequest,
                                                                Class<T> clazz) {
-        return dataWindowNotificationsFlow(readRequest, clazz);
+        return requestResponseFlow(
+                new NotificationClientMapper<>(
+                        clientConfig.gson(),
+                        clazz),
+                readRequest);
     }
 
     public <T> Flowable<WriteResponse> write(WriteRequest<T> writeRequest) {
-        return writeFlow(writeRequest);
+        return requestResponseFlow(
+                new WritePushClientMapper<>(
+                        clientConfig.gson()),
+                writeRequest);
     }
 
     public Flowable<DeleteResponse> delete(DeleteRequest deleteRequest) {
-        return deleteFlow(deleteRequest);
+        return requestResponseFlow(
+                new DeleteClientMapper(
+                        clientConfig.gson()),
+                deleteRequest);
     }
 
-    private Flowable<DeleteResponse> deleteFlow(DeleteRequest deleteRequest) {
-        DeleteClientMapper deleteReqResp = new DeleteClientMapper(
-                clientConfig.gson());
-        return requestResponseFlow(deleteReqResp, deleteRequest);
-    }
-
-    private <T> Flowable<WriteResponse> writeFlow(WriteRequest<T> writeRequest) {
-        WritePushClientMapper<T> reqResp = new WritePushClientMapper<>(
-                clientConfig.gson());
-        return requestResponseFlow(reqResp, writeRequest);
-    }
-
-    private <T> Flowable<ReadResponse<T>> dataWindowFlow(ReadRequest readRequest,
-                                                         Class<T> clazz) {
-        DataWindowClientMapper<T> reqResp = new DataWindowClientMapper<>(
-                clientConfig.gson(),
-                clazz);
-        return requestResponseFlow(reqResp, readRequest);
-    }
-
-    private <T> Flowable<NotifResponse> dataWindowNotificationsFlow(ReadRequest readRequest,
-                                                                    Class<T> clazz) {
-        NotificationClientMapper<T> reqResp = new NotificationClientMapper<>(
-                clientConfig.gson(),
-                clazz);
-        return requestResponseFlow(reqResp, readRequest);
-    }
 
     private <Req extends Operation, Resp> Flowable<Resp> requestResponseFlow(
             ClientMapper<Req, Resp> clientMapper, Req request) {
@@ -87,14 +76,18 @@ class Client {
         Flowable<Resp> readResponseFlow = rsocket
                 .observeOn(Schedulers.io())
                 .flatMap(socket -> {
-                    Payload requestPayload = Conversions.bytesToPayload(
-                            clientMapper.marshall(request));
+                    KeyValue metaData = new KeyValue().put("operation", request.getOp());
+                    BytePayload bytePayload = clientMapper.marshall(request, metaData);
+                    Payload requestPayload = Conversions
+                            .bytesToPayload(
+                                    bytePayload.getData(),
+                                    bytePayload.getMetaData());
                     return socket.requestStream(requestPayload);
                 })
                 .filter(requestStreamDataFrames())
                 .flatMap(response -> {
                     Publisher<Resp> responseFlow = clientMapper
-                            .map(Conversions.payloadToBytes(response));
+                            .map(Conversions.dataToBytes(response));
                     return responseFlow;
                 });
 

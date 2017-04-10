@@ -1,6 +1,5 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.mapper;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import com.google.gson.*;
@@ -26,12 +25,6 @@ public class DataWindowClientMapper<T> extends BaseClientMapper<ReadRequest, Rea
     public DataWindowClientMapper(Gson gson, Class<T> responseType) {
         super(gson);
         this.responseType = responseType;
-    }
-
-    @Override
-    public byte[] marshall(ReadRequest request) {
-        request.setOperation(Op.DATA_WINDOW);
-        return super.marshall(request);
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.mapper;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.DataWindowChangeEvent;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NextWindow;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifKind;
@@ -30,12 +29,6 @@ public class NotificationClientMapper<T> extends BaseClientMapper<ReadRequest, N
     public NotificationClientMapper(Gson gson, Class<T> notifItemType) {
         super(gson);
         this.notifItemType = notifItemType;
-    }
-
-    @Override
-    public byte[] marshall(ReadRequest request) {
-        request.setOperation(Op.DATA_WINDOW_NOTIF);
-        return super.marshall(request);
     }
 
     @Override

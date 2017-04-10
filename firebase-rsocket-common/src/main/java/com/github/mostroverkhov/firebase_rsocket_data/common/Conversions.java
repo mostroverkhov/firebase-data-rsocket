@@ -31,8 +31,15 @@ public final class Conversions {
         }
     }
 
-    public static byte[] payloadToBytes(Payload payload) {
-        ByteBuffer bb = payload.getData();
+    public static byte[] dataToBytes(Payload payload) {
+        return byteBufferToBytes(payload.getData());
+    }
+
+    public static byte[] metadataToBytes(Payload payload) {
+        return byteBufferToBytes(payload.getMetadata());
+    }
+
+    private static byte[] byteBufferToBytes(ByteBuffer bb) {
         byte[] b = new byte[bb.remaining()];
         bb.get(b);
         return b;
@@ -40,6 +47,10 @@ public final class Conversions {
 
     public static Payload bytesToPayload(byte[] bytes) {
         return new PayloadImpl(bytes);
+    }
+
+    public static Payload bytesToPayload(byte[] data, byte[] metadata) {
+        return new PayloadImpl(data, metadata);
     }
 
     public static BufferedReader bytesToReader(byte[] bytes) {
