@@ -14,8 +14,7 @@ import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.
  */
 public class WritePushClientMapper<T> extends BaseClientMapper<WriteRequest<T>, WriteResponse> {
 
-    public WritePushClientMapper(Gson gson) {
-        super(gson);
+    public WritePushClientMapper() {
     }
 
     @Override

@@ -22,8 +22,7 @@ public class DataWindowClientMapper<T> extends BaseClientMapper<ReadRequest, Rea
 
     private final Class<T> responseType;
 
-    public DataWindowClientMapper(Gson gson, Class<T> responseType) {
-        super(gson);
+    public DataWindowClientMapper(Class<T> responseType) {
         this.responseType = responseType;
     }
 

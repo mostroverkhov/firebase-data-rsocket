@@ -17,10 +17,9 @@ import java.util.Map;
  * Author: mostroverkhov
  */
 public abstract class BaseClientMapper<Req extends Operation, Resp> implements ClientMapper<Req, Resp> {
-    private final Gson gson;
+    private volatile Gson gson;
 
-    public BaseClientMapper(Gson gson) {
-        this.gson = gson;
+    public BaseClientMapper() {
     }
 
     @Override
@@ -29,6 +28,11 @@ public abstract class BaseClientMapper<Req extends Operation, Resp> implements C
         byte[] metaDataBytes = Conversions.stringToBytes(gson.toJson(metaDataMap(metadata)));
         byte[] dataBytes = Conversions.stringToBytes(gson.toJson(request));
         return new BytePayload(metaDataBytes, dataBytes);
+    }
+
+    public BaseClientMapper<Req, Resp> setSerializer(Gson gson) {
+        this.gson = gson;
+        return this;
     }
 
     Function<? super Throwable, ? extends Publisher<? extends Resp>> mappingError(String msg) {

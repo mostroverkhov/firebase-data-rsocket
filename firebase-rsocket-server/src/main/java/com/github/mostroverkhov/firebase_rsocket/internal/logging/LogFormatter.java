@@ -1,7 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.logging;
 
 import com.github.mostroverkhov.firebase_rsocket.Logger;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,7 +11,7 @@ public class LogFormatter {
     public LogFormatter() {
     }
 
-    public Logger.Row requestRow(String uuid, Operation request) {
+    public Logger.Row requestRow(String uuid, Object request) {
         return new Logger.Row(
                 Kind.REQUEST.code(),
                 uuid,

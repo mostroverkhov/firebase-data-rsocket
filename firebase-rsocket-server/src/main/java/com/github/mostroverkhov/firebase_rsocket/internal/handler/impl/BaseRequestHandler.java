@@ -1,6 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.handler.impl;
 
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.RequestHandler;
+import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
@@ -21,12 +22,8 @@ public abstract class BaseRequestHandler<Req extends Operation, Resp> implements
     }
 
     @Override
-    public boolean canHandle(Operation op) {
-        return this.op.code().equals(op.getOp());
-    }
-
-    public Op getOp() {
-        return op;
+    public boolean canHandle(KeyValue metadata) {
+        return this.op.code().equals(metadata.get("operation"));
     }
 
     protected DatabaseReference reference(Path path) {

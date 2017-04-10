@@ -26,8 +26,7 @@ public class NotificationClientMapper<T> extends BaseClientMapper<ReadRequest, N
 
     private final Class<T> notifItemType;
 
-    public NotificationClientMapper(Gson gson, Class<T> notifItemType) {
-        super(gson);
+    public NotificationClientMapper(Class<T> notifItemType) {
         this.notifItemType = notifItemType;
     }
 

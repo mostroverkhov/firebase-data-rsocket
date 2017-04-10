@@ -14,8 +14,7 @@ import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.
  */
 public class DeleteClientMapper extends BaseClientMapper<DeleteRequest, DeleteResponse> {
 
-    public DeleteClientMapper(Gson gson) {
-        super(gson);
+    public DeleteClientMapper() {
     }
 
     @Override

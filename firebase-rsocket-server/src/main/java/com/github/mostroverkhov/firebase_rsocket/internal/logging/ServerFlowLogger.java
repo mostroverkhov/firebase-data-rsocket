@@ -1,7 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.logging;
 
 import com.github.mostroverkhov.firebase_rsocket.Logger;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -29,9 +28,9 @@ public class ServerFlowLogger {
         return log(uid, logging, (formatter, uidV) -> formatter.responseRow(uidV.toString(), response));
     }
 
-    public Operation logRequest(Operation op) {
-        log(uid, logging, (formatter, uidV) -> formatter.requestRow(uidV.toString(), op));
-        return op;
+    public Object logRequest(Object data) {
+        log(uid, logging, (formatter, uidV) -> formatter.requestRow(uidV.toString(), data));
+        return data;
     }
 
     private static Optional<Logger.Row> log(Optional<UUID> uid,

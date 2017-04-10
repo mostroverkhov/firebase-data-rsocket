@@ -18,10 +18,6 @@ public abstract class Operation {
         return operation;
     }
 
-    public void setOperation(Op operation) {
-        this.operation = operation.code();
-    }
-
     private void assertNotEmpty(String operation) {
         if (operation == null || operation.isEmpty()) {
             throw new IllegalArgumentException("Operation should not be empty");

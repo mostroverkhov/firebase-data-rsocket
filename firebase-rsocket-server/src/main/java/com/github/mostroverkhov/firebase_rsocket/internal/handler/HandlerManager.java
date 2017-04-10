@@ -1,6 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.handler;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
+import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,9 +23,9 @@ public class HandlerManager {
         this.handlers = handlers;
     }
 
-    public RequestHandler<?, ?> handler(Operation op) {
+    public RequestHandler<?, ?> handlerFor(KeyValue metadata) {
         return handlers.stream()
-                .filter(h -> h.canHandle(op))
+                .filter(h -> h.canHandle(metadata))
                 .findFirst()
                 .orElseThrow(() ->
                         new AssertionError("Handlers chain is not exhaustive"));
