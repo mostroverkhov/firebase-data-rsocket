@@ -7,6 +7,7 @@ import com.github.mostroverkhov.datawindowsource.model.WindowChangeEvent;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.Cache;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.CacheDuration;
+import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.DataWindowChangeEvent;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.DataWindowNotif;
@@ -28,18 +29,13 @@ public class NotifRequestHandler extends BaseDataWindowHandler<DataWindowNotif> 
 
     private final Optional<Cache> cache;
 
-    public NotifRequestHandler(Cache cache) {
+    public NotifRequestHandler(Optional<Cache> cache) {
         super(Op.DATA_WINDOW_NOTIF);
-        this.cache = Optional.of(cache);
-    }
-
-    public NotifRequestHandler() {
-        super(Op.DATA_WINDOW_NOTIF);
-        this.cache = Optional.empty();
+        this.cache = cache;
     }
 
     @Override
-    public Flowable<DataWindowNotif> handle(ReadRequest request) {
+    public Flowable<DataWindowNotif> handle(KeyValue metadata, ReadRequest request) {
         DataQuery dataQuery = toDataQuery(request);
         DatabaseReference dbRef = dataQuery.getDbRef();
 

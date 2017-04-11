@@ -1,6 +1,5 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
 
@@ -16,6 +15,6 @@ public class DeleteRequestBuilder {
     }
 
     public DeleteRequest build() {
-        return new DeleteRequest(Op.DELETE.code(), new Path(childrenPath));
+        return new DeleteRequest(new Path(childrenPath));
     }
 }

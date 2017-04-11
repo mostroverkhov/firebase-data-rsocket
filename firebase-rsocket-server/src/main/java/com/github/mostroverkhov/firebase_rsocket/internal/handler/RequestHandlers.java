@@ -9,21 +9,25 @@ import java.util.List;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class HandlerManager {
+public class RequestHandlers {
 
-    private final List<RequestHandler<?, ?>> handlers;
+    private final List<ServerRequestHandler<?, ?>> handlers;
 
-    public HandlerManager(RequestHandler<?, ?>... handlers) {
+    public RequestHandlers(ServerRequestHandler<?, ?>... handlers) {
         assertHandlers(handlers);
         this.handlers = Arrays.asList(handlers);
     }
 
-    public HandlerManager(List<RequestHandler<?, ?>> handlers) {
+    private RequestHandlers(List<ServerRequestHandler<?, ?>> handlers) {
         assertHandlers(handlers);
         this.handlers = handlers;
     }
 
-    public RequestHandler<?, ?> handlerFor(KeyValue metadata) {
+    public static RequestHandlers newInstance(List<ServerRequestHandler<?, ?>> handlers) {
+        return new RequestHandlers(handlers);
+    }
+
+    public ServerRequestHandler<?, ?> handlerFor(KeyValue metadata) {
         return handlers.stream()
                 .filter(h -> h.canHandle(metadata))
                 .findFirst()

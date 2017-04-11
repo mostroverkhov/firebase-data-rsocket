@@ -1,6 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.mapper;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
+import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,28 +10,36 @@ import java.util.Optional;
 /**
  * Created by Maksym Ostroverkhov on 03.03.17.
  */
-public class DelegatingRequestMapper implements ServerRequestMapper {
+public class RequestMappers implements ServerRequestMapper {
     private final List<ServerRequestMapper<?>> delegates = new ArrayList<>();
 
-    public DelegatingRequestMapper(ServerRequestMapper<?>... adapters) {
-        assertAdapters(adapters);
-        delegates.addAll(Arrays.asList(adapters));
+    public static RequestMappers newInstance(List<ServerRequestMapper<?>> mappers) {
+        return new RequestMappers(mappers);
+    }
+
+    protected RequestMappers(ServerRequestMapper<?>... mappers) {
+        this(Arrays.asList(mappers));
+    }
+
+    protected RequestMappers(List<ServerRequestMapper<?>> mappers) {
+        assertAdapters(mappers);
+        delegates.addAll(mappers);
     }
 
     @Override
-    public boolean accepts(byte[] metaData) {
+    public boolean accepts(KeyValue metaData) {
         return true;
     }
 
     @Override
-    public Optional<? extends Operation> map(byte[] metadata, byte[] data) {
+    public Optional<?> map(KeyValue metadata, byte[] data) {
 
         Optional<ServerRequestMapper<?>> maybeMapper = delegates
                 .stream()
                 .filter(mapper -> mapper.accepts(metadata))
                 .findFirst();
 
-        Optional<? extends Operation> maybeOp =
+        Optional<?> maybeOp =
                 maybeMapper.flatMap(mapper -> mapper.map(metadata, data));
 
         return maybeOp;
@@ -43,11 +51,11 @@ public class DelegatingRequestMapper implements ServerRequestMapper {
         return delegates.get(0).marshall(response);
     }
 
-    private static void assertAdapters(ServerRequestMapper<?>[] adapters) {
+    private static void assertAdapters(List<ServerRequestMapper<?>> adapters) {
         if (adapters == null) {
             throw new IllegalArgumentException("Adapters should not be null");
         }
-        if (adapters.length == 0) {
+        if (adapters.isEmpty()) {
             throw new IllegalArgumentException("Adapters should not be empty");
         }
     }

@@ -1,8 +1,7 @@
-package com.github.mostroverkhov.firebase_rsocket.auth;
+package com.github.mostroverkhov.firebase_rsocket.internal.auth;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.reactivex.Notification;
 
 /**
  * Created by Maksym Ostroverkhov on 28.02.17.

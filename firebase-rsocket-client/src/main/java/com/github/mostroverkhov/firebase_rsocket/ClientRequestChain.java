@@ -4,7 +4,6 @@ import com.github.mostroverkhov.firebase_rsocket.internal.mapper.BaseClientMappe
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import io.reactivesocket.Frame;
 import io.reactivesocket.FrameType;
 import io.reactivesocket.Payload;
@@ -31,7 +30,7 @@ class ClientRequestChain {
         this.rsocket = rsocket();
     }
 
-    public <Req extends Operation, Resp> Flowable<Resp> request(
+    public <Req, Resp> Flowable<Resp> request(
             BaseClientMapper<Req, Resp> clientMapper,
             Req request,
             KeyValue metadata) {
@@ -41,7 +40,7 @@ class ClientRequestChain {
         Flowable<Resp> readResponseFlow = rsocket
                 .observeOn(Schedulers.io())
                 .flatMap(socket -> {
-                    BytePayload bytePayload = clientMapper.marshall(request, metadata);
+                    BytePayload bytePayload = clientMapper.marshall(metadata, request);
                     Payload requestPayload = Conversions
                             .bytesToPayload(
                                     bytePayload.getData(),

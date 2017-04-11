@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket.auth;
+package com.github.mostroverkhov.firebase_rsocket.internal.auth;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;

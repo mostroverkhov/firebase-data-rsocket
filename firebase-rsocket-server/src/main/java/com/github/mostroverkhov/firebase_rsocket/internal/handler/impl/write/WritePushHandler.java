@@ -2,7 +2,8 @@ package com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.write;
 
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.model.WriteResult;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.BaseRequestHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.OperationRequestHandler;
+import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
@@ -16,14 +17,14 @@ import rx.Observable;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class WritePushHandler extends BaseRequestHandler<WriteRequest<?>, WriteResponse> {
+public class WritePushHandler extends OperationRequestHandler<WriteRequest<?>, WriteResponse> {
 
     public WritePushHandler() {
         super(Op.WRITE_PUSH);
     }
 
     @Override
-    public Flowable<WriteResponse> handle(WriteRequest<?> writeRequest) {
+    public Flowable<WriteResponse> handle(KeyValue metadata, WriteRequest<?> writeRequest) {
 
         Path path = writeRequest.getPath();
         DatabaseReference dbRef = reference(path);

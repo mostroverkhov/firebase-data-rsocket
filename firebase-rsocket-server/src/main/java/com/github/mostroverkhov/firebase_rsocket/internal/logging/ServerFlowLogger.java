@@ -21,14 +21,14 @@ public class ServerFlowLogger {
     }
 
     public Optional<Logger.Row> logError(Throwable err) {
-        return log(uid, logging, (lf, uid) -> lf.responseErrorRow(uid.toString(), err));
+        return log(uid, logging, (formatter, uid) -> formatter.responseErrorRow(uid.toString(), err));
     }
 
     public Optional<Logger.Row> logResponse(Object response) {
         return log(uid, logging, (formatter, uidV) -> formatter.responseRow(uidV.toString(), response));
     }
 
-    public Object logRequest(Object data) {
+    public <T> T logRequest(T data) {
         log(uid, logging, (formatter, uidV) -> formatter.requestRow(uidV.toString(), data));
         return data;
     }

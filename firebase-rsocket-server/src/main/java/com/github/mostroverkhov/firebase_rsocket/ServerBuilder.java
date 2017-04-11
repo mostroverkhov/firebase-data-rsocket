@@ -1,20 +1,30 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
-import com.github.mostroverkhov.firebase_rsocket.auth.CredentialsAuthenticator;
-import com.github.mostroverkhov.firebase_rsocket.auth.PermitAllAuthenticator;
-import com.github.mostroverkhov.firebase_rsocket.auth.PropsCredentialsFactory;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.RequestHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.Authenticator;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.CredentialsAuthenticator;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.PermitAllAuthenticator;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.PropsCredentialsFactory;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.DataCodec;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.GsonDataCodec;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.GsonMetadataCodec;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.MetadataCodec;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerRequestHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.UnknownHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.delete.DeleteHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.DataWindowHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.NotifRequestHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.*;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.write.WritePushHandler;
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.DefaultRequestMapper;
+import com.github.mostroverkhov.firebase_rsocket.internal.mapper.OperationRequestMapper;
+import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerRequestMapper;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ServerTransport;
 import com.google.gson.Gson;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -33,12 +43,17 @@ public class ServerBuilder {
                     Executors.newSingleThreadScheduledExecutor(
                             ServerBuilder::newDaemonThread)),
             new CacheDurationConstant(5, TimeUnit.SECONDS));
-    private static final Gson GSON = new Gson();
+    private static final Codecs GSON_CODECS = new Codecs(
+            new GsonDataCodec(
+                    new Gson(),
+                    Charset.forName("UTF-8")),
+            new GsonMetadataCodec());
 
     private final ServerTransport transport;
     private Authenticator authenticator = PERMIT_ALL_AUTH;
     private Optional<Cache> cache = Optional.empty();
     private Optional<LogConfig> logConfig = Optional.empty();
+    private Codecs codecs = GSON_CODECS;
 
     public ServerBuilder(ServerTransport transport) {
         assertTransport(transport);
@@ -54,6 +69,12 @@ public class ServerBuilder {
         assertCredsFile(credsFile);
         this.authenticator = new CredentialsAuthenticator(
                 new PropsCredentialsFactory(credsFile));
+        return this;
+    }
+
+    public ServerBuilder codecs(Codecs codecs) {
+        assertNotNull(codecs);
+        this.codecs = codecs;
         return this;
     }
 
@@ -84,15 +105,32 @@ public class ServerBuilder {
         ServerConfig serverConfig = new ServerConfig(
                 transport,
                 authenticator,
-                new DefaultRequestMapper(gson()),
+                mappers(),
                 handlers(),
+                codecs.getDataCodec(),
+                codecs.getMetadataCodec(),
                 logConfig);
 
         return new Server(serverConfig);
     }
 
-    private static Gson gson() {
-        return GSON;
+    public static class Codecs {
+        private final DataCodec dataCodec;
+        private final MetadataCodec metadataCodec;
+
+        public Codecs(DataCodec dataCodec,
+                      MetadataCodec metadataCodec) {
+            this.dataCodec = dataCodec;
+            this.metadataCodec = metadataCodec;
+        }
+
+        public DataCodec getDataCodec() {
+            return dataCodec;
+        }
+
+        public MetadataCodec getMetadataCodec() {
+            return metadataCodec;
+        }
     }
 
     private void assertTransport(ServerTransport transport) {
@@ -121,21 +159,25 @@ public class ServerBuilder {
         }
     }
 
-    private List<RequestHandler<?, ?>> handlers() {
-
-        DataWindowHandler dataWindowHandler = cache
-                .map(DataWindowHandler::new)
-                .orElseGet(DataWindowHandler::new);
-
-        NotifRequestHandler notifHandler = cache
-                .map(NotifRequestHandler::new)
-                .orElseGet(NotifRequestHandler::new);
+    @SuppressWarnings("unchecked")
+    private List<ServerRequestHandler<?, ?>> handlers() {
 
         return Arrays.asList(
-                dataWindowHandler,
-                notifHandler,
+                new DataWindowHandler(cache),
+                new NotifRequestHandler(cache),
                 new WritePushHandler(),
                 new DeleteHandler(),
                 new UnknownHandler());
+    }
+
+    private List<ServerRequestMapper<?>> mappers() {
+
+        DataCodec dataCodec = codecs.getDataCodec();
+        return Arrays.asList(
+                new OperationRequestMapper<>(dataCodec, ReadRequest.class, Op.DATA_WINDOW.code()),
+                new OperationRequestMapper<>(dataCodec, ReadRequest.class, Op.DATA_WINDOW_NOTIF.code()),
+                new OperationRequestMapper<>(dataCodec, WriteRequest.class, Op.WRITE_PUSH.code()),
+                new OperationRequestMapper<>(dataCodec, DeleteRequest.class, Op.DELETE.code())
+        );
     }
 }

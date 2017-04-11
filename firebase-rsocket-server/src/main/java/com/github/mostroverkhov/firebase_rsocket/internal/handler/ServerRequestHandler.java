@@ -7,14 +7,14 @@ import io.reactivex.Flowable;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public interface RequestHandler<Req, Resp> {
+public interface ServerRequestHandler<Req, Resp> {
 
     boolean canHandle(KeyValue metadata);
 
-    Flowable<Resp> handle(Req req);
+    Flowable<Resp> handle(KeyValue metadata, Req req);
 
     @SuppressWarnings("unchecked")
-    default Flowable<Resp> handleOp(Object request) {
-        return handle((Req) request);
+    default Flowable<Resp> handleOp(KeyValue metadata, Object request) {
+        return handle(metadata, (Req) request);
     }
 }

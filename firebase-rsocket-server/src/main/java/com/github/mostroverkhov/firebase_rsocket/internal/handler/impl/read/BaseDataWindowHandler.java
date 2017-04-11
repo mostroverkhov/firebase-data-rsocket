@@ -1,7 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read;
 
 import com.github.mostroverkhov.datawindowsource.model.DataQuery;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.BaseRequestHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.OperationRequestHandler;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
@@ -11,7 +11,7 @@ import com.google.firebase.database.DatabaseReference;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public abstract class BaseDataWindowHandler<Resp> extends BaseRequestHandler<ReadRequest, Resp> {
+public abstract class BaseDataWindowHandler<Resp> extends OperationRequestHandler<ReadRequest, Resp> {
 
     public BaseDataWindowHandler(Op op) {
         super(op);
@@ -48,7 +48,7 @@ public abstract class BaseDataWindowHandler<Resp> extends BaseRequestHandler<Rea
 
     static ReadRequest nextReadRequest(ReadRequest readRequest,
                                        DataQuery dataQuery) {
-        return new ReadRequest(readRequest.getOp(),
+        return new ReadRequest(
                 readRequest.getPath(),
                 readRequest.getWindowSize(),
                 readRequest.getOrderDir(),

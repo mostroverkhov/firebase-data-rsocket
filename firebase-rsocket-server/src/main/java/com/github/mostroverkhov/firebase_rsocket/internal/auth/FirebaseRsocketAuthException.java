@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket.auth;
+package com.github.mostroverkhov.firebase_rsocket.internal.auth;
 
 /**
  * Created by Maksym Ostroverkhov on 28.02.17.

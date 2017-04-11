@@ -75,7 +75,7 @@ public class ReadRequestBuilder {
 
     public ReadRequest build() {
 
-        return new ReadRequest(operation,
+        return new ReadRequest(
                 path,
                 windowSize,
                 orderDir,

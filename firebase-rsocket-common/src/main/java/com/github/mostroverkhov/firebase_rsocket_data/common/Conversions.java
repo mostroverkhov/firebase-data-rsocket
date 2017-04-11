@@ -8,20 +8,13 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 /**
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
 public final class Conversions {
-
-    public static String bytesToString(byte[] bytes) {
-        try {
-            return new String(bytes, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("String encoding error", e);
-        }
-    }
 
     public static byte[] stringToBytes(String str) {
         try {
@@ -54,6 +47,10 @@ public final class Conversions {
     }
 
     public static BufferedReader bytesToReader(byte[] bytes) {
-        return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes)));
+        return bytesToReader(bytes, Charset.forName("UTF-8"));
+    }
+
+    public static BufferedReader bytesToReader(byte[] bytes, Charset charSet) {
+        return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes), charSet));
     }
 }

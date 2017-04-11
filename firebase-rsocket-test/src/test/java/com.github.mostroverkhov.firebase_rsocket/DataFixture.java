@@ -2,8 +2,8 @@ package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.model.WriteResult;
-import com.github.mostroverkhov.firebase_rsocket.auth.PropsCredentialsFactory;
-import com.github.mostroverkhov.firebase_rsocket.auth.CredentialsAuthenticator;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.CredentialsAuthenticator;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.PropsCredentialsFactory;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import hu.akarnokd.rxjava.interop.RxJavaInterop;

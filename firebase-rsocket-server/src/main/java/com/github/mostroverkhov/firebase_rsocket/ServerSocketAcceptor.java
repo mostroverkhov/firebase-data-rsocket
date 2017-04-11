@@ -1,10 +1,14 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.HandlerManager;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.Authenticator;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.GsonMetadataCodec;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.MetadataCodec;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.RequestHandlers;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerRequestHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.LogFormatter;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.Logging;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.ServerFlowLogger;
+import com.github.mostroverkhov.firebase_rsocket.internal.mapper.RequestMappers;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerRequestMapper;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
@@ -20,10 +24,12 @@ import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
 import org.reactivestreams.Publisher;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.*;
+import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.dataToBytes;
+import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.metadataToBytes;
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,7 +37,7 @@ import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.
  */
 final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor {
 
-    private ServerConfig serverConfig;
+    private final ServerConfig serverConfig;
 
     ServerSocketAcceptor(ServerConfig serverConfig) {
         this.serverConfig = serverConfig;
@@ -41,28 +47,31 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
     public LeaseEnforcingSocket accept(ConnectionSetupPayload setupPayload,
                                        ReactiveSocket reactiveSocket) {
         return new DisabledLeaseAcceptingSocket(
-                new ServerReactiveSocket(serverContext()));
+                new ServerSocket(serverContext()));
     }
 
     private ServerContext serverContext() {
         return new ServerContext(
-                serverConfig.requestMapper(),
-                new HandlerManager(serverConfig.handlers()),
+                serverConfig.mappers(),
+                serverConfig.handlers(),
+                serverConfig.metadataCodec(),
                 serverConfig.authenticator(),
                 serverConfig.logConfig());
     }
 
-    private static class ServerReactiveSocket extends AbstractReactiveSocket {
+    private static class ServerSocket extends AbstractReactiveSocket {
         private final ServerContext context;
-        private final HandlerManager handlers;
+        private final RequestHandlers handlers;
         private final ServerRequestMapper<?> requestMapper;
         private final Optional<Logging> logging;
+        private final MetadataCodec metadataCodec;
 
-        public ServerReactiveSocket(ServerContext context) {
+        public ServerSocket(ServerContext context) {
             this.context = context;
-            this.handlers = context.getHandlerManager();
-            this.requestMapper = context.getRequestMapper();
+            this.requestMapper = context.getRequestMappers();
+            this.handlers = context.getRequestHandlers();
             this.logging = logging(context);
+            this.metadataCodec = new GsonMetadataCodec();
         }
 
         @Override
@@ -71,42 +80,52 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
             Optional<UUID> uid = logging.map(__ -> UUID.randomUUID());
             ServerFlowLogger serverFlowLogger = new ServerFlowLogger(uid, logging);
 
-            Flowable<BytePayload> payloadBytesFlow = Flowable.fromCallable(() -> payloadBytes(payload))
+            Flowable<BytePayload> payloadBytesFlow = Flowable
+                    .fromCallable(() -> payloadBytes(payload))
                     .observeOn(Schedulers.io())
                     .cache();
-            payloadBytesFlow.map(BytePayload::getMetaData);
-            Flowable<Optional<Publisher<Payload>>> responseFlow = payloadBytesFlow
-                    .map(plBytes -> {
-                        Optional<?> operation = mapRequest(plBytes);
-                        return operation
-                                .map(serverFlowLogger::logRequest)
-                                .map(data -> {
-                                    Flowable<Object> response = handleRequest(data);
-                                    return response
-                                            .doOnNext(serverFlowLogger::logResponse)
-                                            .map(this::payload);
-                                });
-                    });
+
+            Flowable<byte[]> metadataFlow = payloadBytesFlow
+                    .map(BytePayload::getMetaData);
+            Flowable<KeyValue> metaDataKvFlow = metadataFlow
+                    .map(metadataCodec::decode)
+                    .cache();
+
+            Flowable<Optional<MappedRequest<?>>> mappedRequestFlow =
+                    payloadBytesFlow
+                            .zipWith(
+                                    metaDataKvFlow,
+                                    (payloadBytes, metadataKv) ->
+                                            mapRequest(metadataKv, payloadBytes.getData()));
+
+            Flowable<Optional<Flowable<Payload>>> responseFlow =
+                    mappedRequestFlow
+                            .map(maybeMappedData -> maybeMappedData
+                                    .map(serverFlowLogger::logRequest)
+                                    .map(mappedData -> {
+                                        Flowable<Object> response = handleRequest(mappedData);
+                                        Flowable<Payload> encodedResponse = response
+                                                .doOnNext(serverFlowLogger::logResponse)
+                                                .map(this::encodeResponse);
+                                        return encodedResponse;
+                                    }));
+
             Flowable<Publisher<Payload>> succFlow = responseFlow
                     .filter(Optional::isPresent)
                     .map(Optional::get);
+
             Flowable<Publisher<Payload>> succOrErrorFlow = succFlow
-                    .switchIfEmpty(payloadBytesFlow
-                            .flatMap(r -> {
-                                String request = bytesToString(r.getData());
-                                return Flowable
-                                        .<Publisher<Payload>>error(missingHandlerMapper(request))
-                                        .doOnError(serverFlowLogger::logError);
-                            }));
-            return succOrErrorFlow.flatMap(pub -> pub);
+                    .switchIfEmpty(metaDataKvFlow
+                            .flatMap(kv -> Flowable.error(missingMapper(kv))));
+
+            return succOrErrorFlow
+                    .flatMap(__ -> __)
+                    .doOnError(serverFlowLogger::logError);
         }
 
-        private Optional<?> mapRequest(BytePayload plBytes) {
-            byte[] metadata = plBytes.getMetaData();
-            byte[] data = plBytes.getData();
-            return requestMapper.map(
-                    metadata,
-                    data);
+        private Optional<MappedRequest<?>> mapRequest(KeyValue metadata, byte[] data) {
+            Optional<?> maybeData = requestMapper.map(metadata, data);
+            return maybeData.map(d -> new MappedRequest<>(metadata, d));
         }
 
         private static BytePayload payloadBytes(Payload pl) {
@@ -124,51 +143,75 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
                                     new LogFormatter()));
         }
 
-        private Flowable<Object> handleRequest(KeyValue metadata, Object data) {
+        private Flowable<Object> handleRequest(MappedRequest<?> mappedRequest) {
             return context.authenticator().authenticate()
                     .andThen(Flowable.defer(
                             () -> handlers
-                                    .handlerFor(metadata)
-                                    .handleOp(data)));
+                                    .handlerFor(mappedRequest.getMetadata())
+                                    .handleOp(mappedRequest.getMetadata(),
+                                            mappedRequest.getData())));
         }
 
-        private Payload payload(Object resp) {
+        private Payload encodeResponse(Object resp) {
             return Conversions.bytesToPayload(requestMapper.marshall(resp));
         }
-
     }
 
-    private static FirebaseRsocketMessageFormatException missingHandlerMapper(String request) {
-        return new FirebaseRsocketMessageFormatException("No mapper for request: " + request);
+    private static class MappedRequest<T> {
+        private final KeyValue metadata;
+        private final T data;
+
+        public MappedRequest(KeyValue metadata, T data) {
+            this.metadata = metadata;
+            this.data = data;
+        }
+
+        public KeyValue getMetadata() {
+            return metadata;
+        }
+
+        public T getData() {
+            return data;
+        }
     }
 
-    public static class ServerContext {
+    private static FirebaseRsocketException missingMapper(KeyValue metadata) {
+        return new FirebaseRsocketException("No mapper for request: " + metadata);
+    }
+
+    private static class ServerContext {
+        private MetadataCodec metadataCodec;
         private final Authenticator authenticator;
-        private final HandlerManager handlerManager;
-        private final ServerRequestMapper<?> requestMapper;
+        private final RequestHandlers requestHandlers;
+        private final ServerRequestMapper<?> requestMappers;
         private final Optional<LogConfig> logConfig;
 
-        public ServerContext(ServerRequestMapper<?> requestMapper,
-                             HandlerManager handlerManager,
+        public ServerContext(List<ServerRequestMapper<?>> requestMappers,
+                             List<ServerRequestHandler<?, ?>> requestHandlers,
+                             MetadataCodec metadataCodec,
                              Authenticator authenticator,
                              Optional<LogConfig> logConfig) {
+            this.requestMappers = RequestMappers.newInstance(requestMappers);
+            this.requestHandlers = RequestHandlers.newInstance(requestHandlers);
+            this.metadataCodec = metadataCodec;
             this.authenticator = authenticator;
-            this.handlerManager = handlerManager;
-            this.requestMapper = requestMapper;
             this.logConfig = logConfig;
+        }
 
+        public MetadataCodec getMetadataCodec() {
+            return metadataCodec;
         }
 
         public Authenticator authenticator() {
             return authenticator;
         }
 
-        public HandlerManager getHandlerManager() {
-            return handlerManager;
+        public RequestHandlers getRequestHandlers() {
+            return requestHandlers;
         }
 
-        public ServerRequestMapper<?> getRequestMapper() {
-            return requestMapper;
+        public ServerRequestMapper<?> getRequestMappers() {
+            return requestMappers;
         }
 
         public Optional<LogConfig> getLogConfig() {

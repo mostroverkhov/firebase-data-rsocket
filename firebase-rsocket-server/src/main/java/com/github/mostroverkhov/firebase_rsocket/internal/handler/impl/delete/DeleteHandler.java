@@ -2,7 +2,8 @@ package com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.delete;
 
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.model.WriteResult;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.BaseRequestHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.OperationRequestHandler;
+import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
@@ -16,14 +17,14 @@ import rx.Observable;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class DeleteHandler extends BaseRequestHandler<DeleteRequest, DeleteResponse> {
+public class DeleteHandler extends OperationRequestHandler<DeleteRequest, DeleteResponse> {
 
     public DeleteHandler() {
         super(Op.DELETE);
     }
 
     @Override
-    public Flowable<DeleteResponse> handle(DeleteRequest deleteRequest) {
+    public Flowable<DeleteResponse> handle(KeyValue metadata, DeleteRequest deleteRequest) {
         Path path = deleteRequest.getPath();
         DatabaseReference dbRef = reference(path);
         Observable<WriteResult> deleteO = new FirebaseDatabaseManager(dbRef)

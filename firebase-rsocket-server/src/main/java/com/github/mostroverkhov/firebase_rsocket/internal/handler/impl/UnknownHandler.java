@@ -1,32 +1,33 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.handler.impl;
 
-import com.github.mostroverkhov.firebase_rsocket.FirebaseRsocketMessageFormatException;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.RequestHandler;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
+import com.github.mostroverkhov.firebase_rsocket.FirebaseRsocketException;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerRequestHandler;
+import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import io.reactivex.Flowable;
 
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 /**
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class UnknownHandler implements RequestHandler {
+public class UnknownHandler implements ServerRequestHandler {
 
     @Override
-    public boolean canHandle(Operation op) {
+    public boolean canHandle(KeyValue metadata) {
         return true;
     }
 
     @Override
-    public Flowable handle(Operation op) {
-        return Flowable.error(unknownOperationError(op.getOp()));
-
+    public Flowable handle(KeyValue metadata, Object req) {
+        Optional<Object> op = Optional.ofNullable(metadata.get("operation"));
+        return Flowable.error(unknownOperationError(op));
     }
 
-    private Callable<Throwable> unknownOperationError(String operation) {
-        String msg = operation.isEmpty() ? " empty" : operation;
-        return () -> new FirebaseRsocketMessageFormatException(
+    private Callable<Throwable> unknownOperationError(Optional<Object> operation) {
+        String msg = operation.isPresent() ? operation.toString() : " empty";
+        return () -> new FirebaseRsocketException(
                 "No handler for operation: " + msg);
     }
 

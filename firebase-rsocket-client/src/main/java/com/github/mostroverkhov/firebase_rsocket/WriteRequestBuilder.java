@@ -1,6 +1,5 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
 
@@ -24,7 +23,7 @@ public class WriteRequestBuilder<T> {
         assertData(data, "Data should not be null");
         assertPaths(childPaths);
 
-        return new WriteRequest<>(Op.WRITE_PUSH.code(),
+        return new WriteRequest<>(
                 new Path(childPaths),
                 data);
     }

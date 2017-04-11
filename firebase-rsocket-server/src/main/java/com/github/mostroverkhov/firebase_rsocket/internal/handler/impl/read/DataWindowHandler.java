@@ -5,6 +5,7 @@ import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.model.Window;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.Cache;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.CacheDuration;
+import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
@@ -24,21 +25,13 @@ public class DataWindowHandler extends BaseDataWindowHandler<ReadResponse<?>> {
 
     private Optional<Cache> cache;
 
-    public DataWindowHandler() {
-        this(Optional.empty());
-    }
-
-    public DataWindowHandler(Cache cache) {
-        this(Optional.of(cache));
-    }
-
-    private DataWindowHandler(Optional<Cache> cache) {
+    public DataWindowHandler(Optional<Cache> cache) {
         super(Op.DATA_WINDOW);
         this.cache = cache;
     }
 
     @Override
-    public Flowable<ReadResponse<?>> handle(ReadRequest readRequest) {
+    public Flowable<ReadResponse<?>> handle(KeyValue metadata, ReadRequest readRequest) {
         DataQuery dataQuery = toDataQuery(readRequest);
         DatabaseReference dbRef = dataQuery.getDbRef();
 
@@ -65,6 +58,7 @@ public class DataWindowHandler extends BaseDataWindowHandler<ReadResponse<?>> {
                 window.dataWindow());
     }
 
+    @SuppressWarnings("Duplicates")
     private void tryCache(ReadRequest readRequest, DatabaseReference dbRef) {
         cache.ifPresent(c -> {
             CacheDuration dur = c.cacheDuration();

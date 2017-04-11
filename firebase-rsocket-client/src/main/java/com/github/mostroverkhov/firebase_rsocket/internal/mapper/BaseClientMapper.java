@@ -3,7 +3,6 @@ package com.github.mostroverkhov.firebase_rsocket.internal.mapper;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import com.google.gson.Gson;
 import io.reactivex.Flowable;
 import io.reactivex.functions.Function;
@@ -16,14 +15,14 @@ import java.util.Map;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public abstract class BaseClientMapper<Req extends Operation, Resp> implements ClientMapper<Req, Resp> {
+public abstract class BaseClientMapper<Req, Resp> implements ClientMapper<Req, Resp> {
     private volatile Gson gson;
 
     public BaseClientMapper() {
     }
 
     @Override
-    public BytePayload marshall(Req request, KeyValue metadata) {
+    public BytePayload marshall(KeyValue metadata, Req request) {
 
         byte[] metaDataBytes = Conversions.stringToBytes(gson.toJson(metaDataMap(metadata)));
         byte[] dataBytes = Conversions.stringToBytes(gson.toJson(request));

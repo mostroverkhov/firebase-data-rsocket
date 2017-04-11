@@ -1,7 +1,9 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.auth.Authenticator;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.RequestHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.Authenticator;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.DataCodec;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.MetadataCodec;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerRequestHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerRequestMapper;
 import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ServerTransport;
 
@@ -14,24 +16,26 @@ import java.util.Optional;
 class ServerConfig {
     private final ServerTransport transport;
     private final Authenticator authenticator;
-    private final List<RequestHandler<?, ?>> handlers;
+    private final List<ServerRequestHandler<?, ?>> handlers;
+    private final DataCodec dataCodec;
+    private final MetadataCodec metadataCodec;
     private final Optional<LogConfig> logConfig;
-    private ServerRequestMapper<?> requestMapper;
+    private final List<ServerRequestMapper<?>> mappers;
 
     public ServerConfig(ServerTransport transport,
                         Authenticator authenticator,
-                        ServerRequestMapper<?> requestMapper,
-                        List<RequestHandler<?, ?>> handlers,
+                        List<ServerRequestMapper<?>> mappers,
+                        List<ServerRequestHandler<?, ?>> handlers,
+                        DataCodec dataCodec,
+                        MetadataCodec metadataCodec,
                         Optional<LogConfig> logConfig) {
-        this.requestMapper = requestMapper;
         this.transport = transport;
         this.authenticator = authenticator;
+        this.mappers = mappers;
         this.handlers = handlers;
+        this.dataCodec = dataCodec;
+        this.metadataCodec = metadataCodec;
         this.logConfig = logConfig;
-    }
-
-    public ServerRequestMapper<?> requestMapper() {
-        return requestMapper;
     }
 
     public ServerTransport transport() {
@@ -42,7 +46,11 @@ class ServerConfig {
         return authenticator;
     }
 
-    public List<RequestHandler<?, ?>> handlers() {
+    public List<ServerRequestMapper<?>> mappers() {
+        return mappers;
+    }
+
+    public List<ServerRequestHandler<?, ?>> handlers() {
         return handlers;
     }
 
@@ -50,4 +58,11 @@ class ServerConfig {
         return logConfig;
     }
 
+    public DataCodec dataCodec() {
+        return dataCodec;
+    }
+
+    public MetadataCodec metadataCodec() {
+        return metadataCodec;
+    }
 }

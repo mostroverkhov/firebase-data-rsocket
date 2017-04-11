@@ -1,34 +1,17 @@
 package com.github.mostroverkhov.firebase_rsocket_data.common.model.read;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Operation;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 
 /**
  * Created by Maksym Ostroverkhov on 27.02.17.
  */
-public class ReadRequest extends Operation {
+public class ReadRequest {
     private final Path path;
     private final int windowSize;
     private final OrderDir orderDir;
     private final OrderBy orderBy;
     private final String orderByChildKey;
     private final String windowStartWith;
-
-    public ReadRequest(String operation,
-                       Path path,
-                       int windowSize,
-                       OrderDir orderDir,
-                       OrderBy orderBy,
-                       String orderByChildKey,
-                       String windowStartWith) {
-        super(operation);
-        this.path = path;
-        this.windowSize = windowSize;
-        this.orderDir = orderDir;
-        this.orderBy = orderBy;
-        this.orderByChildKey = orderByChildKey;
-        this.windowStartWith = windowStartWith;
-    }
 
     public ReadRequest(Path path,
                        int windowSize,
@@ -87,7 +70,6 @@ public class ReadRequest extends Operation {
     @Override
     public String toString() {
         return "Query{" +
-                "operation='" + getOp() + '\'' +
                 ", path=" + path +
                 ", windowSize=" + windowSize +
                 ", orderDir=" + orderDir +

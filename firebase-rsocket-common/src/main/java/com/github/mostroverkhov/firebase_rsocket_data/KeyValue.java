@@ -1,6 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket_data;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,11 +27,25 @@ public class KeyValue {
         return this;
     }
 
-    public Object contains(String key) {
+    public boolean contains(String key) {
         return keyValues.containsKey(key);
+    }
+
+    public boolean contains(String key, String value) {
+        return Optional.ofNullable(keyValues.get(key))
+                .map(v -> v.equals(value))
+                .orElse(false);
     }
 
     public Set<String> keys() {
         return keyValues.keySet();
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("KeyValue{");
+        sb.append("keyValues=").append(keyValues);
+        sb.append('}');
+        return sb.toString();
     }
 }
