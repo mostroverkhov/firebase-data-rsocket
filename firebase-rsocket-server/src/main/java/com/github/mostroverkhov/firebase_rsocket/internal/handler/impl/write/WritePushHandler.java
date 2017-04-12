@@ -2,9 +2,8 @@ package com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.write;
 
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.model.WriteResult;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.OperationRequestHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.MetadataRequestHandler;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteResponse;
@@ -17,10 +16,10 @@ import rx.Observable;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class WritePushHandler extends OperationRequestHandler<WriteRequest<?>, WriteResponse> {
+public class WritePushHandler extends MetadataRequestHandler<WriteRequest<?>, WriteResponse> {
 
-    public WritePushHandler() {
-        super(Op.WRITE_PUSH);
+    public WritePushHandler(String key, String value) {
+        super(key, value);
     }
 
     @Override

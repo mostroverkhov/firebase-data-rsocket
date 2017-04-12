@@ -7,13 +7,17 @@ public enum Op {
     WRITE_PUSH("write_push"),
     DELETE("delete");
 
-    private final String code;
+    private final String value;
 
-    Op(String code) {
-        this.code = code;
+    Op(String value) {
+        this.value = value;
     }
 
-    public String code() {
-        return code;
+    public String value() {
+        return value;
+    }
+
+    public static String key() {
+        return "operation";
     }
 }

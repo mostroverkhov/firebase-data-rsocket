@@ -1,6 +1,5 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 
@@ -11,7 +10,6 @@ import static com.github.mostroverkhov.firebase_rsocket_data.common.model.read.R
  */
 public class ReadRequestBuilder {
 
-    private String operation = Op.DATA_WINDOW.code();
     private int windowSize = 25;
     private ReadRequest.OrderDir orderDir = ReadRequest.OrderDir.ASC;
     private ReadRequest.OrderBy orderBy = KEY;

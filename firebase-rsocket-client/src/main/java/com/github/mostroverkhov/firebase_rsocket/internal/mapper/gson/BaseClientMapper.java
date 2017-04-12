@@ -1,5 +1,7 @@
-package com.github.mostroverkhov.firebase_rsocket.internal.mapper;
+package com.github.mostroverkhov.firebase_rsocket.internal.mapper.gson;
 
+import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ClientMapper;
+import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ResponseMappingException;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;

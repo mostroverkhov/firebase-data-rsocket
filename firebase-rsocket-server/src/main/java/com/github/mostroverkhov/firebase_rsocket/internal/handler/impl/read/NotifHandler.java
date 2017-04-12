@@ -5,10 +5,8 @@ import com.github.mostroverkhov.datawindowsource.model.DataQuery;
 import com.github.mostroverkhov.datawindowsource.model.NextQuery;
 import com.github.mostroverkhov.datawindowsource.model.WindowChangeEvent;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.Cache;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.CacheDuration;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.DataWindowChangeEvent;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.DataWindowNotif;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NextWindow;
@@ -18,20 +16,16 @@ import hu.akarnokd.rxjava.interop.RxJavaInterop;
 import io.reactivex.Flowable;
 import rx.Observable;
 
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class NotifRequestHandler extends BaseDataWindowHandler<DataWindowNotif> {
+public class NotifHandler extends BaseDataWindowHandler<DataWindowNotif> {
 
-    private final Optional<Cache> cache;
-
-    public NotifRequestHandler(Optional<Cache> cache) {
-        super(Op.DATA_WINDOW_NOTIF);
-        this.cache = cache;
+    public NotifHandler(String key, String value) {
+        super(key, value);
     }
 
     @Override

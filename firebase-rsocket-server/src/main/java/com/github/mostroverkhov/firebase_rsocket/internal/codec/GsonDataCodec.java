@@ -2,8 +2,11 @@ package com.github.mostroverkhov.firebase_rsocket.internal.codec;
 
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
 import com.google.gson.Gson;
+import org.apache.commons.io.IOUtils;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Optional;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,6 +24,18 @@ public class GsonDataCodec implements DataCodec {
     @Override
     public byte[] encode(Object data) {
         return gson.toJson(data).getBytes(charSet);
+    }
+
+    @Override
+    public Optional<String> decode(byte[] data) {
+        String s;
+        try {
+            s = IOUtils.toString(data, charSet.name());
+        } catch (IOException e) {
+            return Optional.empty();
+        }
+        return Optional.of(s);
+
     }
 
     @Override

@@ -3,10 +3,8 @@ package com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read;
 import com.github.mostroverkhov.datawindowsource.model.DataQuery;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.model.Window;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.Cache;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.CacheDuration;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import com.google.firebase.database.DatabaseReference;
@@ -14,7 +12,6 @@ import hu.akarnokd.rxjava.interop.RxJavaInterop;
 import io.reactivex.Flowable;
 import rx.Observable;
 
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -23,11 +20,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class DataWindowHandler extends BaseDataWindowHandler<ReadResponse<?>> {
 
-    private Optional<Cache> cache;
-
-    public DataWindowHandler(Optional<Cache> cache) {
-        super(Op.DATA_WINDOW);
-        this.cache = cache;
+    public DataWindowHandler(String key, String value) {
+        super(key, value);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.mapper;
 
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.DataCodec;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 
 import java.util.ArrayList;
@@ -58,5 +59,11 @@ public class RequestMappers implements ServerRequestMapper {
         if (adapters.isEmpty()) {
             throw new IllegalArgumentException("Adapters should not be empty");
         }
+    }
+
+    @Override
+    public RequestMappers setDataCodec(DataCodec dataCodec) {
+        delegates.forEach(m -> m.setDataCodec(dataCodec));
+        return this;
     }
 }

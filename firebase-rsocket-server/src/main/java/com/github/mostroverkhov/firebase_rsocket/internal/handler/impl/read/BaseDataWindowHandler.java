@@ -1,20 +1,37 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read;
 
 import com.github.mostroverkhov.datawindowsource.model.DataQuery;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.OperationRequestHandler;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.MetadataRequestHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.Cache;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.CacheAware;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.google.firebase.database.DatabaseReference;
+
+import java.util.Optional;
 
 /**
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public abstract class BaseDataWindowHandler<Resp> extends OperationRequestHandler<ReadRequest, Resp> {
+public abstract class BaseDataWindowHandler<Resp>
+        extends MetadataRequestHandler<ReadRequest, Resp>
+        implements CacheAware{
 
-    public BaseDataWindowHandler(Op op) {
-        super(op);
+    protected volatile Optional<Cache> cache = Optional.empty();
+
+    public BaseDataWindowHandler(String key, String value) {
+        super(key, value);
+    }
+
+    @Override
+    public BaseDataWindowHandler<Resp> setCache(Cache cache) {
+        this.cache = Optional.of(cache);
+        return this;
+    }
+
+    protected Optional<Cache> getCache() {
+        return cache;
     }
 
     protected DataQuery toDataQuery(ReadRequest readRequest) {

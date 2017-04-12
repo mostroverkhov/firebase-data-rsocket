@@ -1,11 +1,13 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.codec;
 
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
-import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
 import com.google.gson.stream.JsonReader;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+
+import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.bytesToReader;
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,7 +22,7 @@ public class GsonMetadataCodec implements MetadataCodec {
 
     @Override
     public KeyValue decode(byte[] metadata) {
-        try (JsonReader reader = new JsonReader(Conversions.bytesToReader(metadata))) {
+        try (JsonReader reader = new JsonReader(bytesToReader(metadata, Charset.forName("UTF-8")))) {
             KeyValue kv = new KeyValue();
             reader.beginObject();
             while (reader.hasNext()) {

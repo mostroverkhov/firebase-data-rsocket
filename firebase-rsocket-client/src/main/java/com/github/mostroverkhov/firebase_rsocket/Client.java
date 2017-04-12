@@ -1,9 +1,9 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.DataWindowClientMapper;
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.DeleteClientMapper;
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.NotificationClientMapper;
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.WritePushClientMapper;
+import com.github.mostroverkhov.firebase_rsocket.internal.mapper.gson.DataWindowClientMapper;
+import com.github.mostroverkhov.firebase_rsocket.internal.mapper.gson.DeleteClientMapper;
+import com.github.mostroverkhov.firebase_rsocket.internal.mapper.gson.NotificationClientMapper;
+import com.github.mostroverkhov.firebase_rsocket.internal.mapper.gson.WritePushClientMapper;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteResponse;
@@ -32,7 +32,7 @@ class Client {
         return clientChain.request(
                 new DataWindowClientMapper<>(clazz),
                 readRequest,
-                metadata("operation", Op.DATA_WINDOW.code()));
+                metadata(Op.key(), Op.DATA_WINDOW.value()));
     }
 
     public <T> Flowable<NotifResponse> dataWindowNotifications(ReadRequest readRequest,
@@ -40,21 +40,21 @@ class Client {
         return clientChain.request(
                 new NotificationClientMapper<>(clazz),
                 readRequest,
-                metadata("operation", Op.DATA_WINDOW_NOTIF.code()));
+                metadata(Op.key(), Op.DATA_WINDOW_NOTIF.value()));
     }
 
     public <T> Flowable<WriteResponse> write(WriteRequest<T> writeRequest) {
         return clientChain.request(
                 new WritePushClientMapper<>(),
                 writeRequest,
-                metadata("operation", Op.WRITE_PUSH.code()));
+                metadata(Op.key(), Op.WRITE_PUSH.value()));
     }
 
     public Flowable<DeleteResponse> delete(DeleteRequest deleteRequest) {
         return clientChain.request(
                 new DeleteClientMapper(),
                 deleteRequest,
-                metadata("operation", Op.DELETE.code()));
+                metadata(Op.key(), Op.DELETE.value()));
     }
 
 }

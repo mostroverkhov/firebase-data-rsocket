@@ -9,18 +9,8 @@ import com.github.mostroverkhov.firebase_rsocket.internal.codec.GsonDataCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.GsonMetadataCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.MetadataCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerRequestHandler;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.UnknownHandler;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.delete.DeleteHandler;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.DataWindowHandler;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.NotifRequestHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.*;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.write.WritePushHandler;
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.OperationRequestMapper;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerRequestMapper;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ServerTransport;
 import com.google.gson.Gson;
 
@@ -30,6 +20,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import static com.github.mostroverkhov.firebase_rsocket.Router.MapperHandler;
 
 /**
  * Created with IntelliJ IDEA.
@@ -72,12 +64,6 @@ public class ServerBuilder {
         return this;
     }
 
-    public ServerBuilder codecs(Codecs codecs) {
-        assertNotNull(codecs);
-        this.codecs = codecs;
-        return this;
-    }
-
     public ServerBuilder cacheReads() {
         cache = Optional.of(DEFAULT_CACHE);
         return this;
@@ -102,47 +88,51 @@ public class ServerBuilder {
     }
 
     public Server build() {
+
+        MapperHandler routes = routes();
+        List<ServerRequestMapper<?>> mappers = routes.mappers();
+        List<ServerRequestHandler<?, ?>> handlers = routes.handlers();
+        DataCodec dataCodec = codecs.getDataCodec();
+        MetadataCodec metadataCodec = codecs.getMetadataCodec();
+
+        setCodec(mappers, dataCodec);
+        setCache(handlers, cache);
+
         ServerConfig serverConfig = new ServerConfig(
                 transport,
                 authenticator,
-                mappers(),
-                handlers(),
-                codecs.getDataCodec(),
-                codecs.getMetadataCodec(),
+                mappers,
+                handlers,
+                dataCodec,
+                metadataCodec,
                 logConfig);
 
         return new Server(serverConfig);
     }
 
-    public static class Codecs {
-        private final DataCodec dataCodec;
-        private final MetadataCodec metadataCodec;
-
-        public Codecs(DataCodec dataCodec,
-                      MetadataCodec metadataCodec) {
-            this.dataCodec = dataCodec;
-            this.metadataCodec = metadataCodec;
-        }
-
-        public DataCodec getDataCodec() {
-            return dataCodec;
-        }
-
-        public MetadataCodec getMetadataCodec() {
-            return metadataCodec;
-        }
+    private static void setCache(List<ServerRequestHandler<?, ?>> handlers, Optional<Cache> cache) {
+        cache.ifPresent(c -> {
+            handlers.stream()
+                    .filter(h -> h instanceof CacheAware)
+                    .map(h -> ((CacheAware) h))
+                    .forEach(ca -> ca.setCache(c));
+        });
     }
 
-    private void assertTransport(ServerTransport transport) {
-        if (transport == null) {
-            throw new IllegalArgumentException("ServerTransport should be present");
-        }
+    private static void setCodec(List<ServerRequestMapper<?>> mappers, DataCodec dataCodec) {
+        mappers.forEach(m -> m.setDataCodec(dataCodec));
     }
 
     private static Thread newDaemonThread(Runnable r) {
         Thread thread = new Thread(r);
         thread.setDaemon(true);
         return thread;
+    }
+
+    private static void assertTransport(ServerTransport transport) {
+        if (transport == null) {
+            throw new IllegalArgumentException("ServerTransport should be present");
+        }
     }
 
     private static void assertCredsFile(String credsFile) {
@@ -159,25 +149,7 @@ public class ServerBuilder {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private List<ServerRequestHandler<?, ?>> handlers() {
-
-        return Arrays.asList(
-                new DataWindowHandler(cache),
-                new NotifRequestHandler(cache),
-                new WritePushHandler(),
-                new DeleteHandler(),
-                new UnknownHandler());
-    }
-
-    private List<ServerRequestMapper<?>> mappers() {
-
-        DataCodec dataCodec = codecs.getDataCodec();
-        return Arrays.asList(
-                new OperationRequestMapper<>(dataCodec, ReadRequest.class, Op.DATA_WINDOW.code()),
-                new OperationRequestMapper<>(dataCodec, ReadRequest.class, Op.DATA_WINDOW_NOTIF.code()),
-                new OperationRequestMapper<>(dataCodec, WriteRequest.class, Op.WRITE_PUSH.code()),
-                new OperationRequestMapper<>(dataCodec, DeleteRequest.class, Op.DELETE.code())
-        );
+    private MapperHandler routes() {
+        return Routes.router().asLists();
     }
 }
