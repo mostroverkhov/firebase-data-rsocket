@@ -1,14 +1,13 @@
-package com.github.mostroverkhov.firebase_rsocket.internal.mapper.gson;
+package com.github.mostroverkhov.firebase_rsocket.internal.codec.gson;
 
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
-import io.reactivex.Flowable;
-import org.reactivestreams.Publisher;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,28 +17,30 @@ import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class DataWindowClientMapper<T> extends BaseClientMapper<ReadRequest, ReadResponse<T>> {
+public class DataWindowClientCodec<T> extends GsonClientCodec<ReadRequest, ReadResponse<T>> {
 
     private final Class<T> responseType;
 
-    public DataWindowClientMapper(Class<T> responseType) {
+    public DataWindowClientCodec(Class<T> responseType) {
         this.responseType = responseType;
     }
 
     @Override
-    public Publisher<ReadResponse<T>> map(byte[] response) {
+    public ReadResponse<T> map(byte[] response) {
 
-        return Flowable.fromCallable(() -> mapRead(
-                gson(),
+        return mapRead(
+                serializer(),
                 response,
-                responseType))
-                .onErrorResumeNext(mappingError("Error while mapping DataWindow response"));
+                responseType);
     }
 
-    private static <T> ReadResponse<T> mapRead(Gson gson,
+    private static <T> ReadResponse<T> mapRead(GsonSerializer gsonSerializer,
                                                byte[] payload,
                                                Class<T> itemType) {
-        Reader reader = bytesToReader(payload);
+        Gson gson = gsonSerializer.getGson();
+        Charset charset = Charset.forName(gsonSerializer.getEncoding());
+
+        Reader reader = bytesToReader(payload, charset);
 
         TypeAdapter<JsonElement> adapter = gson.getAdapter(JsonElement.class);
         JsonElement root = getRoot(new JsonReader(reader), adapter);

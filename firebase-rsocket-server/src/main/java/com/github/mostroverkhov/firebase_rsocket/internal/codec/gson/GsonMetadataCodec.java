@@ -1,6 +1,8 @@
-package com.github.mostroverkhov.firebase_rsocket.internal.codec;
+package com.github.mostroverkhov.firebase_rsocket.internal.codec.gson;
 
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.MetadataCodec;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
+import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import org.apache.commons.io.IOUtils;
 
@@ -15,14 +17,23 @@ import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.
  */
 public class GsonMetadataCodec implements MetadataCodec {
 
+    private final Gson gson;
+    private Charset charset;
+
+    public GsonMetadataCodec(Gson gson, Charset charset) {
+        this.gson = gson;
+        this.charset = charset;
+    }
+
     @Override
     public byte[] encode(KeyValue keyValue) {
-        throw new UnsupportedOperationException("Not implemented");
+        String s = gson.toJson(keyValue);
+        return s.getBytes(charset);
     }
 
     @Override
     public KeyValue decode(byte[] metadata) {
-        try (JsonReader reader = new JsonReader(bytesToReader(metadata, Charset.forName("UTF-8")))) {
+        try (JsonReader reader = new JsonReader(bytesToReader(metadata, charset))) {
             KeyValue kv = new KeyValue();
             reader.beginObject();
             while (reader.hasNext()) {
@@ -32,12 +43,12 @@ public class GsonMetadataCodec implements MetadataCodec {
             }
             return kv;
         } catch (IOException e) {
-            throw mapMetadataError(metadata);
+            throw mapMetadataError(metadata, e);
         }
     }
 
-    private static IllegalStateException mapMetadataError(byte[] metaData) {
-        return new IllegalStateException("Error reading metadata op: " + bytesToMessage(metaData));
+    private static IllegalStateException mapMetadataError(byte[] metaData, IOException e) {
+        return new IllegalStateException("Error reading metadata op: " + bytesToMessage(metaData), e);
     }
 
     private static String bytesToMessage(byte[] data) {

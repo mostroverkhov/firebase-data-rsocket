@@ -11,18 +11,18 @@ import java.util.Optional;
 /**
  * Created by Maksym Ostroverkhov on 03.03.17.
  */
-public class RequestMappers implements ServerRequestMapper {
-    private final List<ServerRequestMapper<?>> delegates = new ArrayList<>();
+public class RequestMappers implements ServerMapper {
+    private final List<ServerMapper<?>> delegates = new ArrayList<>();
 
-    public static RequestMappers newInstance(List<ServerRequestMapper<?>> mappers) {
+    public static RequestMappers newInstance(List<ServerMapper<?>> mappers) {
         return new RequestMappers(mappers);
     }
 
-    protected RequestMappers(ServerRequestMapper<?>... mappers) {
+    protected RequestMappers(ServerMapper<?>... mappers) {
         this(Arrays.asList(mappers));
     }
 
-    protected RequestMappers(List<ServerRequestMapper<?>> mappers) {
+    protected RequestMappers(List<ServerMapper<?>> mappers) {
         assertAdapters(mappers);
         delegates.addAll(mappers);
     }
@@ -35,7 +35,7 @@ public class RequestMappers implements ServerRequestMapper {
     @Override
     public Optional<?> map(KeyValue metadata, byte[] data) {
 
-        Optional<ServerRequestMapper<?>> maybeMapper = delegates
+        Optional<ServerMapper<?>> maybeMapper = delegates
                 .stream()
                 .filter(mapper -> mapper.accepts(metadata))
                 .findFirst();
@@ -52,7 +52,7 @@ public class RequestMappers implements ServerRequestMapper {
         return delegates.get(0).marshall(response);
     }
 
-    private static void assertAdapters(List<ServerRequestMapper<?>> adapters) {
+    private static void assertAdapters(List<ServerMapper<?>> adapters) {
         if (adapters == null) {
             throw new IllegalArgumentException("Adapters should not be null");
         }

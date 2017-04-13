@@ -1,25 +1,25 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.Serializer;
 import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ClientTransport;
-import com.google.gson.Gson;
 
 /**
  * Created by Maksym Ostroverkhov on 28.02.17.
  */
 class ClientConfig {
     private final ClientTransport transport;
-    private final Gson gson;
+    private final Serializer serializer;
 
-    ClientConfig(ClientTransport transport, Gson gson) {
+    ClientConfig(ClientTransport transport, Serializer serializer) {
         this.transport = transport;
-        this.gson = gson;
+        this.serializer = serializer;
     }
 
     public ClientTransport transport() {
         return transport;
     }
 
-    public Gson gson() {
-        return gson;
+    public Serializer serializer() {
+        return serializer;
     }
 }

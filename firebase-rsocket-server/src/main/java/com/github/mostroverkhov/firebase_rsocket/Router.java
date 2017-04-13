@@ -1,7 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerRequestHandler;
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerRequestMapper;
+import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.function.BiFunction;
  */
 class Router {
 
-    private final List<ServerRequestMapper<?>> mappers = new ArrayList<>();
+    private final List<ServerMapper<?>> mappers = new ArrayList<>();
     private final List<ServerRequestHandler<?, ?>> handlers = new ArrayList<>();
 
     public Router route(String key, String value, BiFunction<String, String, Route> routeF) {
@@ -30,13 +30,13 @@ class Router {
     }
 
     static class Route {
-        private ServerRequestMapper<?> mapper;
+        private ServerMapper<?> mapper;
         private ServerRequestHandler<?, ?> handler;
 
         public Route() {
         }
 
-        public Route mapper(ServerRequestMapper<?> mapper) {
+        public Route mapper(ServerMapper<?> mapper) {
             this.mapper = mapper;
             return this;
         }
@@ -46,7 +46,7 @@ class Router {
             return this;
         }
 
-        public ServerRequestMapper<?> getMapper() {
+        public ServerMapper<?> getMapper() {
             return mapper;
         }
 
@@ -56,16 +56,16 @@ class Router {
     }
 
     public static class MapperHandler {
-        private final List<ServerRequestMapper<?>> mappers;
+        private final List<ServerMapper<?>> mappers;
         private final List<ServerRequestHandler<?, ?>> handlers;
 
-        public MapperHandler(List<ServerRequestMapper<?>> mappers,
+        public MapperHandler(List<ServerMapper<?>> mappers,
                              List<ServerRequestHandler<?, ?>> handlers) {
             this.mappers = mappers;
             this.handlers = handlers;
         }
 
-        public List<ServerRequestMapper<?>> mappers() {
+        public List<ServerMapper<?>> mappers() {
             return mappers;
         }
 

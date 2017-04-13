@@ -21,4 +21,13 @@ public final class ReadResponse<T> {
     public List<T> getData() {
         return data;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ReadResponse{");
+        sb.append("readRequest=").append(readRequest);
+        sb.append(", data=").append(data);
+        sb.append('}');
+        return sb.toString();
+    }
 }

@@ -15,4 +15,12 @@ public class NotifResponse {
     public DataWindowNotif getDataItem() {
         return dataItem;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NotifResponse{");
+        sb.append("dataItem=").append(dataItem);
+        sb.append('}');
+        return sb.toString();
+    }
 }

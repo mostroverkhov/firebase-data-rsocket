@@ -1,5 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.Serializer;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.GsonSerializer;
 import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ClientTransport;
 import com.google.gson.Gson;
 
@@ -9,6 +11,10 @@ import com.google.gson.Gson;
  */
 public class ClientBuilder {
 
+    private static final Serializer serializer =
+            new GsonSerializer(
+                    new Gson(),
+                    "UTF-8");
     private final ClientTransport transport;
 
     public ClientBuilder(ClientTransport transport) {
@@ -17,7 +23,7 @@ public class ClientBuilder {
     }
 
     public Client build() {
-        ClientConfig clientConfig = new ClientConfig(transport, new Gson());
+        ClientConfig clientConfig = new ClientConfig(transport, serializer);
         return new Client(clientConfig);
     }
 

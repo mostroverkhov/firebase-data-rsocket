@@ -8,7 +8,7 @@ import java.util.Optional;
 /**
  * Created by Maksym Ostroverkhov on 03.03.17.
  */
-public interface ServerRequestMapper<T> extends CodecAware {
+public interface ServerMapper<T> extends CodecAware {
 
     boolean accepts(KeyValue metaData);
 

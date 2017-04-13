@@ -17,4 +17,12 @@ public class NextWindow extends DataWindowNotif {
     public ReadRequest getNext() {
         return next;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NextWindow{");
+        sb.append("next=").append(next);
+        sb.append('}');
+        return sb.toString();
+    }
 }

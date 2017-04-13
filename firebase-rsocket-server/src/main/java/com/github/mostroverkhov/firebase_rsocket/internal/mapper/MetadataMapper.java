@@ -8,7 +8,7 @@ import java.util.Optional;
 /**
  * Created by Maksym Ostroverkhov on 03.03.17.
  */
-public class MetadataMapper<T> implements ServerRequestMapper<T> {
+public class MetadataMapper<T> implements ServerMapper<T> {
     private volatile DataCodec dataCodec;
     private final Class<T> targetType;
     private final String key;

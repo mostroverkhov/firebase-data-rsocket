@@ -6,7 +6,9 @@ import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class ClientUtil {
+class ClientUtil {
+    private ClientUtil() {
+    }
 
     static KeyValue metadata(String... tuples) {
         if (tuples.length % 2 == 0) {

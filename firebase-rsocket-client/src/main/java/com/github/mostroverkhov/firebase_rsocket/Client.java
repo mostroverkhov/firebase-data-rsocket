@@ -1,9 +1,9 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.gson.DataWindowClientMapper;
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.gson.DeleteClientMapper;
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.gson.NotificationClientMapper;
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.gson.WritePushClientMapper;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.DataWindowClientCodec;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.DeleteClientCodec;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.NotificationClientCodec;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.WritePushClientCodec;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteResponse;
@@ -30,7 +30,7 @@ class Client {
     public <T> Flowable<ReadResponse<T>> dataWindow(ReadRequest readRequest,
                                                     Class<T> clazz) {
         return clientChain.request(
-                new DataWindowClientMapper<>(clazz),
+                new DataWindowClientCodec<>(clazz),
                 readRequest,
                 metadata(Op.key(), Op.DATA_WINDOW.value()));
     }
@@ -38,21 +38,21 @@ class Client {
     public <T> Flowable<NotifResponse> dataWindowNotifications(ReadRequest readRequest,
                                                                Class<T> clazz) {
         return clientChain.request(
-                new NotificationClientMapper<>(clazz),
+                new NotificationClientCodec<>(clazz),
                 readRequest,
                 metadata(Op.key(), Op.DATA_WINDOW_NOTIF.value()));
     }
 
     public <T> Flowable<WriteResponse> write(WriteRequest<T> writeRequest) {
         return clientChain.request(
-                new WritePushClientMapper<>(),
+                new WritePushClientCodec<>(),
                 writeRequest,
                 metadata(Op.key(), Op.WRITE_PUSH.value()));
     }
 
     public Flowable<DeleteResponse> delete(DeleteRequest deleteRequest) {
         return clientChain.request(
-                new DeleteClientMapper(),
+                new DeleteClientCodec(),
                 deleteRequest,
                 metadata(Op.key(), Op.DELETE.value()));
     }

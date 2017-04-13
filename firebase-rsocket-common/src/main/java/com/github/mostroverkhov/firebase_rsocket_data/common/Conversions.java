@@ -6,7 +6,6 @@ import io.reactivesocket.util.PayloadImpl;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
@@ -16,12 +15,12 @@ import java.nio.charset.Charset;
  */
 public final class Conversions {
 
-    public static byte[] stringToBytes(String str) {
-        try {
-            return str.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("String encoding error", e);
-        }
+    public static byte[] stringToBytes(String str, Charset charset) {
+        return str.getBytes(charset);
+    }
+
+    public static BufferedReader bytesToReader(byte[] bytes, Charset charSet) {
+        return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes), charSet));
     }
 
     public static byte[] dataToBytes(Payload payload) {
@@ -44,13 +43,5 @@ public final class Conversions {
 
     public static Payload bytesToPayload(byte[] data, byte[] metadata) {
         return new PayloadImpl(data, metadata);
-    }
-
-    public static BufferedReader bytesToReader(byte[] bytes) {
-        return bytesToReader(bytes, Charset.forName("UTF-8"));
-    }
-
-    public static BufferedReader bytesToReader(byte[] bytes, Charset charSet) {
-        return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes), charSet));
     }
 }

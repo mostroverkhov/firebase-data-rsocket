@@ -1,7 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.internal.auth.Authenticator;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.GsonMetadataCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.MetadataCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.RequestHandlers;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerRequestHandler;
@@ -9,7 +8,7 @@ import com.github.mostroverkhov.firebase_rsocket.internal.logging.LogFormatter;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.Logging;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.ServerFlowLogger;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.RequestMappers;
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerRequestMapper;
+import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerMapper;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
@@ -62,7 +61,7 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
     private static class ServerSocket extends AbstractReactiveSocket {
         private final ServerContext context;
         private final RequestHandlers handlers;
-        private final ServerRequestMapper<?> requestMapper;
+        private final ServerMapper<?> requestMapper;
         private final Optional<Logging> logging;
         private final MetadataCodec metadataCodec;
 
@@ -71,7 +70,7 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
             this.requestMapper = context.getRequestMappers();
             this.handlers = context.getRequestHandlers();
             this.logging = logging(context);
-            this.metadataCodec = new GsonMetadataCodec();
+            this.metadataCodec = context.getMetadataCodec();
         }
 
         @Override
@@ -173,6 +172,15 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
         public T getData() {
             return data;
         }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("MappedRequest{");
+            sb.append("metadata=").append(metadata);
+            sb.append(", data=").append(data);
+            sb.append('}');
+            return sb.toString();
+        }
     }
 
     private static FirebaseRsocketException missingMapper(KeyValue metadata) {
@@ -183,10 +191,10 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
         private MetadataCodec metadataCodec;
         private final Authenticator authenticator;
         private final RequestHandlers requestHandlers;
-        private final ServerRequestMapper<?> requestMappers;
+        private final ServerMapper<?> requestMappers;
         private final Optional<LogConfig> logConfig;
 
-        public ServerContext(List<ServerRequestMapper<?>> requestMappers,
+        public ServerContext(List<ServerMapper<?>> requestMappers,
                              List<ServerRequestHandler<?, ?>> requestHandlers,
                              MetadataCodec metadataCodec,
                              Authenticator authenticator,
@@ -210,7 +218,7 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
             return requestHandlers;
         }
 
-        public ServerRequestMapper<?> getRequestMappers() {
+        public ServerMapper<?> getRequestMappers() {
             return requestMappers;
         }
 

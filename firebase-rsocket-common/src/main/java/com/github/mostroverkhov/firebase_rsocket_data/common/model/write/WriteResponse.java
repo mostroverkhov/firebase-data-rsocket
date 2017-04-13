@@ -25,6 +25,15 @@ public class WriteResponse {
         return writeKey;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("WriteResponse{");
+        sb.append("pathChildren=").append(Arrays.toString(pathChildren));
+        sb.append(", writeKey='").append(writeKey).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+
     private static void assertArgs(String writeKey, String[] pathChildren) {
         if (pathChildren == null) {
             throw new IllegalArgumentException("Path should not be null");

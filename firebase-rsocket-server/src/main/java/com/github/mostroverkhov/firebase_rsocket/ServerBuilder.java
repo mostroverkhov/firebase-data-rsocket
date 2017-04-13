@@ -5,12 +5,12 @@ import com.github.mostroverkhov.firebase_rsocket.internal.auth.CredentialsAuthen
 import com.github.mostroverkhov.firebase_rsocket.internal.auth.PermitAllAuthenticator;
 import com.github.mostroverkhov.firebase_rsocket.internal.auth.PropsCredentialsFactory;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.DataCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.GsonDataCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.GsonMetadataCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.MetadataCodec;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.GsonDataCodec;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.GsonMetadataCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerRequestHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.*;
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerRequestMapper;
+import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerMapper;
 import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ServerTransport;
 import com.google.gson.Gson;
 
@@ -35,11 +35,16 @@ public class ServerBuilder {
                     Executors.newSingleThreadScheduledExecutor(
                             ServerBuilder::newDaemonThread)),
             new CacheDurationConstant(5, TimeUnit.SECONDS));
+
+    private static final Gson GSON = new Gson();
+    private static final Charset CHARSET_UTF8 = Charset.forName("UTF-8");
     private static final Codecs GSON_CODECS = new Codecs(
             new GsonDataCodec(
-                    new Gson(),
-                    Charset.forName("UTF-8")),
-            new GsonMetadataCodec());
+                    GSON,
+                    CHARSET_UTF8),
+            new GsonMetadataCodec(
+                    GSON,
+                    CHARSET_UTF8));
 
     private final ServerTransport transport;
     private Authenticator authenticator = PERMIT_ALL_AUTH;
@@ -90,7 +95,7 @@ public class ServerBuilder {
     public Server build() {
 
         MapperHandler routes = routes();
-        List<ServerRequestMapper<?>> mappers = routes.mappers();
+        List<ServerMapper<?>> mappers = routes.mappers();
         List<ServerRequestHandler<?, ?>> handlers = routes.handlers();
         DataCodec dataCodec = codecs.getDataCodec();
         MetadataCodec metadataCodec = codecs.getMetadataCodec();
@@ -119,7 +124,7 @@ public class ServerBuilder {
         });
     }
 
-    private static void setCodec(List<ServerRequestMapper<?>> mappers, DataCodec dataCodec) {
+    private static void setCodec(List<ServerMapper<?>> mappers, DataCodec dataCodec) {
         mappers.forEach(m -> m.setDataCodec(dataCodec));
     }
 

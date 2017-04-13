@@ -1,6 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.gson.BaseClientMapper;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.ResponseMappingException;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.GsonClientCodec;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
@@ -10,6 +11,7 @@ import io.reactivesocket.Payload;
 import io.reactivesocket.ReactiveSocket;
 import io.reactivesocket.client.ReactiveSocketClient;
 import io.reactivex.Flowable;
+import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import org.reactivestreams.Publisher;
@@ -30,12 +32,13 @@ class ClientRequestChain {
         this.rsocket = rsocket();
     }
 
+    @SuppressWarnings("UnnecessaryLocalVariable")
     public <Req, Resp> Flowable<Resp> request(
-            BaseClientMapper<Req, Resp> clientMapper,
+            GsonClientCodec<Req, Resp> clientMapper,
             Req request,
             KeyValue metadata) {
 
-        clientMapper.setSerializer(clientConfig.gson());
+        clientMapper.setSerializer(clientConfig.serializer());
 
         Flowable<Resp> readResponseFlow = rsocket
                 .observeOn(Schedulers.io())
@@ -48,13 +51,16 @@ class ClientRequestChain {
                     return socket.requestStream(requestPayload);
                 })
                 .filter(requestStreamDataFrames())
-                .flatMap(response -> {
-                    Publisher<Resp> responseFlow = clientMapper
+                .map(response -> {
+                    Resp responseFlow = clientMapper
                             .map(Conversions.dataToBytes(response));
                     return responseFlow;
                 });
 
-        return readResponseFlow;
+        Flowable<Resp> readResponseOrErrorFlow = readResponseFlow
+                .onErrorResumeNext(mappingError("Error while processing request " + request));
+
+        return readResponseOrErrorFlow;
     }
 
     private Flowable<ReactiveSocket> rsocket() {
@@ -62,6 +68,12 @@ class ClientRequestChain {
                 ReactiveSocketClient.create(clientConfig.transport().transportClient(),
                         keepAlive(never()).disableLease())
                         .connect());
+    }
+
+    private static <Resp>
+    Function<? super Throwable, ? extends Publisher<? extends Resp>>
+    mappingError(String msg) {
+        return err -> Flowable.error(new ResponseMappingException(msg, err));
     }
 
     /*workaround for https://github.com/ReactiveSocket/reactivesocket-java/issues/226*/
