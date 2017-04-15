@@ -9,9 +9,7 @@ Based on [reactivesocket-java](https://github.com/ReactiveSocket/reactivesocket-
 * Native APIs are callback based, with threading controlled by firebase, this makes composing results of different queries hard 
 
 #### Supported transports   
-Tcp and udp at the moment. Server relies on `reactivesocket-java`, which also provides
-websockets transport out of the box. This one is not implemented yet, but can be added trivially by providing
-`ClientTransport` and `ServerTransport` implementations 
+TCP, UDP, Websockets. `ClientTransport` and `ServerTransport` implementations for each transport are available on `transport-` submodules    
 
 #### Usage
 ###### Setup
