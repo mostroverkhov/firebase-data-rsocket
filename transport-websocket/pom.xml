@@ -2,14 +2,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <artifactId>firebase-rsocket-server-parent</artifactId>
         <groupId>com.github.mostroverkhov</groupId>
         <version>0.1.1-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
+    <artifactId>firebase-rsocket-transport-websocket</artifactId>
+    <version>0.1.1-SNAPSHOT</version>
 
-    <artifactId>firebase-rsocket-transport-aeron</artifactId>
     <dependencies>
         <dependency>
             <groupId>com.github.mostroverkhov</groupId>
@@ -18,18 +20,17 @@
         </dependency>
 
         <dependency>
-            <groupId>io.reactivesocket</groupId>
-            <artifactId>reactivesocket-transport-aeron</artifactId>
+            <groupId>com.github.mostroverkhov</groupId>
+            <artifactId>reactivesocket-transport-websocket</artifactId>
             <version>0.5.2</version>
         </dependency>
-
-        <dependency>
-            <groupId>io.aeron</groupId>
-            <artifactId>aeron-all</artifactId>
-            <version>1.0.1</version>
-        </dependency>
-
-
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 
 </project>

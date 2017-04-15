@@ -9,12 +9,13 @@
     <packaging>pom</packaging>
     <version>0.1.1-SNAPSHOT</version>
     <modules>
-        <module>firebase-rsocket-client</module>
-        <module>firebase-rsocket-server</module>
-        <module>firebase-rsocket-common</module>
-        <module>firebase-rsocket-test</module>
-        <module>firebase-rsocket-transport-tcp</module>
-        <module>firebase-rsocket-transport-aeron</module>
+        <module>client</module>
+        <module>server</module>
+        <module>shared</module>
+        <module>test</module>
+        <module>transport-tcp</module>
+        <module>transport-aeron</module>
+        <module>transport-websocket</module>
     </modules>
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.reactivestreams/reactive-streams -->
