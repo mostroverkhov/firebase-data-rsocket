@@ -1,5 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.UnknownHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.delete.DeleteHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.DataWindowHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.NotifHandler;
@@ -36,6 +37,7 @@ final class Routes {
                         Op.key(), Op.DELETE.value(),
                         (k, v) -> new Router.Route()
                                 .mapper(new DeleteMapper(k, v))
-                                .handler(new DeleteHandler(k, v)));
+                                .handler(new DeleteHandler(k, v)))
+                .defaultHandler(UnknownHandler::new);
     }
 }

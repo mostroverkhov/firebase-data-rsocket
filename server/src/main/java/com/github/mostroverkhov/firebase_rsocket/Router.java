@@ -6,6 +6,7 @@ import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,11 +18,17 @@ class Router {
     private final List<ServerRequestHandler<?, ?>> handlers = new ArrayList<>();
 
     public Router route(String key, String value, BiFunction<String, String, Route> routeF) {
-        assertArgs(key, value, routeF);
+        assertRouteArgs(key, value, routeF);
         Route route = routeF.apply(key, value);
         assertRoute(route);
         mappers.add(route.getMapper());
         handlers.add(route.getHandler());
+        return this;
+    }
+
+    public Router defaultHandler(Supplier<ServerRequestHandler<?, ?>> defHandlerF) {
+        assertArg(defHandlerF);
+        handlers.add(defHandlerF.get());
         return this;
     }
 
@@ -74,6 +81,12 @@ class Router {
         }
     }
 
+    private static void assertArg(Object arg) {
+        if (arg == null) {
+            throw new IllegalArgumentException("Arg should not be null");
+        }
+    }
+
     private static void assertRoute(Route route) {
         if (route.getHandler() == null
                 || route.getMapper() == null) {
@@ -81,9 +94,9 @@ class Router {
         }
     }
 
-    private static void assertArgs(String key,
-                                   String val,
-                                   BiFunction<String, String, Route> f) {
+    private static void assertRouteArgs(String key,
+                                        String val,
+                                        BiFunction<String, String, Route> f) {
         if (key == null || val == null || f == null) {
             throw new IllegalArgumentException("args should not be null");
         }

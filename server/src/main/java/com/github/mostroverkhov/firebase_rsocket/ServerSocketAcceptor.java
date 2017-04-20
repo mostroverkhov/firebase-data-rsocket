@@ -119,7 +119,15 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
 
             return succOrErrorFlow
                     .flatMap(__ -> __)
-                    .doOnError(serverFlowLogger::logError);
+                    .doOnError(serverFlowLogger::logError)
+                    .onErrorResumeNext(ServerSocket::resumeServerError);
+        }
+
+        private static Publisher<Payload> resumeServerError(Throwable t) {
+                Throwable err = t instanceof FirebaseRsocketException
+                        ? t
+                        : new FirebaseRsocketException("Server error", t);
+                return Flowable.error(err);
         }
 
         private Optional<MappedRequest<?>> mapRequest(KeyValue metadata, byte[] data) {
