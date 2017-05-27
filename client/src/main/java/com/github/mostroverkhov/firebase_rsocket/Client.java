@@ -21,10 +21,10 @@ import static com.github.mostroverkhov.firebase_rsocket.ClientUtil.metadata;
  */
 class Client {
 
-    private final ClientRequestChain clientChain;
+    private final ClientChain clientChain;
 
     public Client(ClientConfig clientConfig) {
-        this.clientChain = new ClientRequestChain(clientConfig);
+        this.clientChain = new ClientChain(clientConfig);
     }
 
     public <T> Flowable<ReadResponse<T>> dataWindow(ReadRequest readRequest,

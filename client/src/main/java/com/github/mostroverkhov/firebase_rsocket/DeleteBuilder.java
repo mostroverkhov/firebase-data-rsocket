@@ -7,10 +7,10 @@ import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.Delete
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class DeleteRequestBuilder {
+public class DeleteBuilder {
     private final String[] childrenPath;
 
-    DeleteRequestBuilder(String[] childrenPath) {
+    DeleteBuilder(String[] childrenPath) {
         this.childrenPath = childrenPath;
     }
 

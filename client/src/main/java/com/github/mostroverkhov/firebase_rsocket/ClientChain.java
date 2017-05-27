@@ -23,11 +23,11 @@ import static io.reactivesocket.client.SetupProvider.keepAlive;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-class ClientRequestChain {
+class ClientChain {
     private final ClientConfig clientConfig;
     private final Flowable<ReactiveSocket> rsocket;
 
-    public ClientRequestChain(ClientConfig clientConfig) {
+    public ClientChain(ClientConfig clientConfig) {
         this.clientConfig = clientConfig;
         this.rsocket = rsocket();
     }

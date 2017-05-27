@@ -8,7 +8,7 @@ import static com.github.mostroverkhov.firebase_rsocket_data.common.model.read.R
 /**
  * Created by Maksym Ostroverkhov on 28.02.17.
  */
-public class ReadRequestBuilder {
+public class ReadBuilder {
 
     private int windowSize = 25;
     private ReadRequest.OrderDir orderDir = ReadRequest.OrderDir.ASC;
@@ -17,13 +17,13 @@ public class ReadRequestBuilder {
     private String startWith;
     private final Path path;
 
-    ReadRequestBuilder(String... childPaths) {
+    ReadBuilder(String... childPaths) {
         assertNotEmpty(childPaths);
         this.path = new Path(childPaths);
 
     }
 
-    public ReadRequestBuilder windowWithSize(int size) {
+    public ReadBuilder windowWithSize(int size) {
         if (size < 1) {
             throw new IllegalArgumentException("Size should be positive");
         }
@@ -31,42 +31,42 @@ public class ReadRequestBuilder {
         return this;
     }
 
-    public ReadRequestBuilder orderByChild(String key) {
+    public ReadBuilder orderByChild(String key) {
         assertNotNull(key);
         this.key = key;
         orderBy = CHILD;
         return this;
     }
 
-    public ReadRequestBuilder orderByKey() {
+    public ReadBuilder orderByKey() {
         orderBy = KEY;
         this.key = null;
         return this;
     }
 
-    public ReadRequestBuilder orderByValue() {
+    public ReadBuilder orderByValue() {
         orderBy = VALUE;
         this.key = null;
         return this;
     }
 
-    public ReadRequestBuilder asc() {
+    public ReadBuilder asc() {
         orderDir = ReadRequest.OrderDir.ASC;
         return this;
     }
 
-    public ReadRequestBuilder desc() {
+    public ReadBuilder desc() {
         orderDir = ReadRequest.OrderDir.DESC;
         return this;
     }
 
-    public ReadRequestBuilder startWith(String key) {
+    public ReadBuilder startWith(String key) {
         assertNotNull(key);
         this.startWith = key;
         return this;
     }
 
-    public ReadRequestBuilder clearStartWith() {
+    public ReadBuilder clearStartWith() {
         this.startWith = null;
         return this;
     }

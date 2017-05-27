@@ -7,15 +7,15 @@ public final class Requests {
     private Requests() {
     }
 
-    public static ReadRequestBuilder readRequest(String... childPaths) {
-        return new ReadRequestBuilder(childPaths);
+    public static ReadBuilder readRequest(String... childPaths) {
+        return new ReadBuilder(childPaths);
     }
 
-    public static <T> WriteRequestBuilder<T> writeRequest(String... childPaths) {
-        return new WriteRequestBuilder<>(childPaths);
+    public static <T> WriteBuilder<T> writeRequest(String... childPaths) {
+        return new WriteBuilder<>(childPaths);
     }
 
-    public static DeleteRequestBuilder deleteRequest(String... childPaths) {
-        return new DeleteRequestBuilder(childPaths);
+    public static DeleteBuilder deleteRequest(String... childPaths) {
+        return new DeleteBuilder(childPaths);
     }
 }
