@@ -1,8 +1,8 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.read;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.NonTypedReadResponse;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.TypedReadResponse;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -21,7 +21,7 @@ import java.util.function.Function;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class DataWindowTransformer<T> implements Function<NonTypedReadResponse, Flowable<ReadResponse<T>>> {
+public class DataWindowTransformer<T> implements Function<ReadResponse, Flowable<TypedReadResponse<T>>> {
     private final Gson gson;
     private final Class<T> itemsType;
 
@@ -31,15 +31,15 @@ public class DataWindowTransformer<T> implements Function<NonTypedReadResponse, 
     }
 
     @Override
-    public Flowable<ReadResponse<T>> apply(NonTypedReadResponse nonTyped) {
+    public Flowable<TypedReadResponse<T>> apply(ReadResponse nonTyped) {
         return Flowable.just(typedWindow(nonTyped));
     }
 
-    private ReadResponse<T> typedWindow(NonTypedReadResponse nonTyped) {
+    private TypedReadResponse<T> typedWindow(ReadResponse nonTyped) {
         ReadRequest readRequest = nonTyped.getReadRequest();
         String data = nonTyped.getData();
         List<T> typedData = typedItems(data);
-        return new ReadResponse<>(readRequest, typedData);
+        return new TypedReadResponse<>(readRequest, typedData);
     }
 
     private List<T> typedItems(String items) {

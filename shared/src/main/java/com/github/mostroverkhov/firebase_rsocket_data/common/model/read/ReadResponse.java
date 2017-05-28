@@ -1,15 +1,15 @@
 package com.github.mostroverkhov.firebase_rsocket_data.common.model.read;
 
-import java.util.List;
-
 /**
- * Created by Maksym Ostroverkhov on 28.02.17.
+ * Created with IntelliJ IDEA.
+ * Author: mostroverkhov
  */
-public final class ReadResponse<T> {
-    private final ReadRequest readRequest;
-    private final List<T> data;
+public class ReadResponse {
 
-    public ReadResponse(ReadRequest readRequest, List<T> data) {
+    private final ReadRequest readRequest;
+    private final String data;
+
+    public ReadResponse(ReadRequest readRequest, String data) {
         this.readRequest = readRequest;
         this.data = data;
     }
@@ -18,7 +18,7 @@ public final class ReadResponse<T> {
         return readRequest;
     }
 
-    public List<T> getData() {
+    public String getData() {
         return data;
     }
 
@@ -30,4 +30,5 @@ public final class ReadResponse<T> {
         sb.append('}');
         return sb.toString();
     }
+
 }

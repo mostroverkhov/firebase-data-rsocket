@@ -8,17 +8,17 @@ import java.util.Objects;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class NotifResponse<T> {
+public class NotifResponse {
     private final ReadRequest nextDataWindow;
     private final NotifEventKind kind;
-    private final T item;
+    private final String item;
 
-    public static <T> NotifResponse<T> nextWindow(ReadRequest nextDataWindow) {
-        return new NotifResponse<>(nextDataWindow);
+    public static NotifResponse nextWindow(ReadRequest nextDataWindow) {
+        return new NotifResponse(nextDataWindow);
     }
 
-    public static <T> NotifResponse<T> changeEvent(NotifEventKind kind, T item) {
-        return new NotifResponse<>(kind, item);
+    public static NotifResponse changeEvent(NotifEventKind kind, String item) {
+        return new NotifResponse(kind, item);
     }
 
     NotifResponse(ReadRequest nextDataWindow) {
@@ -28,7 +28,7 @@ public class NotifResponse<T> {
         this.item = null;
     }
 
-     NotifResponse(NotifEventKind kind, T item) {
+    NotifResponse(NotifEventKind kind, String item) {
         Objects.requireNonNull(kind, "kind");
         Objects.requireNonNull(item, "item");
         this.kind = kind;
@@ -52,9 +52,9 @@ public class NotifResponse<T> {
         return kind;
     }
 
-    public T getItem() {
+    public String getItem() {
         return item;
     }
 
-}
 
+}

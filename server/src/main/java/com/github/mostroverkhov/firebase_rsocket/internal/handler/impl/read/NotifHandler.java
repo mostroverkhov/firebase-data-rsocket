@@ -8,7 +8,7 @@ import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.CacheDuration;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifEventKind;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.TypedNotifResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.google.firebase.database.DatabaseReference;
 import hu.akarnokd.rxjava.interop.RxJavaInterop;
@@ -21,14 +21,14 @@ import java.util.concurrent.TimeUnit;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class NotifHandler extends BaseDataWindowHandler<NotifResponse> {
+public class NotifHandler extends BaseDataWindowHandler<TypedNotifResponse> {
 
     public NotifHandler(String key, String value) {
         super(key, value);
     }
 
     @Override
-    public Flowable<NotifResponse> handle(KeyValue metadata, ReadRequest request) {
+    public Flowable<TypedNotifResponse> handle(KeyValue metadata, ReadRequest request) {
         DataQuery dataQuery = toDataQuery(request);
         DatabaseReference dbRef = dataQuery.getDbRef();
 
@@ -37,21 +37,21 @@ public class NotifHandler extends BaseDataWindowHandler<NotifResponse> {
         Observable<DataItem> notifications = new FirebaseDatabaseManager(dbRef)
                 .data()
                 .notifications(dataQuery);
-        Flowable<NotifResponse> dataWindowNotifFlow =
+        Flowable<TypedNotifResponse> dataWindowNotifFlow =
                 RxJavaInterop.toV2Flowable(notifications)
                         .map(dataItem -> toNotif(request, dataItem));
         return dataWindowNotifFlow;
     }
 
-    private NotifResponse toNotif(ReadRequest curRequest, DataItem dataItem) {
+    private TypedNotifResponse toNotif(ReadRequest curRequest, DataItem dataItem) {
         if (dataItem instanceof NextQuery) {
             NextQuery nextQuery = (NextQuery) dataItem;
             ReadRequest nextReadRequest = nextReadRequest(curRequest, nextQuery.getNext());
-            return NotifResponse.nextWindow(nextReadRequest);
+            return TypedNotifResponse.nextWindow(nextReadRequest);
         } else if (dataItem instanceof WindowChangeEvent) {
             WindowChangeEvent changeEvent = (WindowChangeEvent) dataItem;
             NotifEventKind eventKind = toKind(changeEvent.getKind());
-            return NotifResponse.changeEvent(eventKind, changeEvent.getItem());
+            return TypedNotifResponse.changeEvent(eventKind, changeEvent.getItem());
         } else {
             throw unknownType(dataItem);
         }

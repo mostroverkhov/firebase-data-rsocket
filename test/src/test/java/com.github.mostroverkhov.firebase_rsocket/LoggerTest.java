@@ -5,7 +5,7 @@ import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.read.DataWi
 import com.github.mostroverkhov.firebase_rsocket.transport.tcp.ClientTransportTcp;
 import com.github.mostroverkhov.firebase_rsocket.transport.tcp.ServerTransportTcp;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.TypedReadResponse;
 import com.google.gson.Gson;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -65,9 +65,9 @@ public class LoggerTest {
                 .windowWithSize(2)
                 .orderByKey()
                 .build();
-        Flowable<ReadResponse<Data>> dataWindow = client.dataWindow(readRequest)
+        Flowable<TypedReadResponse<Data>> dataWindow = client.dataWindow(readRequest)
                 .flatMap(dataWindowTransformer::apply);
-        TestSubscriber<ReadResponse<Data>> testSubscriber = new TestSubscriber<>();
+        TestSubscriber<TypedReadResponse<Data>> testSubscriber = new TestSubscriber<>();
         dataWindow.observeOn(Schedulers.io()).subscribe(testSubscriber);
         testSubscriber.awaitDone(10, TimeUnit.SECONDS);
         Queue<Logger.Row> logRows = logger.rows();

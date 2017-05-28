@@ -6,7 +6,7 @@ import com.github.mostroverkhov.firebase_data_rxjava.rx.model.Window;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.CacheDuration;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.TypedReadResponse;
 import com.google.firebase.database.DatabaseReference;
 import hu.akarnokd.rxjava.interop.RxJavaInterop;
 import io.reactivex.Flowable;
@@ -18,14 +18,14 @@ import java.util.concurrent.TimeUnit;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class DataWindowHandler extends BaseDataWindowHandler<ReadResponse<?>> {
+public class DataWindowHandler extends BaseDataWindowHandler<TypedReadResponse<?>> {
 
     public DataWindowHandler(String key, String value) {
         super(key, value);
     }
 
     @Override
-    public Flowable<ReadResponse<?>> handle(KeyValue metadata, ReadRequest readRequest) {
+    public Flowable<TypedReadResponse<?>> handle(KeyValue metadata, ReadRequest readRequest) {
         DataQuery dataQuery = toDataQuery(readRequest);
         DatabaseReference dbRef = dataQuery.getDbRef();
 
@@ -37,16 +37,16 @@ public class DataWindowHandler extends BaseDataWindowHandler<ReadResponse<?>> {
                         .window(dataQuery);
         Flowable<Window<Object>> windowFlow = RxJavaInterop
                 .toV2Flowable(windowStream);
-        Flowable<ReadResponse<?>> payloadFlow = windowFlow
+        Flowable<TypedReadResponse<?>> payloadFlow = windowFlow
                 .map(window -> readResponse(readRequest, window));
 
         return payloadFlow;
 
     }
 
-    private <T> ReadResponse<T> readResponse(ReadRequest readRequest,
-                                             Window<T> window) {
-        return new ReadResponse<>(
+    private <T> TypedReadResponse<T> readResponse(ReadRequest readRequest,
+                                                  Window<T> window) {
+        return new TypedReadResponse<>(
                 nextReadRequest(readRequest,
                         window.getDataQuery()),
                 window.dataWindow());

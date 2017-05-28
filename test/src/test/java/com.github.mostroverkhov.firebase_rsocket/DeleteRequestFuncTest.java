@@ -1,7 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteResponse;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.TypedReadResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteResponse;
 import com.google.firebase.database.FirebaseDatabase;
@@ -43,7 +43,7 @@ public class DeleteRequestFuncTest extends AbstractTest {
         deleteTestSubscriber.assertNoErrors();
         deleteTestSubscriber.assertComplete();
 
-        TestSubscriber<ReadResponse<Data>> readTestSubscriber = new TestSubscriber<>();
+        TestSubscriber<TypedReadResponse<Data>> readTestSubscriber = new TestSubscriber<>();
         client.dataWindow(
                 Requests.read("test", "delete",
                         writeResponse.getWriteKey())

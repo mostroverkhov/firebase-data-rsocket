@@ -5,7 +5,7 @@ import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.read.DataWi
 import com.github.mostroverkhov.firebase_rsocket.transport.ClientTransportWebsocket;
 import com.github.mostroverkhov.firebase_rsocket.transport.ServerTransportWebsocket;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.TypedReadResponse;
 import com.google.gson.Gson;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -55,9 +55,9 @@ public class WebsocketTransportTest {
     public void transportRead() throws Exception {
 
         ReadRequest readRequest = presentReadRequest();
-        Flowable<ReadResponse<Data>> dataWindowFlow = client
+        Flowable<TypedReadResponse<Data>> dataWindowFlow = client
                 .dataWindow(readRequest).flatMap(dataWindowTransformer::apply);
-        TestSubscriber<ReadResponse<Data>> testSubscriber
+        TestSubscriber<TypedReadResponse<Data>> testSubscriber
                 = requestStreamSubscriber();
 
         dataWindowFlow
@@ -73,10 +73,10 @@ public class WebsocketTransportTest {
 
     }
 
-    private TestSubscriber<ReadResponse<Data>> requestStreamSubscriber() {
-        return new TestSubscriber<ReadResponse<Data>>(1) {
+    private TestSubscriber<TypedReadResponse<Data>> requestStreamSubscriber() {
+        return new TestSubscriber<TypedReadResponse<Data>>(1) {
             @Override
-            public void onNext(ReadResponse<Data> o) {
+            public void onNext(TypedReadResponse<Data> o) {
                 super.onNext(o);
                 request(1);
             }

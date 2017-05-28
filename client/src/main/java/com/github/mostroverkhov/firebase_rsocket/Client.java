@@ -10,8 +10,8 @@ import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteResponse;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NonTypedNotifResponse;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.NonTypedReadResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteResponse;
@@ -32,10 +32,10 @@ class Client {
         this.serializer = clientConfig.serializer();
     }
 
-    public Flowable<NonTypedReadResponse> dataWindow(ReadRequest readRequest) {
-        ClientCodec<ReadRequest, NonTypedReadResponse> codec = new DataWindowClientCodec(serializer);
+    public Flowable<ReadResponse> dataWindow(ReadRequest readRequest) {
+        ClientCodec<ReadRequest, ReadResponse> codec = new DataWindowClientCodec(serializer);
 
-        Flowable<NonTypedReadResponse> request = clientFlow.request(
+        Flowable<ReadResponse> request = clientFlow.request(
                 codec,
                 readRequest,
                 metadata(Op.key(), Op.DATA_WINDOW.value()));
@@ -43,12 +43,12 @@ class Client {
         return request;
     }
 
-    public Flowable<NonTypedNotifResponse> dataWindowNotifications(ReadRequest readRequest) {
+    public Flowable<NotifResponse> dataWindowNotifications(ReadRequest readRequest) {
 
-        ClientCodec<ReadRequest, NonTypedNotifResponse> codec = new NotificationClientCodec(serializer);
+        ClientCodec<ReadRequest, NotifResponse> codec = new NotificationClientCodec(serializer);
         KeyValue metadata = metadata(Op.key(), Op.DATA_WINDOW_NOTIF.value());
 
-        Flowable<NonTypedNotifResponse> request = clientFlow.request(
+        Flowable<NotifResponse> request = clientFlow.request(
                 codec,
                 readRequest,
                 metadata);

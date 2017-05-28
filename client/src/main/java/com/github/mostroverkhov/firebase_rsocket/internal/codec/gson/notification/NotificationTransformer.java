@@ -1,8 +1,8 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.notification;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NonTypedNotifResponse;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifEventKind;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifEventKind;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.TypedNotifResponse;
 import com.google.gson.Gson;
 import io.reactivex.Flowable;
 import io.reactivex.functions.Function;
@@ -12,8 +12,8 @@ import io.reactivex.functions.Function;
  * Author: mostroverkhov
  */
 public class NotificationTransformer<T> implements Function<
-        NonTypedNotifResponse,
-        Flowable<NotifResponse<T>>> {
+        NotifResponse,
+        Flowable<TypedNotifResponse<T>>> {
 
     private Gson gson;
     private Class<T> itemType;
@@ -24,18 +24,18 @@ public class NotificationTransformer<T> implements Function<
     }
 
     @Override
-    public Flowable<NotifResponse<T>> apply(NonTypedNotifResponse input) throws Exception {
+    public Flowable<TypedNotifResponse<T>> apply(NotifResponse input) throws Exception {
         return Flowable.just(typedResponse(input));
     }
 
-    private NotifResponse<T> typedResponse(NonTypedNotifResponse input) {
+    private TypedNotifResponse<T> typedResponse(NotifResponse input) {
         if (input.isNextWindow()) {
-            return NotifResponse.nextWindow(
+            return TypedNotifResponse.nextWindow(
                     input.getNextDataWindow());
         } else {
             NotifEventKind kind = input.getKind();
             T item = typedItem(input.getItem());
-            return NotifResponse.changeEvent(kind, item);
+            return TypedNotifResponse.changeEvent(kind, item);
         }
     }
 
