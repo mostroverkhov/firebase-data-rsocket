@@ -44,8 +44,8 @@ Client
                  .orderByKey()
                  .build();
                  
-                 Flowable<ReadResponse<Data>> dataWindowFlow = client
-                                     .dataWindow(readRequest, Data.class);
+                 Flowable<ReadResponse> dataWindowFlow = client
+                                     .dataWindow(readRequest);
  ```
  Reads data windows of size `2` on path `\test\read`, ordered by item key in ascending manner.  
  No window change notifications.
@@ -61,11 +61,13 @@ Client
                 .build();
                 
                 Flowable<NotifResponse> notificationsFlow = client
-                                      .dataWindowNotifications(readRequest, Data.class);
+                                      .dataWindowNotifications(readRequest);
  ```
  Reads data windows of size `2` on path `\test\read`, ordered by item key in ascending manner, as stream   
- of `DataWindowChangeEvent`    interleaved with `NextWindow` item for next window query. 
- Not yet consumed items are buffered on server.
+ of `NotifResponse`, which is either `window change event` representing current data window item, or `next window` item for next window query.   
+ Not yet consumed items are buffered on server.   
+ 
+ Response payloads are represented as json strings. To convert them into typed ones there are `DataWindowTransformer`, `NotificationTransformer` utilities 
  
 ###### Write
 ```
