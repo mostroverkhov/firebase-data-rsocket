@@ -26,7 +26,7 @@ public class DeleteRequestFuncTest extends AbstractTest {
 
         Data data = new Data("w", "w");
         WriteRequest<Data> writeRequest = Requests
-                .<Data>writeRequest("test", "delete")
+                .<Data>write("test", "delete")
                 .data(data)
                 .build();
 
@@ -35,7 +35,7 @@ public class DeleteRequestFuncTest extends AbstractTest {
                 .subscribeOn(Schedulers.io()).blockingFirst();
 
         TestSubscriber<DeleteResponse> deleteTestSubscriber = new TestSubscriber<>();
-        client.delete(Requests.deleteRequest(arr(writeResponse)).build())
+        client.delete(Requests.delete(arr(writeResponse)).build())
                 .observeOn(Schedulers.io())
                 .subscribe(deleteTestSubscriber);
         deleteTestSubscriber.awaitDone(10, TimeUnit.SECONDS);
@@ -44,7 +44,7 @@ public class DeleteRequestFuncTest extends AbstractTest {
         deleteTestSubscriber.assertComplete();
 
         TestSubscriber<ReadResponse<Data>> readTestSubscriber = new TestSubscriber<>();
-        client.dataWindow(Requests.readRequest("test", "delete",
+        client.dataWindow(Requests.read("test", "delete",
                 writeResponse.getWriteKey())
                 .build(), Data.class).observeOn(Schedulers.io())
                 .subscribe(readTestSubscriber);
@@ -58,7 +58,7 @@ public class DeleteRequestFuncTest extends AbstractTest {
     public void deleteMissing() throws Exception {
 
         TestSubscriber<DeleteResponse> deleteTestSubscriber = new TestSubscriber<>();
-        client.delete(Requests.deleteRequest("test", "delete", "missing").build())
+        client.delete(Requests.delete("test", "delete", "missing").build())
                 .observeOn(Schedulers.io())
                 .subscribe(deleteTestSubscriber);
         deleteTestSubscriber.awaitDone(10, TimeUnit.SECONDS);

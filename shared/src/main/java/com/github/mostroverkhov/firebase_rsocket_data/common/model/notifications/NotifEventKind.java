@@ -4,7 +4,7 @@ package com.github.mostroverkhov.firebase_rsocket_data.common.model.notification
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public enum EventKind {
+public enum NotifEventKind {
     ADDED,
     CHANGED,
     MOVED,

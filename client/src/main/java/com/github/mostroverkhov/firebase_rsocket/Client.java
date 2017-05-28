@@ -1,7 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.ClientCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.GsonClientCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.delete.DeleteClientCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.notification.NotificationClientCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.notification.NotificationTransformer;
@@ -13,8 +12,8 @@ import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteResponse;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NonTypedNotificationResponse;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotificationResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NonTypedNotifResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.NonTypedReadResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
@@ -51,14 +50,14 @@ class Client {
         return request;
     }
 
-    public <T> Flowable<NotificationResponse<T>> dataWindowNotifications(ReadRequest readRequest,
-                                                                         Class<T> notificationItemType) {
+    public <T> Flowable<NotifResponse<T>> dataWindowNotifications(ReadRequest readRequest,
+                                                                  Class<T> notificationItemType) {
 
-        ClientCodec<ReadRequest, NonTypedNotificationResponse> codec = new NotificationClientCodec(serializer);
+        ClientCodec<ReadRequest, NonTypedNotifResponse> codec = new NotificationClientCodec(serializer);
         NotificationTransformer<T> transformer = new NotificationTransformer<>(serializer, notificationItemType);
         KeyValue metadata = metadata(Op.key(), Op.DATA_WINDOW_NOTIF.value());
 
-        Flowable<NotificationResponse<T>> request = clientChain.request(
+        Flowable<NotifResponse<T>> request = clientChain.request(
                 codec,
                 transformer::apply,
                 readRequest,

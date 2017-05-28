@@ -121,7 +121,7 @@ public class LatencyCheck extends AbstractTest {
 
     private ReadRequest requestStreamRequest() {
         return Requests
-                .readRequest("test", "read")
+                .read("test", "read")
                 .asc()
                 .windowWithSize(2)
                 .orderByKey()

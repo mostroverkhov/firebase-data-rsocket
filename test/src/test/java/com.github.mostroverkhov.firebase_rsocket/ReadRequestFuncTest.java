@@ -1,6 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotificationResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import io.reactivex.Flowable;
@@ -70,7 +70,7 @@ public class ReadRequestFuncTest extends AbstractTest {
         int valueCount = SAMPLE_ITEM_COUNT / WINDOW_SIZE;
 
         ReadRequest tailRequest = Requests
-                .readRequest("test", "read")
+                .read("test", "read")
                 .asc()
                 .windowWithSize(WINDOW_SIZE)
                 .orderByKey()
@@ -139,24 +139,24 @@ public class ReadRequestFuncTest extends AbstractTest {
     public void presentReadNotifications() throws Exception {
 
         ReadRequest readRequest = presentReadRequest();
-        Flowable<NotificationResponse<Data>> notifFlow = client
+        Flowable<NotifResponse<Data>> notifFlow = client
                 .dataWindowNotifications(readRequest, Data.class);
-        TestSubscriber<NotificationResponse<Data>> testSubscriber = TestSubscriber.create();
+        TestSubscriber<NotifResponse<Data>> testSubscriber = TestSubscriber.create();
         notifFlow.observeOn(Schedulers.io())
                 .subscribe(testSubscriber);
         testSubscriber.awaitDone(10, TimeUnit.SECONDS);
         testSubscriber.assertNoErrors();
         testSubscriber.assertNotComplete();
-        List<NotificationResponse<Data>> events = testSubscriber.values();
+        List<NotifResponse<Data>> events = testSubscriber.values();
         Assert.assertEquals(3, events.size());
-        List<NotificationResponse<Data>> changeEvents = changeEvents(events);
+        List<NotifResponse<Data>> changeEvents = changeEvents(events);
 
-        List<Data> dataList = changeEvents.stream().map(NotificationResponse::getItem)
+        List<Data> dataList = changeEvents.stream().map(NotifResponse::getItem)
                 .collect(Collectors.toList());
         Assert.assertTrue(contains(dataList, new Data("0", "0")));
         Assert.assertTrue(contains(dataList, new Data("1", "1")));
 
-        Optional<NotificationResponse<Data>> maybeNextWindow = nextWindowEvent(events);
+        Optional<NotifResponse<Data>> maybeNextWindow = nextWindowEvent(events);
         Assert.assertTrue(maybeNextWindow.isPresent());
         ReadRequest nextRead = maybeNextWindow.get().getNextDataWindow();
         Assert.assertNotNull(nextRead);
@@ -167,12 +167,12 @@ public class ReadRequestFuncTest extends AbstractTest {
     public void presentReadNotificationsChained() throws Exception {
 
         ReadRequest readRequest = presentReadRequest();
-        Flowable<NotificationResponse<Data>> notifFlow = client
+        Flowable<NotifResponse<Data>> notifFlow = client
                 .dataWindowNotifications(readRequest, Data.class);
-        TestSubscriber<NotificationResponse<Data>> testSubscriber = TestSubscriber.create();
+        TestSubscriber<NotifResponse<Data>> testSubscriber = TestSubscriber.create();
         notifFlow.observeOn(Schedulers.io())
-                .filter(NotificationResponse::isNextWindow)
-                .map(NotificationResponse::getNextDataWindow)
+                .filter(NotifResponse::isNextWindow)
+                .map(NotifResponse::getNextDataWindow)
                 .flatMap(req -> client
                         .dataWindowNotifications(req, Data.class))
                 .subscribe(testSubscriber);
@@ -180,15 +180,15 @@ public class ReadRequestFuncTest extends AbstractTest {
         testSubscriber.awaitDone(10, TimeUnit.SECONDS);
         testSubscriber.assertNoErrors();
         testSubscriber.assertNotComplete();
-        List<NotificationResponse<Data>> events = testSubscriber.values();
+        List<NotifResponse<Data>> events = testSubscriber.values();
         Assert.assertEquals(3, events.size());
-        Optional<NotificationResponse<Data>> maybeNextWindow = nextWindowEvent(events);
+        Optional<NotifResponse<Data>> maybeNextWindow = nextWindowEvent(events);
 
         Assert.assertTrue(maybeNextWindow.isPresent());
         ReadRequest nextRead = maybeNextWindow.get().getNextDataWindow();
 
-        List<NotificationResponse<Data>> changeEvents = changeEvents(events);
-        List<Data> dataList = changeEvents.stream().map(NotificationResponse::getItem)
+        List<NotifResponse<Data>> changeEvents = changeEvents(events);
+        List<Data> dataList = changeEvents.stream().map(NotifResponse::getItem)
                 .collect(Collectors.toList());
         Assert.assertTrue(contains(dataList, new Data("2", "2")));
         Assert.assertTrue(contains(dataList, new Data("3", "3")));
@@ -201,17 +201,17 @@ public class ReadRequestFuncTest extends AbstractTest {
     public void absentReadNotifications() throws Exception {
 
         ReadRequest readRequest = missingReadRequest();
-        Flowable<NotificationResponse<Data>> notifFlow = client
+        Flowable<NotifResponse<Data>> notifFlow = client
                 .dataWindowNotifications(readRequest, Data.class);
-        TestSubscriber<NotificationResponse<Data>> testSubscriber = TestSubscriber.create();
+        TestSubscriber<NotifResponse<Data>> testSubscriber = TestSubscriber.create();
         notifFlow.observeOn(Schedulers.io())
                 .subscribe(testSubscriber);
         testSubscriber.awaitDone(10, TimeUnit.SECONDS);
         testSubscriber.assertNoErrors();
         testSubscriber.assertNotComplete();
-        List<NotificationResponse<Data>> events = testSubscriber.values();
+        List<NotifResponse<Data>> events = testSubscriber.values();
         Assert.assertEquals(1, events.size());
-        NotificationResponse<Data> dataItem = events.get(0);
+        NotifResponse<Data> dataItem = events.get(0);
         Assert.assertTrue(dataItem.isNextWindow());
         Assert.assertTrue((dataItem.getNextDataWindow().getWindowStartWith().isEmpty()));
     }
@@ -225,9 +225,9 @@ public class ReadRequestFuncTest extends AbstractTest {
         return false;
     }
 
-    private <T> Optional<NotificationResponse<T>> nextWindowEvent(List<NotificationResponse<T>> notifResponses) {
+    private <T> Optional<NotifResponse<T>> nextWindowEvent(List<NotifResponse<T>> notifResponses) {
 
-        for (NotificationResponse<T> resp : notifResponses) {
+        for (NotifResponse<T> resp : notifResponses) {
             if (resp.isNextWindow()) {
                 return Optional.of(resp);
             }
@@ -235,9 +235,9 @@ public class ReadRequestFuncTest extends AbstractTest {
         return Optional.empty();
     }
 
-    private <T> List<NotificationResponse<T>> changeEvents(List<NotificationResponse<T>> notifResponses) {
-        List<NotificationResponse<T>> res = new ArrayList<>();
-        for (NotificationResponse<T> resp : notifResponses) {
+    private <T> List<NotifResponse<T>> changeEvents(List<NotifResponse<T>> notifResponses) {
+        List<NotifResponse<T>> res = new ArrayList<>();
+        for (NotifResponse<T> resp : notifResponses) {
             if (resp.isChangeEvent()) {
                 res.add(resp);
             }
@@ -256,7 +256,7 @@ public class ReadRequestFuncTest extends AbstractTest {
 
     private ReadRequest presentReadRequest() {
         return Requests
-                .readRequest("test", "read")
+                .read("test", "read")
                 .asc()
                 .windowWithSize(WINDOW_SIZE)
                 .orderByKey()
@@ -265,7 +265,7 @@ public class ReadRequestFuncTest extends AbstractTest {
 
     private ReadRequest missingReadRequest() {
         return Requests
-                .readRequest("foo", "bar")
+                .read("foo", "bar")
                 .asc()
                 .windowWithSize(WINDOW_SIZE)
                 .orderByKey()

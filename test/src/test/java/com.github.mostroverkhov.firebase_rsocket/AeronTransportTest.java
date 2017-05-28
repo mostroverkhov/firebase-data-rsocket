@@ -80,7 +80,7 @@ public class AeronTransportTest {
 
     private ReadRequest presentReadRequest() {
         return Requests
-                .readRequest("test", "read")
+                .read("test", "read")
                 .asc()
                 .windowWithSize(42)
                 .orderByKey()

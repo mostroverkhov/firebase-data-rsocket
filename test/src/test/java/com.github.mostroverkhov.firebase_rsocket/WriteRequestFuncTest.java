@@ -31,7 +31,7 @@ public class WriteRequestFuncTest extends AbstractTest {
     public void writeData() throws Exception {
         Data data = new Data("w", "w");
         WriteRequest<Data> writeRequest = Requests
-                .<Data>writeRequest("test", "write")
+                .<Data>write("test", "write")
                 .data(data)
                 .build();
 

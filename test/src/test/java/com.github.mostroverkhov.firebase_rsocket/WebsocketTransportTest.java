@@ -2,11 +2,8 @@ package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.transport.ClientTransportWebsocket;
 import com.github.mostroverkhov.firebase_rsocket.transport.ServerTransportWebsocket;
-import com.github.mostroverkhov.firebase_rsocket.transport.tcp.ClientTransportTcp;
-import com.github.mostroverkhov.firebase_rsocket.transport.tcp.ServerTransportTcp;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
-import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ServerTransport;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
@@ -78,7 +75,7 @@ public class WebsocketTransportTest {
 
     private ReadRequest presentReadRequest() {
         return Requests
-                .readRequest("test", "read")
+                .read("test", "read")
                 .asc()
                 .windowWithSize(42)
                 .orderByKey()

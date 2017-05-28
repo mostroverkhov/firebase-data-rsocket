@@ -8,27 +8,27 @@ import java.util.Objects;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class NonTypedNotificationResponse {
+public class NotifResponse<T> {
     private final ReadRequest nextDataWindow;
-    private final EventKind kind;
-    private final String item;
+    private final NotifEventKind kind;
+    private final T item;
 
-    public static NonTypedNotificationResponse nextWindow(ReadRequest nextDataWindow) {
-        return new NonTypedNotificationResponse(nextDataWindow);
+    public static <T> NotifResponse<T> nextWindow(ReadRequest nextDataWindow) {
+        return new NotifResponse<>(nextDataWindow);
     }
 
-    public static NonTypedNotificationResponse changeEvent(EventKind kind, String item) {
-        return new NonTypedNotificationResponse(kind, item);
+    public static <T> NotifResponse<T> changeEvent(NotifEventKind kind, T item) {
+        return new NotifResponse<>(kind, item);
     }
 
-    NonTypedNotificationResponse(ReadRequest nextDataWindow) {
+    NotifResponse(ReadRequest nextDataWindow) {
         Objects.requireNonNull(nextDataWindow, "nextDataWindow");
         this.nextDataWindow = nextDataWindow;
         this.kind = null;
         this.item = null;
     }
 
-    NonTypedNotificationResponse(EventKind kind, String item) {
+     NotifResponse(NotifEventKind kind, T item) {
         Objects.requireNonNull(kind, "kind");
         Objects.requireNonNull(item, "item");
         this.kind = kind;
@@ -48,13 +48,13 @@ public class NonTypedNotificationResponse {
         return nextDataWindow;
     }
 
-    public EventKind getKind() {
+    public NotifEventKind getKind() {
         return kind;
     }
 
-    public String getItem() {
+    public T getItem() {
         return item;
     }
 
-
 }
+

@@ -50,7 +50,7 @@ public class LoggerTest {
 
     @Test
     public void readTest() throws Exception {
-        ReadRequest readRequest = Requests.readRequest("test", "read")
+        ReadRequest readRequest = Requests.read("test", "read")
                 .asc()
                 .windowWithSize(2)
                 .orderByKey()
