@@ -30,7 +30,8 @@ public class ReadRequestFuncTest extends AbstractTest {
 
         ReadRequest readRequest = presentReadRequest();
         Flowable<ReadResponse<Data>> dataWindowFlow = client
-                .dataWindow(readRequest, Data.class);
+                .dataWindow(readRequest)
+                .flatMap(dataWindowTransformer::apply);
         TestSubscriber<ReadResponse<Data>> testSubscriber
                 = requestStreamSubscriber();
 
@@ -58,7 +59,8 @@ public class ReadRequestFuncTest extends AbstractTest {
 
         ReadRequest allRequest = presentReadRequest();
         Flowable<ReadResponse<Data>> allDataWindowFlow = client
-                .dataWindow(allRequest, Data.class);
+                .dataWindow(allRequest)
+                .flatMap(dataWindowTransformer::apply);
         TestSubscriber<ReadResponse<Data>> allDatatestSubscriber
                 = requestStreamSubscriber();
 
@@ -78,7 +80,7 @@ public class ReadRequestFuncTest extends AbstractTest {
                 .build();
 
         Flowable<ReadResponse<Data>> tailDataWindowFlow = client
-                .dataWindow(tailRequest, Data.class);
+                .dataWindow(tailRequest).flatMap(dataWindowTransformer::apply);
         TestSubscriber<ReadResponse<Data>> tailTestSubscriber
                 = requestStreamSubscriber();
 
@@ -99,7 +101,7 @@ public class ReadRequestFuncTest extends AbstractTest {
 
         ReadRequest readRequest = missingReadRequest();
         Flowable<ReadResponse<Data>> dataWindowFlow = client
-                .dataWindow(readRequest, Data.class);
+                .dataWindow(readRequest).flatMap(dataWindowTransformer::apply);
         TestSubscriber<ReadResponse<Data>> testSubscriber
                 = requestStreamSubscriber();
 
@@ -119,7 +121,7 @@ public class ReadRequestFuncTest extends AbstractTest {
 
         ReadRequest readRequest = presentReadRequest();
         Flowable<ReadResponse<Data>> dataWindowFlow = client
-                .dataWindow(readRequest, Data.class);
+                .dataWindow(readRequest).flatMap(dataWindowTransformer::apply);
         TestSubscriber<ReadResponse<Data>> testSubscriber
                 = requestStreamSubscriber();
 
@@ -140,7 +142,8 @@ public class ReadRequestFuncTest extends AbstractTest {
 
         ReadRequest readRequest = presentReadRequest();
         Flowable<NotifResponse<Data>> notifFlow = client
-                .dataWindowNotifications(readRequest, Data.class);
+                .dataWindowNotifications(readRequest)
+                .flatMap(notifTransformer);
         TestSubscriber<NotifResponse<Data>> testSubscriber = TestSubscriber.create();
         notifFlow.observeOn(Schedulers.io())
                 .subscribe(testSubscriber);
@@ -168,13 +171,14 @@ public class ReadRequestFuncTest extends AbstractTest {
 
         ReadRequest readRequest = presentReadRequest();
         Flowable<NotifResponse<Data>> notifFlow = client
-                .dataWindowNotifications(readRequest, Data.class);
+                .dataWindowNotifications(readRequest).flatMap(notifTransformer);
         TestSubscriber<NotifResponse<Data>> testSubscriber = TestSubscriber.create();
         notifFlow.observeOn(Schedulers.io())
                 .filter(NotifResponse::isNextWindow)
                 .map(NotifResponse::getNextDataWindow)
                 .flatMap(req -> client
-                        .dataWindowNotifications(req, Data.class))
+                        .dataWindowNotifications(req)
+                        .flatMap(notifTransformer))
                 .subscribe(testSubscriber);
 
         testSubscriber.awaitDone(10, TimeUnit.SECONDS);
@@ -202,7 +206,8 @@ public class ReadRequestFuncTest extends AbstractTest {
 
         ReadRequest readRequest = missingReadRequest();
         Flowable<NotifResponse<Data>> notifFlow = client
-                .dataWindowNotifications(readRequest, Data.class);
+                .dataWindowNotifications(readRequest)
+                .flatMap(notifTransformer);
         TestSubscriber<NotifResponse<Data>> testSubscriber = TestSubscriber.create();
         notifFlow.observeOn(Schedulers.io())
                 .subscribe(testSubscriber);

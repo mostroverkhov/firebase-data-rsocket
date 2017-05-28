@@ -1,10 +1,12 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.read;
 
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.util.GsonSerializer;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.NonTypedReadResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.TypeAdapter;
 import io.reactivex.Flowable;
 
 import java.io.BufferedReader;
@@ -20,11 +22,11 @@ import java.util.function.Function;
  * Author: mostroverkhov
  */
 public class DataWindowTransformer<T> implements Function<NonTypedReadResponse, Flowable<ReadResponse<T>>> {
-    private final GsonSerializer gsonSerializer;
+    private final Gson gson;
     private final Class<T> itemsType;
 
-    public DataWindowTransformer(GsonSerializer gsonSerializer, Class<T> itemsType) {
-        this.gsonSerializer = gsonSerializer;
+    public DataWindowTransformer(Gson gson, Class<T> itemsType) {
+        this.gson = gson;
         this.itemsType = itemsType;
     }
 
@@ -41,7 +43,6 @@ public class DataWindowTransformer<T> implements Function<NonTypedReadResponse, 
     }
 
     private List<T> typedItems(String items) {
-        Gson gson = gsonSerializer.getGson();
         return typedItems(gson, itemsType, asArray(gson, items));
     }
 

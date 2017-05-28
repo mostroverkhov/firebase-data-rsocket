@@ -1,9 +1,9 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.notification;
 
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.util.GsonSerializer;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifEventKind;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NonTypedNotifResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifEventKind;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifResponse;
+import com.google.gson.Gson;
 import io.reactivex.Flowable;
 import io.reactivex.functions.Function;
 
@@ -15,11 +15,11 @@ public class NotificationTransformer<T> implements Function<
         NonTypedNotifResponse,
         Flowable<NotifResponse<T>>> {
 
-    private final GsonSerializer serializer;
+    private Gson gson;
     private Class<T> itemType;
 
-    public NotificationTransformer(GsonSerializer serializer, Class<T> itemType) {
-        this.serializer = serializer;
+    public NotificationTransformer(Gson gson, Class<T> itemType) {
+        this.gson = gson;
         this.itemType = itemType;
     }
 
@@ -40,6 +40,6 @@ public class NotificationTransformer<T> implements Function<
     }
 
     private T typedItem(String item) {
-        return serializer.getGson().fromJson(item, itemType);
+        return gson.fromJson(item, itemType);
     }
 }

@@ -3,9 +3,7 @@ package com.github.mostroverkhov.firebase_rsocket;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.ClientCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.delete.DeleteClientCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.notification.NotificationClientCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.notification.NotificationTransformer;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.read.DataWindowClientCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.read.DataWindowTransformer;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.util.GsonSerializer;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.write.WritePushClientCodec;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
@@ -13,10 +11,8 @@ import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NonTypedNotifResponse;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.NonTypedReadResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteResponse;
 import io.reactivex.Flowable;
@@ -36,39 +32,33 @@ class Client {
         this.serializer = clientConfig.serializer();
     }
 
-    public <T> Flowable<ReadResponse<T>> dataWindow(ReadRequest readRequest,
-                                                    Class<T> windowItemType) {
+    public Flowable<NonTypedReadResponse> dataWindow(ReadRequest readRequest) {
         ClientCodec<ReadRequest, NonTypedReadResponse> codec = new DataWindowClientCodec(serializer);
-        DataWindowTransformer<T> transformer = new DataWindowTransformer<>(serializer, windowItemType);
 
-        Flowable<ReadResponse<T>> request = clientFlow.request(
+        Flowable<NonTypedReadResponse> request = clientFlow.request(
                 codec,
-                transformer::apply,
                 readRequest,
                 metadata(Op.key(), Op.DATA_WINDOW.value()));
 
         return request;
     }
 
-    public <T> Flowable<NotifResponse<T>> dataWindowNotifications(ReadRequest readRequest,
-                                                                  Class<T> notificationItemType) {
+    public Flowable<NonTypedNotifResponse> dataWindowNotifications(ReadRequest readRequest) {
 
         ClientCodec<ReadRequest, NonTypedNotifResponse> codec = new NotificationClientCodec(serializer);
-        NotificationTransformer<T> transformer = new NotificationTransformer<>(serializer, notificationItemType);
         KeyValue metadata = metadata(Op.key(), Op.DATA_WINDOW_NOTIF.value());
 
-        Flowable<NotifResponse<T>> request = clientFlow.request(
+        Flowable<NonTypedNotifResponse> request = clientFlow.request(
                 codec,
-                transformer::apply,
                 readRequest,
                 metadata);
 
         return request;
     }
 
-    public <T> Flowable<WriteResponse> write(WriteRequest<T> writeRequest) {
+    public Flowable<WriteResponse> write(WriteRequest<?> writeRequest) {
 
-        WritePushClientCodec<T> writePushClientCodec = new WritePushClientCodec<>(serializer);
+        WritePushClientCodec writePushClientCodec = new WritePushClientCodec(serializer);
         KeyValue metadata = metadata(Op.key(), Op.WRITE_PUSH.value());
 
         return clientFlow.request(

@@ -1,9 +1,12 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.notification.NotificationTransformer;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.read.DataWindowTransformer;
 import com.github.mostroverkhov.firebase_rsocket.transport.ClientTransportWebsocket;
 import com.github.mostroverkhov.firebase_rsocket.transport.ServerTransportWebsocket;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
+import com.google.gson.Gson;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
@@ -21,11 +24,18 @@ import java.util.concurrent.TimeUnit;
  */
 public class WebsocketTransportTest {
 
+    private static final Gson gson = new Gson();
+    protected DataWindowTransformer<Data> dataWindowTransformer;
+    protected NotificationTransformer<Data> notifTransformer;
+
     private Completable serverStop;
     private Client client;
 
     @Before
     public void setUp() throws Exception {
+        dataWindowTransformer = new DataWindowTransformer<>(gson, Data.class);
+        notifTransformer = new NotificationTransformer<>(gson, Data.class);
+
         InetSocketAddress socketAddress = new InetSocketAddress("localhost", 8090);
         Server server = new ServerBuilder(
                 new ServerTransportWebsocket(socketAddress))
@@ -46,7 +56,7 @@ public class WebsocketTransportTest {
 
         ReadRequest readRequest = presentReadRequest();
         Flowable<ReadResponse<Data>> dataWindowFlow = client
-                .dataWindow(readRequest, Data.class);
+                .dataWindow(readRequest).flatMap(dataWindowTransformer::apply);
         TestSubscriber<ReadResponse<Data>> testSubscriber
                 = requestStreamSubscriber();
 

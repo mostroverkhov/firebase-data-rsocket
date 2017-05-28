@@ -1,9 +1,12 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.notification.NotificationTransformer;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.read.DataWindowTransformer;
 import com.github.mostroverkhov.firebase_rsocket.transport.tcp.ClientTransportTcp;
 import com.github.mostroverkhov.firebase_rsocket.transport.tcp.ServerTransportTcp;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
+import com.google.gson.Gson;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
@@ -25,12 +28,19 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Author: mostroverkhov
  */
 public class LoggerTest {
+    private static final Gson gson = new Gson();
+    protected DataWindowTransformer<Data> dataWindowTransformer;
+    protected NotificationTransformer<Data> notifTransformer;
+
     protected Completable serverStop;
     protected Client client;
     protected TestLogger logger;
 
     @Before
     public void setUp() throws Exception {
+        dataWindowTransformer = new DataWindowTransformer<>(gson, Data.class);
+        notifTransformer = new NotificationTransformer<>(gson, Data.class);
+
         InetSocketAddress socketAddress = new InetSocketAddress(8090);
         logger = new TestLogger(10_000);
         Server server = new ServerBuilder(
@@ -55,7 +65,8 @@ public class LoggerTest {
                 .windowWithSize(2)
                 .orderByKey()
                 .build();
-        Flowable<ReadResponse<Data>> dataWindow = client.dataWindow(readRequest, Data.class);
+        Flowable<ReadResponse<Data>> dataWindow = client.dataWindow(readRequest)
+                .flatMap(dataWindowTransformer::apply);
         TestSubscriber<ReadResponse<Data>> testSubscriber = new TestSubscriber<>();
         dataWindow.observeOn(Schedulers.io()).subscribe(testSubscriber);
         testSubscriber.awaitDone(10, TimeUnit.SECONDS);

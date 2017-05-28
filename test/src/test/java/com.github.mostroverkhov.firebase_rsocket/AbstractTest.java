@@ -1,7 +1,10 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.notification.NotificationTransformer;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.read.DataWindowTransformer;
 import com.github.mostroverkhov.firebase_rsocket.transport.tcp.ClientTransportTcp;
 import com.github.mostroverkhov.firebase_rsocket.transport.tcp.ServerTransportTcp;
+import com.google.gson.Gson;
 import io.reactivex.Completable;
 import org.junit.After;
 import org.junit.Before;
@@ -14,12 +17,18 @@ import java.util.concurrent.TimeUnit;
  * Author: mostroverkhov
  */
 public class AbstractTest {
-
+    private static final Gson gson = new Gson();
     protected Completable serverStop;
     protected Client client;
+    protected DataWindowTransformer<Data> dataWindowTransformer;
+    protected NotificationTransformer<Data> notifTransformer;
 
     @Before
     public void setUp() throws Exception {
+
+        dataWindowTransformer = new DataWindowTransformer<>(gson, Data.class);
+        notifTransformer = new NotificationTransformer<>(gson, Data.class);
+
         InetSocketAddress socketAddress = new InetSocketAddress(8090);
         Server server = new ServerBuilder(
                 new ServerTransportTcp(socketAddress))

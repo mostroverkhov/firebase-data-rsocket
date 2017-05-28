@@ -1,10 +1,13 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.notification.NotificationTransformer;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.read.DataWindowTransformer;
 import com.github.mostroverkhov.firebase_rsocket.transport.aeron.AeronDriver;
 import com.github.mostroverkhov.firebase_rsocket.transport.aeron.ClientTransportAeron;
 import com.github.mostroverkhov.firebase_rsocket.transport.aeron.ServerTransportAeron;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
+import com.google.gson.Gson;
 import io.reactivesocket.aeron.internal.reactivestreams.AeronSocketAddress;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -25,8 +28,16 @@ public class AeronTransportTest {
     private Client client;
     private Completable serverStop;
 
+    private static final Gson gson = new Gson();
+    protected DataWindowTransformer<Data> dataWindowTransformer;
+    protected NotificationTransformer<Data> notifTransformer;
+
     @Before
     public void setUp() throws Exception {
+
+        dataWindowTransformer = new DataWindowTransformer<>(gson, Data.class);
+        notifTransformer = new NotificationTransformer<>(gson, Data.class);
+
         AeronDriver.load();
         AeronSocketAddress aeronSocketAddress = AeronSocketAddress
                 .create(
@@ -51,7 +62,7 @@ public class AeronTransportTest {
 
         ReadRequest readRequest = presentReadRequest();
         Flowable<ReadResponse<Data>> dataWindowFlow = client
-                .dataWindow(readRequest, Data.class);
+                .dataWindow(readRequest).flatMap(dataWindowTransformer::apply);
         TestSubscriber<ReadResponse<Data>> testSubscriber
                 = requestStreamSubscriber();
 

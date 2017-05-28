@@ -9,7 +9,7 @@ import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRe
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class WritePushClientCodec<T> extends GsonClientCodec<WriteRequest<T>, WriteResponse> {
+public class WritePushClientCodec extends GsonClientCodec<WriteRequest<?>, WriteResponse> {
 
     public WritePushClientCodec(Serializer serializer) {
         super(WriteResponse.class, serializer);

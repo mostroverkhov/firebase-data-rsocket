@@ -44,9 +44,12 @@ public class DeleteRequestFuncTest extends AbstractTest {
         deleteTestSubscriber.assertComplete();
 
         TestSubscriber<ReadResponse<Data>> readTestSubscriber = new TestSubscriber<>();
-        client.dataWindow(Requests.read("test", "delete",
-                writeResponse.getWriteKey())
-                .build(), Data.class).observeOn(Schedulers.io())
+        client.dataWindow(
+                Requests.read("test", "delete",
+                        writeResponse.getWriteKey())
+                        .build())
+                .flatMap(dataWindowTransformer::apply)
+                .observeOn(Schedulers.io())
                 .subscribe(readTestSubscriber);
         readTestSubscriber.awaitDone(10, TimeUnit.SECONDS);
         readTestSubscriber.assertValueCount(0);

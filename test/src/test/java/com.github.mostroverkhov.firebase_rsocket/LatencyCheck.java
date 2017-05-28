@@ -32,7 +32,8 @@ public class LatencyCheck extends AbstractTest {
 
         ReadRequest readRequest = requestStreamRequest();
         Flowable<ReadResponse<Data>> dataWindowFlow = client
-                .dataWindow(readRequest, Data.class)
+                .dataWindow(readRequest)
+                .flatMap(dataWindowTransformer::apply)
                 .repeatWhen(completed -> completed.flatMap(Flowable::just))
                 .observeOn(Schedulers.io());
 
