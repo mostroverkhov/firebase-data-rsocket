@@ -12,7 +12,7 @@ import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class WritePushClientCodec<T> extends GsonClientCodec<WriteRequest<T>, WriteResponse> {
+public class WritePushClientCodec<T> extends CustomGsonClientCodec<WriteRequest<T>, WriteResponse> {
 
     public WritePushClientCodec() {
     }

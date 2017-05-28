@@ -7,9 +7,7 @@ import com.github.mostroverkhov.datawindowsource.model.WindowChangeEvent;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.CacheDuration;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.DataWindowChangeEvent;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.DataWindowNotif;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NextWindow;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotificationResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.google.firebase.database.DatabaseReference;
 import hu.akarnokd.rxjava.interop.RxJavaInterop;
@@ -22,14 +20,14 @@ import java.util.concurrent.TimeUnit;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class NotifHandler extends BaseDataWindowHandler<DataWindowNotif> {
+public class NotifHandler extends BaseDataWindowHandler<NotificationResponse> {
 
     public NotifHandler(String key, String value) {
         super(key, value);
     }
 
     @Override
-    public Flowable<DataWindowNotif> handle(KeyValue metadata, ReadRequest request) {
+    public Flowable<NotificationResponse> handle(KeyValue metadata, ReadRequest request) {
         DataQuery dataQuery = toDataQuery(request);
         DatabaseReference dbRef = dataQuery.getDbRef();
 
@@ -38,35 +36,36 @@ public class NotifHandler extends BaseDataWindowHandler<DataWindowNotif> {
         Observable<DataItem> notifications = new FirebaseDatabaseManager(dbRef)
                 .data()
                 .notifications(dataQuery);
-        Flowable<DataWindowNotif> dataWindowNotifFlow =
+        Flowable<NotificationResponse> dataWindowNotifFlow =
                 RxJavaInterop.toV2Flowable(notifications)
                         .map(dataItem -> toNotif(request, dataItem));
         return dataWindowNotifFlow;
     }
 
-    private DataWindowNotif toNotif(ReadRequest curRequest, DataItem dataItem) {
+    private NotificationResponse toNotif(ReadRequest curRequest, DataItem dataItem) {
         if (dataItem instanceof NextQuery) {
             NextQuery nextQuery = (NextQuery) dataItem;
             ReadRequest nextReadRequest = nextReadRequest(curRequest, nextQuery.getNext());
-            return new NextWindow(nextReadRequest);
+            return NotificationResponse.nextWindow(nextReadRequest);
         } else if (dataItem instanceof WindowChangeEvent) {
             WindowChangeEvent changeEvent = (WindowChangeEvent) dataItem;
-            return new DataWindowChangeEvent<>(changeEvent.getItem(), toKind(changeEvent.getKind()));
+            NotificationResponse.EventKind eventKind = toKind(changeEvent.getKind());
+            return NotificationResponse.changeEvent(eventKind, changeEvent.getItem());
         } else {
             throw unknownType(dataItem);
         }
     }
 
-    private DataWindowChangeEvent.EventKind toKind(WindowChangeEvent.Kind kind) {
+    private NotificationResponse.EventKind toKind(WindowChangeEvent.Kind kind) {
         switch (kind) {
             case ADDED:
-                return DataWindowChangeEvent.EventKind.ADDED;
+                return NotificationResponse.EventKind.ADDED;
             case MOVED:
-                return DataWindowChangeEvent.EventKind.MOVED;
+                return NotificationResponse.EventKind.MOVED;
             case CHANGED:
-                return DataWindowChangeEvent.EventKind.CHANGED;
+                return NotificationResponse.EventKind.CHANGED;
             case REMOVED:
-                return DataWindowChangeEvent.EventKind.REMOVED;
+                return NotificationResponse.EventKind.REMOVED;
             default:
                 throw new AssertionError("Unknown notification event kind: " + kind);
         }

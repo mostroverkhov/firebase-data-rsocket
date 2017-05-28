@@ -17,7 +17,7 @@ import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class DataWindowClientCodec<T> extends GsonClientCodec<ReadRequest, ReadResponse<T>> {
+public class DataWindowClientCodec<T> extends CustomGsonClientCodec<ReadRequest, ReadResponse<T>> {
 
     private final Class<T> responseType;
 

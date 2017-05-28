@@ -1,7 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.ResponseMappingException;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.GsonClientCodec;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.CustomGsonClientCodec;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
@@ -34,7 +34,7 @@ class ClientChain {
 
     @SuppressWarnings("UnnecessaryLocalVariable")
     public <Req, Resp> Flowable<Resp> request(
-            GsonClientCodec<Req, Resp> clientMapper,
+            CustomGsonClientCodec<Req, Resp> clientMapper,
             Req request,
             KeyValue metadata) {
 

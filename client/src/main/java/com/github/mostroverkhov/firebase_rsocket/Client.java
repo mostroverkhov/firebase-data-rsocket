@@ -7,7 +7,7 @@ import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.WritePushCl
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteResponse;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotificationResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
@@ -35,8 +35,8 @@ class Client {
                 metadata(Op.key(), Op.DATA_WINDOW.value()));
     }
 
-    public <T> Flowable<NotifResponse> dataWindowNotifications(ReadRequest readRequest,
-                                                               Class<T> clazz) {
+    public <T> Flowable<NotificationResponse<T>> dataWindowNotifications(ReadRequest readRequest,
+                                                                      Class<T> clazz) {
         return clientChain.request(
                 new NotificationClientCodec<>(clazz),
                 readRequest,

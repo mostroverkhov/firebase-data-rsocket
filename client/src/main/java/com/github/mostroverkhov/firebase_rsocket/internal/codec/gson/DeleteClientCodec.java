@@ -12,7 +12,7 @@ import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class DeleteClientCodec extends GsonClientCodec<DeleteRequest, DeleteResponse> {
+public class DeleteClientCodec extends CustomGsonClientCodec<DeleteRequest, DeleteResponse> {
 
     public DeleteClientCodec() {
     }
