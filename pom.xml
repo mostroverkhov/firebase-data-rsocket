@@ -16,6 +16,7 @@
         <module>transport-tcp</module>
         <module>transport-aeron</module>
         <module>transport-websocket</module>
+        <module>server-binary-tcp</module>
     </modules>
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.reactivestreams/reactive-streams -->
