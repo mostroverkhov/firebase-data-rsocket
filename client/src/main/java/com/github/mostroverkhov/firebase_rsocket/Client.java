@@ -33,12 +33,14 @@ class Client {
     }
 
     public Flowable<ReadResponse> dataWindow(ReadRequest readRequest) {
+
         ClientCodec<ReadRequest, ReadResponse> codec = new DataWindowClientCodec(serializer);
+        KeyValue metadata = metadata(Op.key(), Op.DATA_WINDOW.value());
 
         Flowable<ReadResponse> request = clientFlow.request(
                 codec,
                 readRequest,
-                metadata(Op.key(), Op.DATA_WINDOW.value()));
+                metadata);
 
         return request;
     }
