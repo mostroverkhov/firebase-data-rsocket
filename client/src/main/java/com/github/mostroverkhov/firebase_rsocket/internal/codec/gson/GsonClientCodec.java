@@ -21,8 +21,8 @@ import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.
  */
 public class GsonClientCodec<Req, Resp> implements ClientCodec<Req, Resp> {
 
-    private GsonSerializer gsonSerializer;
-    private Class<Resp> respType;
+    private final GsonSerializer gsonSerializer;
+    private final Class<Resp> respType;
 
     public GsonClientCodec(Class<Resp> respType, Serializer serializer) {
         Objects.requireNonNull(respType, "respType");

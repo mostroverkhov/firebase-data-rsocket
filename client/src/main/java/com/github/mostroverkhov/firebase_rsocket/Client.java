@@ -1,18 +1,18 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.ClientCodec;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.Serializer;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.delete.DeleteClientCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.notification.NotificationClientCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.read.DataWindowClientCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.util.GsonSerializer;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.write.WritePushClientCodec;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifResponse;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteResponse;
 import io.reactivex.Flowable;
@@ -25,7 +25,7 @@ import static com.github.mostroverkhov.firebase_rsocket.ClientUtil.metadata;
 class Client {
 
     private final ClientFlow clientFlow;
-    private GsonSerializer serializer;
+    private final Serializer serializer;
 
     public Client(ClientConfig clientConfig) {
         this.clientFlow = new ClientFlow(clientConfig);
