@@ -28,11 +28,11 @@ import static com.github.mostroverkhov.firebase_rsocket.ClientUtil.metadata;
  */
 class Client {
 
-    private final ClientFlow clientChain;
+    private final ClientFlow clientFlow;
     private GsonSerializer serializer;
 
     public Client(ClientConfig clientConfig) {
-        this.clientChain = new ClientFlow(clientConfig);
+        this.clientFlow = new ClientFlow(clientConfig);
         this.serializer = clientConfig.serializer();
     }
 
@@ -41,7 +41,7 @@ class Client {
         ClientCodec<ReadRequest, NonTypedReadResponse> codec = new DataWindowClientCodec(serializer);
         DataWindowTransformer<T> transformer = new DataWindowTransformer<>(serializer, windowItemType);
 
-        Flowable<ReadResponse<T>> request = clientChain.request(
+        Flowable<ReadResponse<T>> request = clientFlow.request(
                 codec,
                 transformer::apply,
                 readRequest,
@@ -57,7 +57,7 @@ class Client {
         NotificationTransformer<T> transformer = new NotificationTransformer<>(serializer, notificationItemType);
         KeyValue metadata = metadata(Op.key(), Op.DATA_WINDOW_NOTIF.value());
 
-        Flowable<NotifResponse<T>> request = clientChain.request(
+        Flowable<NotifResponse<T>> request = clientFlow.request(
                 codec,
                 transformer::apply,
                 readRequest,
@@ -71,7 +71,7 @@ class Client {
         WritePushClientCodec<T> writePushClientCodec = new WritePushClientCodec<>(serializer);
         KeyValue metadata = metadata(Op.key(), Op.WRITE_PUSH.value());
 
-        return clientChain.request(
+        return clientFlow.request(
                 writePushClientCodec,
                 writeRequest,
                 metadata);
@@ -81,7 +81,7 @@ class Client {
         DeleteClientCodec deleteClientCodec = new DeleteClientCodec(serializer);
         KeyValue metadata = metadata(Op.key(), Op.DELETE.value());
 
-        return clientChain.request(
+        return clientFlow.request(
                 deleteClientCodec,
                 deleteRequest,
                 metadata);
