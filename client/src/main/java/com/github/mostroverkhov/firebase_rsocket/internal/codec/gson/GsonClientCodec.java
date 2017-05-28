@@ -33,8 +33,6 @@ public class GsonClientCodec<Req, Resp> implements ClientCodec<Req, Resp> {
 
     @Override
     public BytePayload encode(KeyValue metadata, Req request) {
-        assertSerializer();
-
         Gson gson = gsonSerializer.getGson();
         Charset charset = gsonSerializer.getCharset();
         byte[] metaDataBytes = Conversions.stringToBytes(gson.toJson(metaDataMap(metadata)), charset);
@@ -59,12 +57,6 @@ public class GsonClientCodec<Req, Resp> implements ClientCodec<Req, Resp> {
         } else {
             throw new IllegalArgumentException(
                     "Expected serializer: GsonSerializer, provided: " + serializer);
-        }
-    }
-
-    private void assertSerializer() {
-        if (gsonSerializer == null) {
-            throw new IllegalStateException("Serializer was not set");
         }
     }
 
