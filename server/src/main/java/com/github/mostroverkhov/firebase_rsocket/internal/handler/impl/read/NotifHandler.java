@@ -7,6 +7,8 @@ import com.github.mostroverkhov.datawindowsource.model.WindowChangeEvent;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.CacheDuration;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.EventKind;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NonTypedNotificationResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotificationResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.google.firebase.database.DatabaseReference;
@@ -49,23 +51,23 @@ public class NotifHandler extends BaseDataWindowHandler<NotificationResponse> {
             return NotificationResponse.nextWindow(nextReadRequest);
         } else if (dataItem instanceof WindowChangeEvent) {
             WindowChangeEvent changeEvent = (WindowChangeEvent) dataItem;
-            NotificationResponse.EventKind eventKind = toKind(changeEvent.getKind());
+            EventKind eventKind = toKind(changeEvent.getKind());
             return NotificationResponse.changeEvent(eventKind, changeEvent.getItem());
         } else {
             throw unknownType(dataItem);
         }
     }
 
-    private NotificationResponse.EventKind toKind(WindowChangeEvent.Kind kind) {
+    private EventKind toKind(WindowChangeEvent.Kind kind) {
         switch (kind) {
             case ADDED:
-                return NotificationResponse.EventKind.ADDED;
+                return EventKind.ADDED;
             case MOVED:
-                return NotificationResponse.EventKind.MOVED;
+                return EventKind.MOVED;
             case CHANGED:
-                return NotificationResponse.EventKind.CHANGED;
+                return EventKind.CHANGED;
             case REMOVED:
-                return NotificationResponse.EventKind.REMOVED;
+                return EventKind.REMOVED;
             default:
                 throw new AssertionError("Unknown notification event kind: " + kind);
         }

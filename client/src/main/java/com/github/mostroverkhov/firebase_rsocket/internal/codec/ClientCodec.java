@@ -9,9 +9,7 @@ import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
  */
 public interface ClientCodec<Req, Resp> {
 
-    BytePayload marshall(KeyValue metadata, Req request);
+    BytePayload encode(KeyValue metadata, Req request);
 
-    Resp map(byte[] response);
-
-    void setSerializer(Serializer serializer);
+    Resp decode(byte[] data);
 }

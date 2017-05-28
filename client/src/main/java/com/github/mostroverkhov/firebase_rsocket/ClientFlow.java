@@ -1,7 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.ClientCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.ResponseMappingException;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.CustomGsonClientCodec;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
@@ -23,27 +23,26 @@ import static io.reactivesocket.client.SetupProvider.keepAlive;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-class ClientChain {
+class ClientFlow {
     private final ClientConfig clientConfig;
     private final Flowable<ReactiveSocket> rsocket;
 
-    public ClientChain(ClientConfig clientConfig) {
+    public ClientFlow(ClientConfig clientConfig) {
         this.clientConfig = clientConfig;
         this.rsocket = rsocket();
     }
 
     @SuppressWarnings("UnnecessaryLocalVariable")
-    public <Req, Resp> Flowable<Resp> request(
-            CustomGsonClientCodec<Req, Resp> clientMapper,
+    public <Req, Resp, T> Flowable<T> request(
+            ClientCodec<Req, Resp> clientCodec,
+            Function<? super Resp, Flowable<T>> transformer,
             Req request,
             KeyValue metadata) {
 
-        clientMapper.setSerializer(clientConfig.serializer());
-
-        Flowable<Resp> readResponseFlow = rsocket
+        Flowable<T> readResponseFlow = rsocket
                 .observeOn(Schedulers.io())
                 .flatMap(socket -> {
-                    BytePayload bytePayload = clientMapper.marshall(metadata, request);
+                    BytePayload bytePayload = clientCodec.encode(metadata, request);
                     Payload requestPayload = Conversions
                             .bytesToPayload(
                                     bytePayload.getData(),
@@ -52,16 +51,24 @@ class ClientChain {
                 })
                 .filter(requestStreamDataFrames())
                 .map(response -> {
-                    Resp responseFlow = clientMapper
-                            .map(Conversions.dataToBytes(response));
+                    Resp responseFlow = clientCodec
+                            .decode(Conversions.dataToBytes(response));
                     return responseFlow;
-                });
+                }).flatMap(transformer::apply);
 
-        Flowable<Resp> readResponseOrErrorFlow = readResponseFlow
+        Flowable<T> readResponseOrErrorFlow = readResponseFlow
                 .onErrorResumeNext(mappingError("Error while processing request " + request));
 
         return readResponseOrErrorFlow;
     }
+
+    public <Req, Resp> Flowable<Resp> request(
+            ClientCodec<Req, Resp> clientCodec,
+            Req request,
+            KeyValue metadata) {
+        return request(clientCodec, Flowable::just, request, metadata);
+    }
+
 
     private Flowable<ReactiveSocket> rsocket() {
         return Flowable.fromPublisher(
