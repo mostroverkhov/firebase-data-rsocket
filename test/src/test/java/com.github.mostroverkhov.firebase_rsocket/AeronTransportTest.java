@@ -1,10 +1,13 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.notification.NotificationTransformer;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.read.DataWindowTransformer;
 import com.github.mostroverkhov.firebase_rsocket.transport.aeron.AeronDriver;
 import com.github.mostroverkhov.firebase_rsocket.transport.aeron.ClientTransportAeron;
 import com.github.mostroverkhov.firebase_rsocket.transport.aeron.ServerTransportAeron;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.TypedReadResponse;
+import com.google.gson.Gson;
 import io.reactivesocket.aeron.internal.reactivestreams.AeronSocketAddress;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -25,8 +28,16 @@ public class AeronTransportTest {
     private Client client;
     private Completable serverStop;
 
+    private static final Gson gson = new Gson();
+    protected DataWindowTransformer<Data> dataWindowTransformer;
+    protected NotificationTransformer<Data> notifTransformer;
+
     @Before
     public void setUp() throws Exception {
+
+        dataWindowTransformer = new DataWindowTransformer<>(gson, Data.class);
+        notifTransformer = new NotificationTransformer<>(gson, Data.class);
+
         AeronDriver.load();
         AeronSocketAddress aeronSocketAddress = AeronSocketAddress
                 .create(
@@ -50,9 +61,9 @@ public class AeronTransportTest {
     public void readRequestFuncTest() throws Exception {
 
         ReadRequest readRequest = presentReadRequest();
-        Flowable<ReadResponse<Data>> dataWindowFlow = client
-                .dataWindow(readRequest, Data.class);
-        TestSubscriber<ReadResponse<Data>> testSubscriber
+        Flowable<TypedReadResponse<Data>> dataWindowFlow = client
+                .dataWindow(readRequest).flatMap(dataWindowTransformer::apply);
+        TestSubscriber<TypedReadResponse<Data>> testSubscriber
                 = requestStreamSubscriber();
 
         dataWindowFlow
@@ -68,10 +79,10 @@ public class AeronTransportTest {
 
     }
 
-    private TestSubscriber<ReadResponse<Data>> requestStreamSubscriber() {
-        return new TestSubscriber<ReadResponse<Data>>(1) {
+    private TestSubscriber<TypedReadResponse<Data>> requestStreamSubscriber() {
+        return new TestSubscriber<TypedReadResponse<Data>>(1) {
             @Override
-            public void onNext(ReadResponse<Data> o) {
+            public void onNext(TypedReadResponse<Data> o) {
                 super.onNext(o);
                 request(1);
             }
@@ -80,7 +91,7 @@ public class AeronTransportTest {
 
     private ReadRequest presentReadRequest() {
         return Requests
-                .readRequest("test", "read")
+                .read("test", "read")
                 .asc()
                 .windowWithSize(42)
                 .orderByKey()

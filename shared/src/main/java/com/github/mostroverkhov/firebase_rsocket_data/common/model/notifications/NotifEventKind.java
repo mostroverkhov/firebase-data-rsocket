@@ -4,6 +4,9 @@ package com.github.mostroverkhov.firebase_rsocket_data.common.model.notification
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public enum NotifKind {
-    NEXT_WINDOW, EVENT
+public enum NotifEventKind {
+    ADDED,
+    CHANGED,
+    MOVED,
+    REMOVED;
 }

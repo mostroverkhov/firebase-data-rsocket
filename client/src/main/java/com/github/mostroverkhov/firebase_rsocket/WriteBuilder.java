@@ -6,15 +6,15 @@ import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRe
 /**
  * Created by Maksym Ostroverkhov on 03.03.17.
  */
-public class WriteRequestBuilder<T> {
+public class WriteBuilder<T> {
     private final String[] childPaths;
     private T data;
 
-    WriteRequestBuilder(String[] childPaths) {
+    WriteBuilder(String[] childPaths) {
         this.childPaths = childPaths;
     }
 
-    public WriteRequestBuilder<T> data(T data) {
+    public WriteBuilder<T> data(T data) {
         this.data = data;
         return this;
     }

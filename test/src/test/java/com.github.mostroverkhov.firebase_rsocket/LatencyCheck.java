@@ -1,7 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.TypedReadResponse;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subscribers.TestSubscriber;
@@ -31,8 +31,9 @@ public class LatencyCheck extends AbstractTest {
     public void read() throws Exception {
 
         ReadRequest readRequest = requestStreamRequest();
-        Flowable<ReadResponse<Data>> dataWindowFlow = client
-                .dataWindow(readRequest, Data.class)
+        Flowable<TypedReadResponse<Data>> dataWindowFlow = client
+                .dataWindow(readRequest)
+                .flatMap(dataWindowTransformer::apply)
                 .repeatWhen(completed -> completed.flatMap(Flowable::just))
                 .observeOn(Schedulers.io());
 
@@ -40,8 +41,8 @@ public class LatencyCheck extends AbstractTest {
         histogram.setAutoResize(true);
         Recorder recorder = new Recorder(histogram);
 
-        List<TestSubscriber<ReadResponse<Data>>> subscribers = subscribers(SUBSCRIBERS_COUNT, recorder);
-        TestSubscriber<ReadResponse<Data>> firstSubs = subscribers.get(0);
+        List<TestSubscriber<TypedReadResponse<Data>>> subscribers = subscribers(SUBSCRIBERS_COUNT, recorder);
+        TestSubscriber<TypedReadResponse<Data>> firstSubs = subscribers.get(0);
 
         subscribers.forEach(dataWindowFlow::subscribe);
         firstSubs.awaitDone(15, TimeUnit.SECONDS);
@@ -54,8 +55,8 @@ public class LatencyCheck extends AbstractTest {
         stopServerDelayed(100, TimeUnit.MILLISECONDS);
     }
 
-    private List<TestSubscriber<ReadResponse<Data>>> subscribers(int count, Recorder recorder) {
-        List<TestSubscriber<ReadResponse<Data>>> subscribers = new ArrayList<>(count);
+    private List<TestSubscriber<TypedReadResponse<Data>>> subscribers(int count, Recorder recorder) {
+        List<TestSubscriber<TypedReadResponse<Data>>> subscribers = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             subscribers.add(testSubscriber(recorder));
         }
@@ -63,10 +64,10 @@ public class LatencyCheck extends AbstractTest {
     }
 
 
-    private TestSubscriber<ReadResponse<Data>> testSubscriber(Recorder recorder) {
-        return new TestSubscriber<ReadResponse<Data>>(REQUEST_N) {
+    private TestSubscriber<TypedReadResponse<Data>> testSubscriber(Recorder recorder) {
+        return new TestSubscriber<TypedReadResponse<Data>>(REQUEST_N) {
             @Override
-            public void onNext(ReadResponse<Data> o) {
+            public void onNext(TypedReadResponse<Data> o) {
                 super.onNext(o);
                 recorder.record();
                 request(REQUEST_N);
@@ -121,7 +122,7 @@ public class LatencyCheck extends AbstractTest {
 
     private ReadRequest requestStreamRequest() {
         return Requests
-                .readRequest("test", "read")
+                .read("test", "read")
                 .asc()
                 .windowWithSize(2)
                 .orderByKey()

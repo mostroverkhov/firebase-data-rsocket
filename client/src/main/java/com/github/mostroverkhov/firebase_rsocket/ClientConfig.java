@@ -19,7 +19,7 @@ class ClientConfig {
         return transport;
     }
 
-    public Serializer serializer() {
-        return serializer;
+    public <T extends Serializer> T serializer() {
+        return (T) serializer;
     }
 }

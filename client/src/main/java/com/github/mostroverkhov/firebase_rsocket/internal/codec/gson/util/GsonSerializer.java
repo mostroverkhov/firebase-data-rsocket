@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket.internal.codec.gson;
+package com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.util;
 
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.Serializer;
 import com.google.gson.Gson;
