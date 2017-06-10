@@ -95,7 +95,7 @@ Client
 Minimal insights about server processing can be obtained with `Logger` implementation set   
 as `ServerBuilder.logging(Logger logger)`. Server will report started, served and error requests.   
  
-#### Security
+#### Authorization
 
 Firebase rules are used for authorization, particularly, server setup requires authenticator, which
 sets credentials [(docs)](https://firebase.google.com/docs/database/admin/start) via `CredentialsFactory`.
