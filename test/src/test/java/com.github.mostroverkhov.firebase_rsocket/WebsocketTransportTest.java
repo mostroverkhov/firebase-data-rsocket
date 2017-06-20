@@ -40,7 +40,7 @@ public class WebsocketTransportTest {
         Server server = new ServerBuilder(
                 new ServerTransportWebsocket(socketAddress))
                 .cacheReads()
-                .credentialsAuth("creds.properties")
+                .classpathPropsAuth("creds.properties")
                 .build();
 
         this.client = new ClientBuilder(

@@ -47,7 +47,7 @@ public class AeronTransportTest {
         Server server = new ServerBuilder(
                 new ServerTransportAeron(aeronSocketAddress))
                 .cacheReads()
-                .credentialsAuth("creds.properties")
+                .classpathPropsAuth("creds.properties")
                 .build();
 
         client = new ClientBuilder(

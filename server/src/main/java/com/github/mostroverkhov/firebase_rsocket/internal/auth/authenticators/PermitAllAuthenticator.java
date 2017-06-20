@@ -1,5 +1,6 @@
-package com.github.mostroverkhov.firebase_rsocket.internal.auth;
+package com.github.mostroverkhov.firebase_rsocket.internal.auth.authenticators;
 
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.Authenticator;
 import io.reactivex.Completable;
 
 /**

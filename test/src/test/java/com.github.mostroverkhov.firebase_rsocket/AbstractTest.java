@@ -33,7 +33,7 @@ public class AbstractTest {
         Server server = new ServerBuilder(
                 new ServerTransportTcp(socketAddress))
                 .cacheReads()
-                .credentialsAuth("creds.properties")
+                .classpathPropsAuth("creds.properties")
                 .build();
 
         Client client = new ClientBuilder(

@@ -124,10 +124,10 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
         }
 
         private static Publisher<Payload> resumeServerError(Throwable t) {
-                Throwable err = t instanceof FirebaseRsocketException
-                        ? t
-                        : new FirebaseRsocketException("Server error", t);
-                return Flowable.error(err);
+            Throwable err = t instanceof FirebaseRsocketException
+                    ? t
+                    : new FirebaseRsocketException("Server error " + t, t);
+            return Flowable.error(err);
         }
 
         private Optional<MappedRequest<?>> mapRequest(KeyValue metadata, byte[] data) {

@@ -2,8 +2,9 @@ package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.model.WriteResult;
-import com.github.mostroverkhov.firebase_rsocket.internal.auth.CredentialsAuthenticator;
-import com.github.mostroverkhov.firebase_rsocket.internal.auth.PropsCredentialsFactory;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.authenticators.CredentialsAuthenticator;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.CredentialsSource;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.sources.ClasspathPropsCredentialsSource;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import hu.akarnokd.rxjava.interop.RxJavaInterop;
@@ -69,7 +70,7 @@ public class DataFixture {
 
     private static class TestAutheticator extends CredentialsAuthenticator {
         public TestAutheticator() {
-            super(new PropsCredentialsFactory("creds.properties"));
+            super(new ClasspathPropsCredentialsSource("creds.properties"));
         }
     }
 

@@ -1,19 +1,16 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.auth;
 
-import java.io.InputStream;
-import java.util.function.Supplier;
-
 /**
- * Created by Maksym Ostroverkhov on 28.02.2017.
+ * Created with IntelliJ IDEA.
+ * Author: mostroverkhov
  */
-public class Credentials {
+public class NonResolvedCredentials {
+
     private final String dbUrl;
     private final String userId;
-    private final Supplier<InputStream> serviceFile;
+    private final String serviceFile;
 
-    public Credentials(String dbUrl,
-                       String userId,
-                       Supplier<InputStream> serviceFile) {
+    public NonResolvedCredentials(String dbUrl, String userId, String serviceFile) {
         this.dbUrl = dbUrl;
         this.userId = userId;
         this.serviceFile = serviceFile;
@@ -27,7 +24,7 @@ public class Credentials {
         return userId;
     }
 
-    public Supplier<InputStream> getServiceFile() {
+    public String getServiceFile() {
         return serviceFile;
     }
 }
