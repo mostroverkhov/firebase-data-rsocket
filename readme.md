@@ -12,8 +12,15 @@ Based on [reactivesocket-java](https://github.com/ReactiveSocket/reactivesocket-
 tcp, websockets, udp. `ClientTransport` and `ServerTransport` implementations for each transport are available on `transport-` submodules    
 
 #### Standalone binaries
-`mvn package` on `server-binary-tcp` will produce runnable fat jar supporting tcp transport. Authorization credentials, if required, should be provided as described in `Authorization` section. Server can be started as    
-`java -Dserver.port=<SERVER_PORT> firebase-rsocket-server-binary-tcp-<VERSION>.jar`    
+`mvn package` on `server-binary-tcp` will produce runnable uber jar supporting tcp transport. Authorization credentials, if required, should be provided as reference to file using `-Dserver.creds` property. Port parameter is mandatory   
+Server can be started as    
+`java -Dserver.port=<SERVER_PORT> -Dserver.creds=<CREDS_FILE> firebase-rsocket-server-binary-tcp-<VERSION>.jar`    
+
+For example
+```
+java -Dserver.port=8090 -Dserver.creds=creds.properties -jar firebase-rsocket-server-binary-tcp-0.1.1-SNAPSHOT.jar
+```
+will start server on 8090 port. It assumes credentials file `creds.properties` is in same directory as `jar`, also it's convenient to have firebase service file in same directory aswell. 
 
 #### Usage
 ###### Setup
