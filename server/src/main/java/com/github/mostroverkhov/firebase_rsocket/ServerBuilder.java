@@ -1,9 +1,11 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.internal.auth.Authenticator;
-import com.github.mostroverkhov.firebase_rsocket.internal.auth.CredentialsAuthenticator;
-import com.github.mostroverkhov.firebase_rsocket.internal.auth.PermitAllAuthenticator;
-import com.github.mostroverkhov.firebase_rsocket.internal.auth.PropsCredentialsFactory;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.authenticators.CredentialsAuthenticator;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.authenticators.PermitAllAuthenticator;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.CredentialsSource;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.sources.ClasspathPropsCredentialsSource;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.sources.FsPathPropsCredentialsSource;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.DataCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.MetadataCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.GsonDataCodec;
@@ -62,10 +64,17 @@ public class ServerBuilder {
         return this;
     }
 
-    public ServerBuilder credentialsAuth(String credsFile) {
+    public ServerBuilder classpathPropsAuth(String credsFile) {
         assertCredsFile(credsFile);
         this.authenticator = new CredentialsAuthenticator(
-                new PropsCredentialsFactory(credsFile));
+                new ClasspathPropsCredentialsSource(credsFile));
+        return this;
+    }
+
+    public ServerBuilder fileSystemPropsAuth(String credsFile) {
+        assertCredsFile(credsFile);
+        this.authenticator = new CredentialsAuthenticator(
+                new FsPathPropsCredentialsSource(credsFile));
         return this;
     }
 

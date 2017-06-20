@@ -4,7 +4,9 @@ package com.github.mostroverkhov.firebase_rsocket.internal.auth;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public interface CredentialsFactory {
+public interface CredentialsSupplier {
 
-    NonResolvedCredentials credentials(TaggedStream credentialsRef);
+    TaggedStream credentialsRef();
+
+    TaggedStream serviceFileRef(String ref);
 }

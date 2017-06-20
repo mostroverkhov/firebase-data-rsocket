@@ -46,7 +46,7 @@ public class LoggerTest {
         Server server = new ServerBuilder(
                 new ServerTransportTcp(socketAddress))
                 .cacheReads()
-                .credentialsAuth("creds.properties")
+                .classpathPropsAuth("creds.properties")
                 .logging(logger)
                 .build();
 
