@@ -22,7 +22,7 @@ public class ClientTransportAeron implements ClientTransport {
     }
 
     @Override
-    public TransportClient transportClient() {
+    public TransportClient client() {
         SingleThreadedEventLoop clientEventLoop = new SingleThreadedEventLoop("client");
         AeronClientChannelConnector connector = AeronClientChannelConnector.create(
                 new DefaultAeronWrapper(),

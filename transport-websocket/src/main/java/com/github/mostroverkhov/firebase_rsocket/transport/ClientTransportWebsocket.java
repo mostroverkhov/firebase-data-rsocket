@@ -2,9 +2,7 @@ package com.github.mostroverkhov.firebase_rsocket.transport;
 
 import com.github.mostroverkhov.client.WsTransportClient;
 import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ClientTransport;
-import io.reactivesocket.DuplexConnection;
 import io.reactivesocket.transport.TransportClient;
-import org.reactivestreams.Publisher;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -26,7 +24,7 @@ public class ClientTransportWebsocket implements ClientTransport {
     }
 
     @Override
-    public TransportClient transportClient() {
+    public TransportClient client() {
         return WsTransportClient.create(socketAddress);
     }
 }

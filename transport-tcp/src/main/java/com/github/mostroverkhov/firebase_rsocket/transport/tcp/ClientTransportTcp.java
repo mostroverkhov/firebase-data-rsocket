@@ -19,7 +19,7 @@ public class ClientTransportTcp implements ClientTransport {
     }
 
     @Override
-    public TransportClient transportClient() {
+    public TransportClient client() {
         return TcpTransportClient.create(socketAddress);
     }
 

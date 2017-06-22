@@ -5,6 +5,7 @@ import com.github.mostroverkhov.firebase_rsocket.internal.codec.ResponseMappingE
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
+import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ClientTransport;
 import io.reactivesocket.Frame;
 import io.reactivesocket.FrameType;
 import io.reactivesocket.Payload;
@@ -24,11 +25,11 @@ import static io.reactivesocket.client.SetupProvider.keepAlive;
  * Author: mostroverkhov
  */
 class ClientFlow {
-    private final ClientConfig clientConfig;
+    private final ClientTransport clientTransport;
     private final Flowable<ReactiveSocket> rsocket;
 
-    public ClientFlow(ClientConfig clientConfig) {
-        this.clientConfig = clientConfig;
+    public ClientFlow(ClientTransport clientTransport) {
+        this.clientTransport = clientTransport;
         this.rsocket = rsocket();
     }
 
@@ -37,13 +38,12 @@ class ClientFlow {
             ClientCodec clientCodec,
             Function<? super Resp, Flowable<T>> transformer,
             Req request,
-            Class<Resp> respType,
-            KeyValue metadata) {
+            KeyValue reqMetadata, Class<Resp> respType) {
 
         Flowable<T> readResponseFlow = rsocket
                 .observeOn(Schedulers.io())
                 .flatMap(socket -> {
-                    BytePayload bytePayload = clientCodec.encode(metadata, request);
+                    BytePayload bytePayload = clientCodec.encode(reqMetadata, request);
                     Payload requestPayload = Conversions
                             .bytesToPayload(
                                     bytePayload.getData(),
@@ -68,12 +68,12 @@ class ClientFlow {
             Req request,
             Class<Resp> respType,
             KeyValue metadata) {
-        return request(clientCodec, Flowable::just, request, respType, metadata);
+        return request(clientCodec, Flowable::just, request, metadata, respType);
     }
 
     private Flowable<ReactiveSocket> rsocket() {
         return Flowable.fromPublisher(
-                ReactiveSocketClient.create(clientConfig.transport().transportClient(),
+                ReactiveSocketClient.create(clientTransport.client(),
                         keepAlive(never()).disableLease())
                         .connect());
     }

@@ -23,7 +23,7 @@ class Client {
     private final ClientCodec codec;
 
     public Client(ClientConfig clientConfig) {
-        this.clientFlow = new ClientFlow(clientConfig);
+        this.clientFlow = new ClientFlow(clientConfig.transport());
         this.codec = clientConfig.codec();
     }
 
