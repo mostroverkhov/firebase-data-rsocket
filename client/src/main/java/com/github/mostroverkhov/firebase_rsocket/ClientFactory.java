@@ -1,6 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.ClientCodec;
+import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import io.reactivex.Flowable;
 
@@ -47,14 +48,30 @@ class ClientFactory {
                 Op op = action.value();
                 Class<?> responseType = responseType(proxy, method);
                 Object arg = requestArg(args);
+                KeyValue metadata = metadata(op);
                 return clientFlow.request(
                         codec,
                         arg,
                         responseType,
-                        ClientUtil.metadata(Op.key(), op.value())
+                        metadata
                 );
             }
             throw new IllegalStateException("Client methods should have Metadata annotation");
+        }
+
+        static KeyValue metadata(Op op) {
+            String[] tuples = new String[]{Op.key(), op.value()};
+            KeyValue result;
+            if (tuples.length % 2 == 0) {
+                KeyValue metadata = new KeyValue();
+                for (int i = 0; i < tuples.length - 1; i++) {
+                    metadata.put(tuples[i], tuples[i + 1]);
+                }
+                result = metadata;
+            } else {
+                throw new IllegalArgumentException("Args should be even");
+            }
+            return result;
         }
 
         static Object requestArg(Object[] args) {

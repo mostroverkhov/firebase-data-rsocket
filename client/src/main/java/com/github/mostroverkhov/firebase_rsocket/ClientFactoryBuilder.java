@@ -2,8 +2,8 @@ package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.ClientCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.GsonClientCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.util.GsonSerializer;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.util.JsonAsStringTypeAdapter;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.GsonSerializer;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.JsonAsStringTypeAdapter;
 import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ClientTransport;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

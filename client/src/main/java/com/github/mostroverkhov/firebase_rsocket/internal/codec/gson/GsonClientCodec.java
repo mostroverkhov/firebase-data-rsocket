@@ -1,7 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.codec.gson;
 
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.ClientCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.util.GsonSerializer;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
