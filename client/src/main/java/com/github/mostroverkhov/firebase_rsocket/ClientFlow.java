@@ -5,6 +5,7 @@ import com.github.mostroverkhov.firebase_rsocket.internal.codec.ResponseMappingE
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
+import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ClientTransport;
 import io.reactivesocket.Frame;
 import io.reactivesocket.FrameType;
 import io.reactivesocket.Payload;
@@ -24,25 +25,25 @@ import static io.reactivesocket.client.SetupProvider.keepAlive;
  * Author: mostroverkhov
  */
 class ClientFlow {
-    private final ClientConfig clientConfig;
+    private final ClientTransport clientTransport;
     private final Flowable<ReactiveSocket> rsocket;
 
-    public ClientFlow(ClientConfig clientConfig) {
-        this.clientConfig = clientConfig;
+    public ClientFlow(ClientTransport clientTransport) {
+        this.clientTransport = clientTransport;
         this.rsocket = rsocket();
     }
 
     @SuppressWarnings("UnnecessaryLocalVariable")
     public <Req, Resp, T> Flowable<T> request(
-            ClientCodec<Req, Resp> clientCodec,
+            ClientCodec clientCodec,
             Function<? super Resp, Flowable<T>> transformer,
             Req request,
-            KeyValue metadata) {
+            KeyValue reqMetadata, Class<Resp> respType) {
 
         Flowable<T> readResponseFlow = rsocket
                 .observeOn(Schedulers.io())
                 .flatMap(socket -> {
-                    BytePayload bytePayload = clientCodec.encode(metadata, request);
+                    BytePayload bytePayload = clientCodec.encode(reqMetadata, request);
                     Payload requestPayload = Conversions
                             .bytesToPayload(
                                     bytePayload.getData(),
@@ -52,7 +53,7 @@ class ClientFlow {
                 .filter(requestStreamDataFrames())
                 .map(response -> {
                     Resp responseFlow = clientCodec
-                            .decode(Conversions.dataToBytes(response));
+                            .decode(Conversions.dataToBytes(response), respType);
                     return responseFlow;
                 }).flatMap(transformer::apply);
 
@@ -63,16 +64,16 @@ class ClientFlow {
     }
 
     public <Req, Resp> Flowable<Resp> request(
-            ClientCodec<Req, Resp> clientCodec,
+            ClientCodec clientCodec,
             Req request,
+            Class<Resp> respType,
             KeyValue metadata) {
-        return request(clientCodec, Flowable::just, request, metadata);
+        return request(clientCodec, Flowable::just, request, metadata, respType);
     }
-
 
     private Flowable<ReactiveSocket> rsocket() {
         return Flowable.fromPublisher(
-                ReactiveSocketClient.create(clientConfig.transport().transportClient(),
+                ReactiveSocketClient.create(clientTransport.client(),
                         keepAlive(never()).disableLease())
                         .connect());
     }

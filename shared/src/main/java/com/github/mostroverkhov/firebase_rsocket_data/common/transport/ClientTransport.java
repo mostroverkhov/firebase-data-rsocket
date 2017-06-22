@@ -8,5 +8,5 @@ import io.reactivesocket.transport.TransportClient;
  */
 public interface ClientTransport {
 
-    TransportClient transportClient();
+    TransportClient client();
 }

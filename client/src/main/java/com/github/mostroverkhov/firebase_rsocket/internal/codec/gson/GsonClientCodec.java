@@ -1,7 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.codec.gson;
 
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.ClientCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.Serializer;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.util.GsonSerializer;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
@@ -19,20 +18,17 @@ import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class GsonClientCodec<Req, Resp> implements ClientCodec<Req, Resp> {
+public class GsonClientCodec implements ClientCodec {
 
     private final GsonSerializer gsonSerializer;
-    private final Class<Resp> respType;
 
-    public GsonClientCodec(Class<Resp> respType, Serializer serializer) {
-        Objects.requireNonNull(respType, "respType");
+    public GsonClientCodec(GsonSerializer serializer) {
         Objects.requireNonNull(serializer, "serializer");
-        this.respType = respType;
-        this.gsonSerializer = checkSerializer(serializer);
+        this.gsonSerializer = serializer;
     }
 
     @Override
-    public BytePayload encode(KeyValue metadata, Req request) {
+    public BytePayload encode(KeyValue metadata, Object request) {
         Gson gson = gsonSerializer.getGson();
         Charset charset = gsonSerializer.getCharset();
         byte[] metaDataBytes = Conversions.stringToBytes(gson.toJson(metaDataMap(metadata)), charset);
@@ -41,23 +37,14 @@ public class GsonClientCodec<Req, Resp> implements ClientCodec<Req, Resp> {
     }
 
     @Override
-    public Resp decode(byte[] data) {
+    public <Resp> Resp decode(byte[] data, Class<Resp> type) {
         Gson gson = gsonSerializer.getGson();
         String encoding = gsonSerializer.getEncoding();
         return gson.fromJson(
                 bytesToReader(
                         data,
                         Charset.forName(encoding)),
-                respType);
-    }
-
-    private GsonSerializer checkSerializer(Serializer serializer) {
-        if (serializer instanceof GsonSerializer) {
-            return (GsonSerializer) serializer;
-        } else {
-            throw new IllegalArgumentException(
-                    "Expected serializer: GsonSerializer, provided: " + serializer);
-        }
+                type);
     }
 
     private Map<String, Object> metaDataMap(KeyValue keyValue) {

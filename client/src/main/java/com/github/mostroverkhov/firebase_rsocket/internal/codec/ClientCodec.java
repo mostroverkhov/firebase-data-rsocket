@@ -7,9 +7,9 @@ import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public interface ClientCodec<Req, Resp> {
+public interface ClientCodec {
 
-    BytePayload encode(KeyValue metadata, Req request);
+    BytePayload encode(KeyValue metadata, Object request);
 
-    Resp decode(byte[] data);
+    <Resp> Resp decode(byte[] data, Class<Resp> type);
 }

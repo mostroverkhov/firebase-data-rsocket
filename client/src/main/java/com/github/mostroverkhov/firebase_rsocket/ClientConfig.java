@@ -1,6 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.Serializer;
+import com.github.mostroverkhov.firebase_rsocket.internal.codec.ClientCodec;
 import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ClientTransport;
 
 /**
@@ -8,18 +8,18 @@ import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ClientTra
  */
 class ClientConfig {
     private final ClientTransport transport;
-    private final Serializer serializer;
+    private final ClientCodec codec;
 
-    ClientConfig(ClientTransport transport, Serializer serializer) {
+    ClientConfig(ClientTransport transport, ClientCodec codec) {
         this.transport = transport;
-        this.serializer = serializer;
+        this.codec = codec;
     }
 
     public ClientTransport transport() {
         return transport;
     }
 
-    public <T extends Serializer> T serializer() {
-        return (T) serializer;
+    public ClientCodec codec() {
+        return codec;
     }
 }

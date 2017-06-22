@@ -1,6 +1,5 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.util;
 
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.Serializer;
 import com.google.gson.Gson;
 
 import java.nio.charset.Charset;
@@ -9,7 +8,7 @@ import java.nio.charset.Charset;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class GsonSerializer implements Serializer{
+public class GsonSerializer {
     private final String encoding;
     private final Gson gson;
     private final Charset charset;

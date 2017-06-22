@@ -50,9 +50,10 @@ public class AeronTransportTest {
                 .classpathPropsAuth("creds.properties")
                 .build();
 
-        client = new ClientBuilder(
+        client = new ClientFactoryBuilder(
                 new ClientTransportAeron(aeronSocketAddress))
-                .build();
+                .build()
+                .client(Client.class);
 
         serverStop = server.start();
     }
