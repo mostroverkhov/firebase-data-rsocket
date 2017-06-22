@@ -29,7 +29,7 @@ public class WebsocketTransportTest {
     protected NotificationTransformer<Data> notifTransformer;
 
     private Completable serverStop;
-    private Client client;
+    private ClientFactory client;
 
     @Before
     public void setUp() throws Exception {

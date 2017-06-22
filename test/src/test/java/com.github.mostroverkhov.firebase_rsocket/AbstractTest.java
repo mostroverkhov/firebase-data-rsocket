@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class AbstractTest {
     private static final Gson gson = new Gson();
     protected Completable serverStop;
-    protected Client client;
+    protected ClientFactory client;
     protected DataWindowTransformer<Data> dataWindowTransformer;
     protected NotificationTransformer<Data> notifTransformer;
 
@@ -36,7 +36,7 @@ public class AbstractTest {
                 .classpathPropsAuth("creds.properties")
                 .build();
 
-        Client client = new ClientBuilder(
+        ClientFactory client = new ClientBuilder(
                 new ClientTransportTcp(socketAddress))
                 .build();
         this.client = client;

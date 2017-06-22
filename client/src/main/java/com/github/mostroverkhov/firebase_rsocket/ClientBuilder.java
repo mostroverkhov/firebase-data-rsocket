@@ -30,9 +30,9 @@ public class ClientBuilder {
         this.transport = transport;
     }
 
-    public Client build() {
+    public ClientFactory build() {
         ClientConfig clientConfig = new ClientConfig(transport, codec);
-        return new Client(clientConfig);
+        return new ClientFactory(clientConfig);
     }
 
     private void assertArg(ClientTransport socketAddress) {

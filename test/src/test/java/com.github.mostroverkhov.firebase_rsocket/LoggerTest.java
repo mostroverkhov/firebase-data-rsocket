@@ -33,7 +33,7 @@ public class LoggerTest {
     protected NotificationTransformer<Data> notifTransformer;
 
     protected Completable serverStop;
-    protected Client client;
+    protected ClientFactory client;
     protected TestLogger logger;
 
     @Before
@@ -50,7 +50,7 @@ public class LoggerTest {
                 .logging(logger)
                 .build();
 
-        Client client = new ClientBuilder(
+        ClientFactory client = new ClientBuilder(
                 new ClientTransportTcp(socketAddress))
                 .build();
         this.client = client;

@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AeronTransportTest {
 
-    private Client client;
+    private ClientFactory client;
     private Completable serverStop;
 
     private static final Gson gson = new Gson();
