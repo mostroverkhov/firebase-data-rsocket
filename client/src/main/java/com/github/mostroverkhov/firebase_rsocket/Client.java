@@ -1,11 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.ClientCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.Serializer;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.delete.DeleteClientCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.notification.NotificationClientCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.read.DataWindowClientCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.write.WritePushClientCodec;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
@@ -25,34 +20,31 @@ import static com.github.mostroverkhov.firebase_rsocket.ClientUtil.metadata;
 class Client {
 
     private final ClientFlow clientFlow;
-    private final Serializer serializer;
+    private final ClientCodec codec;
 
     public Client(ClientConfig clientConfig) {
         this.clientFlow = new ClientFlow(clientConfig);
-        this.serializer = clientConfig.serializer();
+        this.codec = clientConfig.codec();
     }
 
     public Flowable<ReadResponse> dataWindow(ReadRequest readRequest) {
 
-        ClientCodec<ReadRequest, ReadResponse> codec = new DataWindowClientCodec(serializer);
         KeyValue metadata = metadata(Op.key(), Op.DATA_WINDOW.value());
-
         Flowable<ReadResponse> request = clientFlow.request(
                 codec,
                 readRequest,
+                ReadResponse.class,
                 metadata);
-
         return request;
     }
 
     public Flowable<NotifResponse> dataWindowNotifications(ReadRequest readRequest) {
 
-        ClientCodec<ReadRequest, NotifResponse> codec = new NotificationClientCodec(serializer);
         KeyValue metadata = metadata(Op.key(), Op.DATA_WINDOW_NOTIF.value());
-
         Flowable<NotifResponse> request = clientFlow.request(
                 codec,
                 readRequest,
+                NotifResponse.class,
                 metadata);
 
         return request;
@@ -60,22 +52,20 @@ class Client {
 
     public Flowable<WriteResponse> write(WriteRequest<?> writeRequest) {
 
-        WritePushClientCodec writePushClientCodec = new WritePushClientCodec(serializer);
         KeyValue metadata = metadata(Op.key(), Op.WRITE_PUSH.value());
-
         return clientFlow.request(
-                writePushClientCodec,
+                codec,
                 writeRequest,
+                WriteResponse.class,
                 metadata);
     }
 
     public Flowable<DeleteResponse> delete(DeleteRequest deleteRequest) {
-        DeleteClientCodec deleteClientCodec = new DeleteClientCodec(serializer);
         KeyValue metadata = metadata(Op.key(), Op.DELETE.value());
-
         return clientFlow.request(
-                deleteClientCodec,
+                codec,
                 deleteRequest,
+                DeleteResponse.class,
                 metadata);
     }
 

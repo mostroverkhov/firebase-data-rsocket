@@ -34,9 +34,10 @@ class ClientFlow {
 
     @SuppressWarnings("UnnecessaryLocalVariable")
     public <Req, Resp, T> Flowable<T> request(
-            ClientCodec<Req, Resp> clientCodec,
+            ClientCodec clientCodec,
             Function<? super Resp, Flowable<T>> transformer,
             Req request,
+            Class<Resp> respType,
             KeyValue metadata) {
 
         Flowable<T> readResponseFlow = rsocket
@@ -52,7 +53,7 @@ class ClientFlow {
                 .filter(requestStreamDataFrames())
                 .map(response -> {
                     Resp responseFlow = clientCodec
-                            .decode(Conversions.dataToBytes(response));
+                            .decode(Conversions.dataToBytes(response), respType);
                     return responseFlow;
                 }).flatMap(transformer::apply);
 
@@ -63,12 +64,12 @@ class ClientFlow {
     }
 
     public <Req, Resp> Flowable<Resp> request(
-            ClientCodec<Req, Resp> clientCodec,
+            ClientCodec clientCodec,
             Req request,
+            Class<Resp> respType,
             KeyValue metadata) {
-        return request(clientCodec, Flowable::just, request, metadata);
+        return request(clientCodec, Flowable::just, request, respType, metadata);
     }
-
 
     private Flowable<ReactiveSocket> rsocket() {
         return Flowable.fromPublisher(
