@@ -36,10 +36,10 @@ public class AbstractTest {
                 .classpathPropsAuth("creds.properties")
                 .build();
 
-        ClientFactory client = new ClientFactoryBuilder(
+        this.client = new ClientFactoryBuilder(
                 new ClientTransportTcp(socketAddress))
-                .build();
-        this.client = client.client(Client.class);
+                .build()
+                .client(Client.class);
 
         serverStop = server.start();
     }

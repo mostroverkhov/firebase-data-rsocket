@@ -43,8 +43,8 @@ class ClientFactory {
                 return method.invoke(this, args);
             }
             if (method.isAnnotationPresent(Action.class)) {
-                Action md = method.getDeclaredAnnotation(Action.class);
-                Op op = md.value();
+                Action action = method.getDeclaredAnnotation(Action.class);
+                Op op = action.value();
                 Class<?> responseType = responseType(proxy, method);
                 Object arg = requestArg(args);
                 return clientFlow.request(
