@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AeronTransportTest {
 
-    private ClientFactory client;
+    private Client client;
     private Completable serverStop;
 
     private static final Gson gson = new Gson();
@@ -50,9 +50,10 @@ public class AeronTransportTest {
                 .classpathPropsAuth("creds.properties")
                 .build();
 
-        client = new ClientBuilder(
+        client = new ClientFactoryBuilder(
                 new ClientTransportAeron(aeronSocketAddress))
-                .build();
+                .build()
+                .client(Client.class);
 
         serverStop = server.start();
     }

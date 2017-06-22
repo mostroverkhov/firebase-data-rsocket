@@ -41,7 +41,7 @@ public class ClientFactorySmokeTest {
                 .classpathPropsAuth("creds.properties")
                 .build();
 
-        ClientFactory clientFactory = new ClientBuilder(
+        ClientFactory clientFactory = new ClientFactoryBuilder(
                 new ClientTransportTcp(socketAddress))
                 .build();
         this.client = clientFactory.client(Client.class);

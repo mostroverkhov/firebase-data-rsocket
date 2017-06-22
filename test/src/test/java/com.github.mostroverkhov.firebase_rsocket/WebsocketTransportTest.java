@@ -29,7 +29,7 @@ public class WebsocketTransportTest {
     protected NotificationTransformer<Data> notifTransformer;
 
     private Completable serverStop;
-    private ClientFactory client;
+    private Client client;
 
     @Before
     public void setUp() throws Exception {
@@ -43,9 +43,9 @@ public class WebsocketTransportTest {
                 .classpathPropsAuth("creds.properties")
                 .build();
 
-        this.client = new ClientBuilder(
+        this.client = new ClientFactoryBuilder(
                 new ClientTransportWebsocket(socketAddress))
-                .build();
+                .build().client(Client.class);
 
         serverStop = server.start();
     }

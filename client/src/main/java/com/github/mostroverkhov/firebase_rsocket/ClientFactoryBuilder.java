@@ -12,7 +12,7 @@ import com.google.gson.GsonBuilder;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class ClientBuilder {
+public class ClientFactoryBuilder {
     private static final Gson gson = new GsonBuilder()
             .registerTypeAdapterFactory(
                     new JsonAsStringTypeAdapter
@@ -25,7 +25,7 @@ public class ClientBuilder {
             );
     private final ClientTransport transport;
 
-    public ClientBuilder(ClientTransport transport) {
+    public ClientFactoryBuilder(ClientTransport transport) {
         assertArg(transport);
         this.transport = transport;
     }
