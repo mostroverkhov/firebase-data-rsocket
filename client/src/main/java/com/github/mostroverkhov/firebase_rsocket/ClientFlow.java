@@ -30,7 +30,7 @@ class ClientFlow {
 
     public ClientFlow(ClientTransport clientTransport) {
         this.clientTransport = clientTransport;
-        this.rsocket = rsocket();
+        this.rsocket = rsocket().cache();
     }
 
     @SuppressWarnings("UnnecessaryLocalVariable")
