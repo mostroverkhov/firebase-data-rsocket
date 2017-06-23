@@ -2,8 +2,7 @@ package com.github.mostroverkhov.firebase_rsocket.internal.handler;
 
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Queue;
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,19 +10,14 @@ import java.util.List;
  */
 public class ServerHandlers {
 
-    private final List<ServerRequestHandler<?, ?>> handlers;
+    private final Queue<ServerRequestHandler<?, ?>> handlers;
 
-    public ServerHandlers(ServerRequestHandler<?, ?>... handlers) {
-        assertHandlers(handlers);
-        this.handlers = Arrays.asList(handlers);
-    }
-
-    private ServerHandlers(List<ServerRequestHandler<?, ?>> handlers) {
+    private ServerHandlers(Queue<ServerRequestHandler<?, ?>> handlers) {
         assertHandlers(handlers);
         this.handlers = handlers;
     }
 
-    public static ServerHandlers newInstance(List<ServerRequestHandler<?, ?>> handlers) {
+    public static ServerHandlers newInstance(Queue<ServerRequestHandler<?, ?>> handlers) {
         return new ServerHandlers(handlers);
     }
 

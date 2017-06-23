@@ -3,8 +3,9 @@ package com.github.mostroverkhov.firebase_rsocket;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerRequestHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerMapper;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.ArrayDeque;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -14,8 +15,8 @@ import java.util.function.Supplier;
  */
 class Router {
 
-    private final List<ServerMapper<?>> mappers = new ArrayList<>();
-    private final List<ServerRequestHandler<?, ?>> handlers = new ArrayList<>();
+    private final Queue<ServerMapper<?>> mappers = new ArrayDeque<>();
+    private final Queue<ServerRequestHandler<?, ?>> handlers = new ArrayDeque<>();
 
     public Router route(String key, String value, BiFunction<String, String, Route> routeF) {
         assertRouteArgs(key, value, routeF);
@@ -32,8 +33,10 @@ class Router {
         return this;
     }
 
-    public MapperHandler asLists() {
-        return new MapperHandler(mappers, handlers);
+    public MapperHandler routes() {
+        return new MapperHandler(
+                new ConcurrentLinkedQueue<>(mappers),
+                new ConcurrentLinkedQueue<>(handlers));
     }
 
     static class Route {
@@ -63,20 +66,20 @@ class Router {
     }
 
     public static class MapperHandler {
-        private final List<ServerMapper<?>> mappers;
-        private final List<ServerRequestHandler<?, ?>> handlers;
+        private final Queue<ServerMapper<?>> mappers;
+        private final Queue<ServerRequestHandler<?, ?>> handlers;
 
-        public MapperHandler(List<ServerMapper<?>> mappers,
-                             List<ServerRequestHandler<?, ?>> handlers) {
+        public MapperHandler(Queue<ServerMapper<?>> mappers,
+                             Queue<ServerRequestHandler<?, ?>> handlers) {
             this.mappers = mappers;
             this.handlers = handlers;
         }
 
-        public List<ServerMapper<?>> mappers() {
+        public Queue<ServerMapper<?>> mappers() {
             return mappers;
         }
 
-        public List<ServerRequestHandler<?, ?>> handlers() {
+        public Queue<ServerRequestHandler<?, ?>> handlers() {
             return handlers;
         }
     }

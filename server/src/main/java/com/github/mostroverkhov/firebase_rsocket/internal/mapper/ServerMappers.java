@@ -3,24 +3,23 @@ package com.github.mostroverkhov.firebase_rsocket.internal.mapper;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.DataCodec;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
+import java.util.Queue;
 
 /**
  * Created by Maksym Ostroverkhov on 03.03.17.
  */
 public class ServerMappers implements ServerMapper {
-    private final List<ServerMapper<?>> delegates = new ArrayList<>();
+    private final Queue<ServerMapper<?>> mappers;
 
-    public static ServerMappers newInstance(List<ServerMapper<?>> mappers) {
+    public static ServerMappers newInstance(Queue<ServerMapper<?>> mappers) {
         return new ServerMappers(mappers);
     }
 
-    protected ServerMappers(List<ServerMapper<?>> mappers) {
-        assertAdapters(mappers);
-        delegates.addAll(mappers);
+    protected ServerMappers(Queue<ServerMapper<?>> mappers) {
+        assertMappers(mappers);
+        this.mappers = mappers;
     }
 
     @Override
@@ -31,7 +30,7 @@ public class ServerMappers implements ServerMapper {
     @Override
     public Optional<?> map(KeyValue metadata, byte[] data) {
 
-        Optional<ServerMapper<?>> maybeMapper = delegates
+        Optional<ServerMapper<?>> maybeMapper = mappers
                 .stream()
                 .filter(mapper -> mapper.accepts(metadata))
                 .findFirst();
@@ -45,21 +44,21 @@ public class ServerMappers implements ServerMapper {
 
     @Override
     public byte[] marshall(Object response) {
-        return delegates.get(0).marshall(response);
+        return mappers.peek().marshall(response);
     }
 
-    private static void assertAdapters(List<ServerMapper<?>> adapters) {
-        if (adapters == null) {
+    private static void assertMappers(Collection<ServerMapper<?>> mappers) {
+        if (mappers == null) {
             throw new IllegalArgumentException("Adapters should not be null");
         }
-        if (adapters.isEmpty()) {
+        if (mappers.isEmpty()) {
             throw new IllegalArgumentException("Adapters should not be empty");
         }
     }
 
     @Override
     public ServerMappers setDataCodec(DataCodec dataCodec) {
-        delegates.forEach(m -> m.setDataCodec(dataCodec));
+        mappers.forEach(m -> m.setDataCodec(dataCodec));
         return this;
     }
 }

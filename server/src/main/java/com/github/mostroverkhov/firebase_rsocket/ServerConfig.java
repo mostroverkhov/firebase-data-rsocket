@@ -1,14 +1,13 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.internal.auth.Authenticator;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.DataCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.MetadataCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerRequestHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerMapper;
 import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ServerTransport;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 
 /**
  * Created by Maksym Ostroverkhov on 27.02.17.
@@ -16,15 +15,15 @@ import java.util.Optional;
 class ServerConfig {
     private final ServerTransport transport;
     private final Authenticator authenticator;
-    private final List<ServerRequestHandler<?, ?>> handlers;
+    private final Queue<ServerRequestHandler<?, ?>> handlers;
     private final MetadataCodec metadataCodec;
-    private final Optional<Logger> logConfig;
-    private final List<ServerMapper<?>> mappers;
+    private final Optional<Logger> logger;
+    private final Queue<ServerMapper<?>> mappers;
 
     public ServerConfig(ServerTransport transport,
                         Authenticator authenticator,
-                        List<ServerMapper<?>> mappers,
-                        List<ServerRequestHandler<?, ?>> handlers,
+                        Queue<ServerMapper<?>> mappers,
+                        Queue<ServerRequestHandler<?, ?>> handlers,
                         MetadataCodec metadataCodec,
                         Optional<Logger> logger) {
         this.transport = transport;
@@ -32,7 +31,7 @@ class ServerConfig {
         this.mappers = mappers;
         this.handlers = handlers;
         this.metadataCodec = metadataCodec;
-        this.logConfig = logger;
+        this.logger = logger;
     }
 
     public ServerTransport transport() {
@@ -43,16 +42,16 @@ class ServerConfig {
         return authenticator;
     }
 
-    public List<ServerMapper<?>> mappers() {
+    public Queue<ServerMapper<?>> mappers() {
         return mappers;
     }
 
-    public List<ServerRequestHandler<?, ?>> handlers() {
+    public Queue<ServerRequestHandler<?, ?>> handlers() {
         return handlers;
     }
 
-    public Optional<Logger> logConfig() {
-        return logConfig;
+    public Optional<Logger> logger() {
+        return logger;
     }
 
     public MetadataCodec metadataCodec() {

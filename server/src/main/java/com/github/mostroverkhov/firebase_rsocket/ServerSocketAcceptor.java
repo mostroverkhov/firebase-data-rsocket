@@ -7,8 +7,8 @@ import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerRequestH
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.LogFormatter;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.Logging;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.ServerFlowLogger;
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerMappers;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerMapper;
+import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerMappers;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
@@ -23,8 +23,8 @@ import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
 import org.reactivestreams.Publisher;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 
 import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.dataToBytes;
 import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.metadataToBytes;
@@ -54,7 +54,7 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
                 serverConfig.handlers(),
                 serverConfig.metadataCodec(),
                 serverConfig.authenticator(),
-                serverConfig.logConfig());
+                serverConfig.logger());
     }
 
     private static class ServerSocket extends AbstractReactiveSocket {
@@ -200,8 +200,8 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
         private final ServerMapper<?> requestMappers;
         private final Optional<Logger> logConfig;
 
-        public SocketConfig(List<ServerMapper<?>> requestMappers,
-                            List<ServerRequestHandler<?, ?>> requestHandlers,
+        public SocketConfig(Queue<ServerMapper<?>> requestMappers,
+                            Queue<ServerRequestHandler<?, ?>> requestHandlers,
                             MetadataCodec metadataCodec,
                             Authenticator authenticator,
                             Optional<Logger> logConfig) {

@@ -16,9 +16,7 @@ import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ServerTra
 import com.google.gson.Gson;
 
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -103,8 +101,8 @@ public class ServerBuilder {
     public Server build() {
 
         MapperHandler routes = routes();
-        List<ServerMapper<?>> mappers = routes.mappers();
-        List<ServerRequestHandler<?, ?>> handlers = routes.handlers();
+        Queue<ServerMapper<?>> mappers = routes.mappers();
+        Queue<ServerRequestHandler<?, ?>> handlers = routes.handlers();
         DataCodec dataCodec = codecs.getDataCodec();
         MetadataCodec metadataCodec = codecs.getMetadataCodec();
 
@@ -122,16 +120,17 @@ public class ServerBuilder {
         return new Server(serverConfig);
     }
 
-    private static void setCache(List<ServerRequestHandler<?, ?>> handlers, Optional<Cache> cache) {
+    private static void setCache(Collection<ServerRequestHandler<?, ?>> handlers,
+                                 Optional<Cache> cache) {
         cache.ifPresent(c -> {
             handlers.stream()
                     .filter(h -> h instanceof HasCache)
                     .map(h -> ((HasCache) h))
-                    .forEach(ca -> ca.setCache(c));
+                    .forEach(h -> h.setCache(c));
         });
     }
 
-    private static void setCodec(List<ServerMapper<?>> mappers, DataCodec dataCodec) {
+    private static void setCodec(Collection<ServerMapper<?>> mappers, DataCodec dataCodec) {
         mappers.forEach(m -> m.setDataCodec(dataCodec));
     }
 
@@ -162,6 +161,6 @@ public class ServerBuilder {
     }
 
     private MapperHandler routes() {
-        return Routes.router().asLists();
+        return Routes.router().routes();
     }
 }
