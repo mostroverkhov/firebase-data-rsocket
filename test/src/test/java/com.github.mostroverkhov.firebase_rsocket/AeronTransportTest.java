@@ -65,7 +65,7 @@ public class AeronTransportTest {
 
         ReadRequest readRequest = presentReadRequest();
         Flowable<TypedReadResponse<Data>> dataWindowFlow = client
-                .dataWindow(readRequest).flatMap(dataWindowTransformer::apply);
+                .dataWindow(readRequest).flatMap(dataWindowTransformer::from);
         TestSubscriber<TypedReadResponse<Data>> testSubscriber
                 = requestStreamSubscriber();
 

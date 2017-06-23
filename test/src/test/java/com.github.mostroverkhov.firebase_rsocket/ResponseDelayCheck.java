@@ -34,7 +34,7 @@ public class ResponseDelayCheck extends AbstractTest {
         ReadRequest readRequest = requestStreamRequest();
         Flowable<TypedReadResponse<Data>> dataWindowFlow = client
                 .dataWindow(readRequest)
-                .flatMap(dataWindowTransformer::apply)
+                .flatMap(dataWindowTransformer::from)
                 .repeatWhen(completed -> completed.flatMap(Flowable::just))
                 .observeOn(Schedulers.io());
 

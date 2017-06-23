@@ -1,7 +1,8 @@
 package com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.read;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
+import com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.Transformer;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.TypedReadResponse;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -15,13 +16,12 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class DataWindowTransformer<T> implements Function<ReadResponse, Flowable<TypedReadResponse<T>>> {
+public class DataWindowTransformer<T> implements Transformer<ReadResponse, Flowable<TypedReadResponse<T>>> {
     private final Gson gson;
     private final Class<T> itemsType;
 
@@ -31,7 +31,7 @@ public class DataWindowTransformer<T> implements Function<ReadResponse, Flowable
     }
 
     @Override
-    public Flowable<TypedReadResponse<T>> apply(ReadResponse nonTyped) {
+    public Flowable<TypedReadResponse<T>> from(ReadResponse nonTyped) {
         return Flowable.just(typedWindow(nonTyped));
     }
 

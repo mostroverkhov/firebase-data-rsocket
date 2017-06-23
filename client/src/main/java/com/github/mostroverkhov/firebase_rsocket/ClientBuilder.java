@@ -1,5 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.api.gson.GsonTransform;
+import com.github.mostroverkhov.firebase_rsocket.api.Transform;
 import com.github.mostroverkhov.firebase_rsocket.codec.ClientCodec;
 import com.github.mostroverkhov.firebase_rsocket.codec.gson.GsonClientCodec;
 import com.github.mostroverkhov.firebase_rsocket.codec.gson.JsonAsStringTypeAdapter;
@@ -20,6 +22,9 @@ public class ClientBuilder {
     private static final ClientCodec codec =
             new GsonClientCodec(gson,
                     "UTF-8");
+    private static final Transform transform =
+            new GsonTransform(gson);
+
     private final ClientTransport transport;
 
     public ClientBuilder(ClientTransport transport) {
@@ -28,7 +33,9 @@ public class ClientBuilder {
     }
 
     public ClientFactory build() {
-        return new ClientFactory(transport, codec);
+        return new ClientFactory(transport,
+                codec,
+                transform);
     }
 
     private void assertArg(ClientTransport socketAddress) {

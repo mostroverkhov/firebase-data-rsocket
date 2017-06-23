@@ -68,7 +68,7 @@ public class LoggerTest {
                 .orderByKey()
                 .build();
         Flowable<TypedReadResponse<Data>> dataWindow = client.dataWindow(readRequest)
-                .flatMap(dataWindowTransformer::apply);
+                .flatMap(dataWindowTransformer::from);
         TestSubscriber<TypedReadResponse<Data>> testSubscriber = new TestSubscriber<>();
         dataWindow.observeOn(Schedulers.io()).subscribe(testSubscriber);
         testSubscriber.awaitDone(10, TimeUnit.SECONDS);

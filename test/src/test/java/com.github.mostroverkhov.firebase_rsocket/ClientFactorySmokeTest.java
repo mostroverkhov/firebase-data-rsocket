@@ -2,7 +2,7 @@ package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.api.Client;
 import com.github.mostroverkhov.firebase_rsocket.api.Requests;
-import com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.read.DataWindowTransformer;
+import com.github.mostroverkhov.firebase_rsocket.api.Transform;
 import com.github.mostroverkhov.firebase_rsocket.transport.tcp.ClientTransportTcp;
 import com.github.mostroverkhov.firebase_rsocket.transport.tcp.ServerTransportTcp;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
@@ -29,12 +29,10 @@ public class ClientFactorySmokeTest {
     private static final Gson gson = new Gson();
     protected Completable serverStop;
     protected Client client;
-    protected DataWindowTransformer<Data> dataWindowTransformer;
+    private Transform transform;
 
     @Before
     public void setUp() throws Exception {
-
-        dataWindowTransformer = new DataWindowTransformer<>(gson, Data.class);
 
         InetSocketAddress socketAddress = new InetSocketAddress(8090);
         Server server = new ServerBuilder(
@@ -46,6 +44,7 @@ public class ClientFactorySmokeTest {
         ClientFactory clientFactory = new ClientBuilder(
                 new ClientTransportTcp(socketAddress))
                 .build();
+        this.transform = clientFactory.transform();
         this.client = clientFactory.client(Client.class);
         serverStop = server.start();
     }
@@ -74,7 +73,7 @@ public class ClientFactorySmokeTest {
 
         Flowable<ReadResponse> resp = client.dataWindow(request);
         TypedReadResponse<Data> response = resp.observeOn(Schedulers.io())
-                .flatMap(dataWindowTransformer::apply)
+                .flatMap(reply -> transform.dataWindowOf(Data.class).from(reply))
                 .blockingFirst();
         Assert.assertNotNull(response);
         List<Data> data = response.getData();

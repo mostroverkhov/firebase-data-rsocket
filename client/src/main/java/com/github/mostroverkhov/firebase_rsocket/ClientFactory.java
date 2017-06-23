@@ -1,5 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.api.Transform;
 import com.github.mostroverkhov.firebase_rsocket.codec.ClientCodec;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
@@ -15,11 +16,14 @@ class ClientFactory {
 
     private final ClientFlow clientFlow;
     private final ClientCodec codec;
+    private final Transform transform;
 
     public ClientFactory(ClientTransport transport,
-                         ClientCodec codec) {
+                         ClientCodec codec,
+                         Transform transform) {
         this.clientFlow = new ClientFlow(transport);
         this.codec = codec;
+        this.transform = transform;
     }
 
     @SuppressWarnings("unchecked")
@@ -27,6 +31,10 @@ class ClientFactory {
         return (T) Proxy.newProxyInstance(client.getClassLoader(),
                 new Class<?>[]{client},
                 new ClientInvocationHandler(clientFlow, codec));
+    }
+
+    public Transform transform() {
+        return transform;
     }
 
     static class ClientInvocationHandler implements InvocationHandler {

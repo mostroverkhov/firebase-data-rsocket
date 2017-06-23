@@ -49,7 +49,7 @@ public class DeleteRequestFuncTest extends AbstractTest {
                 Requests.read("test", "delete",
                         writeResponse.getWriteKey())
                         .build())
-                .flatMap(dataWindowTransformer::apply)
+                .flatMap(dataWindowTransformer::from)
                 .observeOn(Schedulers.io())
                 .subscribe(readTestSubscriber);
         readTestSubscriber.awaitDone(10, TimeUnit.SECONDS);
