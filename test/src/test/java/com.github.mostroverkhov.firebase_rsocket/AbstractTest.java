@@ -37,7 +37,7 @@ public class AbstractTest {
                 .classpathPropsAuth("creds.properties")
                 .build();
 
-        this.client = new ClientFactoryBuilder(
+        this.client = new ClientBuilder(
                 new ClientTransportTcp(socketAddress))
                 .build()
                 .client(Client.class);

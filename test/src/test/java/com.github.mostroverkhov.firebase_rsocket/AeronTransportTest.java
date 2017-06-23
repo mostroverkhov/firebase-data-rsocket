@@ -52,7 +52,7 @@ public class AeronTransportTest {
                 .classpathPropsAuth("creds.properties")
                 .build();
 
-        client = new ClientFactoryBuilder(
+        client = new ClientBuilder(
                 new ClientTransportAeron(aeronSocketAddress))
                 .build()
                 .client(Client.class);

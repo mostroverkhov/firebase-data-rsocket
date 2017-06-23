@@ -45,7 +45,7 @@ public class WebsocketTransportTest {
                 .classpathPropsAuth("creds.properties")
                 .build();
 
-        this.client = new ClientFactoryBuilder(
+        this.client = new ClientBuilder(
                 new ClientTransportWebsocket(socketAddress))
                 .build().client(Client.class);
 

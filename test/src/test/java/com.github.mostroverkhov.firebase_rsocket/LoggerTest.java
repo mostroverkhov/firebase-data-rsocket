@@ -52,7 +52,7 @@ public class LoggerTest {
                 .logging(logger)
                 .build();
 
-        ClientFactory clientFactory = new ClientFactoryBuilder(
+        ClientFactory clientFactory = new ClientBuilder(
                 new ClientTransportTcp(socketAddress))
                 .build();
         this.client = clientFactory.client(Client.class);

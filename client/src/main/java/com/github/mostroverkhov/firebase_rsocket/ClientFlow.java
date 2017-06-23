@@ -36,7 +36,8 @@ class ClientFlow {
     @SuppressWarnings("UnnecessaryLocalVariable")
     public <Req, Resp, T> Flowable<T> request(
             ClientCodec clientCodec,
-            Req request, KeyValue reqMetadata,
+            Req request,
+            KeyValue reqMetadata,
             Class<Resp> respType,
             Function<? super Resp, Flowable<T>> transformer) {
 
