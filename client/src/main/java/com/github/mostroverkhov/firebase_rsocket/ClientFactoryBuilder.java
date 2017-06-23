@@ -31,8 +31,7 @@ public class ClientFactoryBuilder {
     }
 
     public ClientFactory build() {
-        ClientConfig clientConfig = new ClientConfig(transport, codec);
-        return new ClientFactory(clientConfig);
+        return new ClientFactory(transport, codec);
     }
 
     private void assertArg(ClientTransport socketAddress) {

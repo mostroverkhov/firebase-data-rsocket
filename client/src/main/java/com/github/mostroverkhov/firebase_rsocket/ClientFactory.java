@@ -3,6 +3,7 @@ package com.github.mostroverkhov.firebase_rsocket;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.ClientCodec;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
+import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ClientTransport;
 import io.reactivex.Flowable;
 
 import java.lang.reflect.*;
@@ -15,9 +16,10 @@ class ClientFactory {
     private final ClientFlow clientFlow;
     private final ClientCodec codec;
 
-    public ClientFactory(ClientConfig clientConfig) {
-        this.clientFlow = new ClientFlow(clientConfig.transport());
-        this.codec = clientConfig.codec();
+    public ClientFactory(ClientTransport transport,
+                         ClientCodec codec) {
+        this.clientFlow = new ClientFlow(transport);
+        this.codec = codec;
     }
 
     @SuppressWarnings("unchecked")
