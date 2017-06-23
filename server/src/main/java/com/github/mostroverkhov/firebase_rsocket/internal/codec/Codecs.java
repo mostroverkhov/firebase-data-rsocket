@@ -1,13 +1,10 @@
-package com.github.mostroverkhov.firebase_rsocket;
-
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.DataCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.MetadataCodec;
+package com.github.mostroverkhov.firebase_rsocket.internal.codec;
 
 /**
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-class Codecs {
+public class Codecs {
     private final DataCodec dataCodec;
     private final MetadataCodec metadataCodec;
 

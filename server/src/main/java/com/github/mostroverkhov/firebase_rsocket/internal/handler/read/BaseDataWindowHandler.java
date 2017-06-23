@@ -1,9 +1,9 @@
-package com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read;
+package com.github.mostroverkhov.firebase_rsocket.internal.handler.read;
 
 import com.github.mostroverkhov.datawindowsource.model.DataQuery;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.MetadataRequestHandler;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.Cache;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.HasCache;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.MetadataRequestHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.read.cache.firebase.Cache;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.read.cache.firebase.HasCache;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.google.firebase.database.DatabaseReference;

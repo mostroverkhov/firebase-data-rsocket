@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase;
+package com.github.mostroverkhov.firebase_rsocket.internal.handler.read.cache.firebase;
 
 /**
  * Created with IntelliJ IDEA.

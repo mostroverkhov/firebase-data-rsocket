@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket.internal.handler.impl;
+package com.github.mostroverkhov.firebase_rsocket.internal.handler;
 
 import com.github.mostroverkhov.firebase_rsocket.FirebaseRsocketException;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerRequestHandler;

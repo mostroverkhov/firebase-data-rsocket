@@ -1,10 +1,10 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.UnknownHandler;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.delete.DeleteHandler;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.DataWindowHandler;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.NotifHandler;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.write.WritePushHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.UnknownHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.delete.DeleteHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.read.DataWindowHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.read.NotifHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.write.WritePushHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.DeleteMapper;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ReadMapper;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.WriteMapper;

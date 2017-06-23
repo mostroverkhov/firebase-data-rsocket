@@ -1,8 +1,8 @@
-package com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.delete;
+package com.github.mostroverkhov.firebase_rsocket.internal.handler.delete;
 
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.model.WriteResult;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.MetadataRequestHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.MetadataRequestHandler;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;

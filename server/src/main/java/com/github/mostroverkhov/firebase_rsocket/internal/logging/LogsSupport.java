@@ -10,10 +10,10 @@ import java.util.function.BiFunction;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class ServerFlowLogger {
+public class LogsSupport {
     private final Optional<Logging> logging;
 
-    public ServerFlowLogger(Optional<Logging> logging) {
+    public LogsSupport(Optional<Logging> logging) {
         this.logging = logging;
     }
 

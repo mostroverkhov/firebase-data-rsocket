@@ -1,11 +1,11 @@
-package com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read;
+package com.github.mostroverkhov.firebase_rsocket.internal.handler.read;
 
 import com.github.mostroverkhov.datawindowsource.model.DataItem;
 import com.github.mostroverkhov.datawindowsource.model.DataQuery;
 import com.github.mostroverkhov.datawindowsource.model.NextQuery;
 import com.github.mostroverkhov.datawindowsource.model.WindowChangeEvent;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cache.firebase.CacheDuration;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.read.cache.firebase.CacheDuration;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifEventKind;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.TypedNotifResponse;
