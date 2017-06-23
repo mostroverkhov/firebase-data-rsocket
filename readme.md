@@ -41,9 +41,10 @@ Builtin implementation provides simple caching of every data window query for
 
 Client
 ```
-        Client client = new ClientBuilder(
+        ClientFactory clientFactory = new ClientBuilder(
                 new ClientTransportTcp(socketAddress))
                 .build();
+        Client client = clientFactory.client();
 ```
 ###### Read
  ```
@@ -78,7 +79,18 @@ Client
  of `NotifResponse`, which is either `window change event` representing current data window item, or `next window` item for next window query.   
  Not yet consumed items are buffered on server.   
  
- Response payloads are represented as json strings. To convert them into typed ones there are `DataWindowTransformer`, `NotificationTransformer` utilities 
+ Response payloads are represented as json strings. To convert them into typed ones there is `Transform` provided by `ClientFactory.transform()`, which can be used as follows:
+ ```
+ Transfrom transform = clientFactory.transform()
+ Flowable<ReadResponse> resp = client.dataWindow(request);
+ Flowable<TypedReadResponse<Data>> response = resp
+                .observeOn(Schedulers.io())
+                .flatMap(reply -> transform.dataWindowOf(Data.class).from(reply));
+
+ Flowable<TypedNotifResponse<Data>> notifFlow = client
+                .dataWindowNotifications(readRequest)
+                .flatMap(reply -> transform.notificationsOf(Data.class).from(reply));          
+ ```
  
 ###### Write
 ```
