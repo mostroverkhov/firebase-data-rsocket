@@ -1,5 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.servercommon.BytePayload;
+import com.github.mostroverkhov.firebase_rsocket.servercommon.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket.internal.auth.Authenticator;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.MetadataCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerHandlers;
@@ -9,9 +11,6 @@ import com.github.mostroverkhov.firebase_rsocket.internal.logging.Logging;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.LogsSupport;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerMapper;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerMappers;
-import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
-import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
-import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
 import io.reactivesocket.AbstractReactiveSocket;
 import io.reactivesocket.ConnectionSetupPayload;
 import io.reactivesocket.Payload;
@@ -26,8 +25,10 @@ import org.reactivestreams.Publisher;
 import java.util.Optional;
 import java.util.Queue;
 
-import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.dataToBytes;
-import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.metadataToBytes;
+import static com.github.mostroverkhov.firebase_rsocket.servercommon.Conversions.bytesToPayload;
+import static com.github.mostroverkhov.firebase_rsocket.servercommon.Conversions.dataToBytes;
+import static com.github.mostroverkhov.firebase_rsocket.servercommon.Conversions.metadataToBytes;
+
 
 /**
  * Created with IntelliJ IDEA.
@@ -155,7 +156,7 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
         }
 
         private Payload encodeResponse(Object resp) {
-            return Conversions.bytesToPayload(requestMapper.marshall(resp));
+            return bytesToPayload(requestMapper.marshall(resp));
         }
     }
 

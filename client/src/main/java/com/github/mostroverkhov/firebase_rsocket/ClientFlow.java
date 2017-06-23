@@ -2,10 +2,10 @@ package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.codec.ClientCodec;
 import com.github.mostroverkhov.firebase_rsocket.codec.ResponseMappingException;
-import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
-import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
-import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
-import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ClientTransport;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.BytePayload;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.Conversions;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.KeyValue;
+import com.github.mostroverkhov.firebase_rsocket.transport.ClientTransport;
 import io.reactivesocket.Frame;
 import io.reactivesocket.FrameType;
 import io.reactivesocket.Payload;

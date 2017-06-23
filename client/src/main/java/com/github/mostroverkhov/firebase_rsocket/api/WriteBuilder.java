@@ -1,7 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket.api;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.Path;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.write.WriteRequest;
 
 /**
  * Created by Maksym Ostroverkhov on 03.03.17.

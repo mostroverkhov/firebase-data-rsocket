@@ -5,7 +5,7 @@ import com.github.mostroverkhov.firebase_rsocket.api.Transform;
 import com.github.mostroverkhov.firebase_rsocket.codec.ClientCodec;
 import com.github.mostroverkhov.firebase_rsocket.codec.gson.GsonClientCodec;
 import com.github.mostroverkhov.firebase_rsocket.codec.gson.JsonAsStringTypeAdapter;
-import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ClientTransport;
+import com.github.mostroverkhov.firebase_rsocket.transport.ClientTransport;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 

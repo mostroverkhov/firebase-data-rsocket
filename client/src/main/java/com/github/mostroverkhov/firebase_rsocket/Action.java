@@ -1,6 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.Op;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

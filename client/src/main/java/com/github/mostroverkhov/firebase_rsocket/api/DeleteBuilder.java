@@ -1,7 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket.api;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.Path;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.delete.DeleteRequest;
 
 /**
  * Created with IntelliJ IDEA.

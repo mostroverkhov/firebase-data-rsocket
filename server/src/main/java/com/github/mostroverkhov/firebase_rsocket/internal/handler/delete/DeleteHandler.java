@@ -2,11 +2,11 @@ package com.github.mostroverkhov.firebase_rsocket.internal.handler.delete;
 
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.model.WriteResult;
+import com.github.mostroverkhov.firebase_rsocket.servercommon.KeyValue;
+import com.github.mostroverkhov.firebase_rsocket.servercommon.model.Path;
+import com.github.mostroverkhov.firebase_rsocket.servercommon.model.delete.DeleteRequest;
+import com.github.mostroverkhov.firebase_rsocket.servercommon.model.delete.DeleteResponse;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.MetadataRequestHandler;
-import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteResponse;
 import com.google.firebase.database.DatabaseReference;
 import hu.akarnokd.rxjava.interop.RxJavaInterop;
 import io.reactivex.Flowable;

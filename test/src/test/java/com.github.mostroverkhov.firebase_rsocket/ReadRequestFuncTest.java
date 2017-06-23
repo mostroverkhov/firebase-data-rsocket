@@ -1,9 +1,9 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.api.Requests;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.TypedNotifResponse;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.TypedReadResponse;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.notifications.TypedNotifResponse;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.read.ReadRequest;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.read.TypedReadResponse;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subscribers.TestSubscriber;

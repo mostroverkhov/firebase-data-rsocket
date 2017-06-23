@@ -3,9 +3,9 @@ package com.github.mostroverkhov.firebase_rsocket;
 import com.github.mostroverkhov.firebase_rsocket.api.Client;
 import com.github.mostroverkhov.firebase_rsocket.api.Transform;
 import com.github.mostroverkhov.firebase_rsocket.codec.ClientCodec;
-import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
-import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ClientTransport;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.KeyValue;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.Op;
+import com.github.mostroverkhov.firebase_rsocket.transport.ClientTransport;
 import io.reactivex.Flowable;
 
 import java.lang.reflect.*;

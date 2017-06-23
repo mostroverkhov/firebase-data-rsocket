@@ -1,9 +1,11 @@
 package com.github.mostroverkhov.firebase_rsocket.api;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.Path;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.read.ReadRequest;
 
-import static com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest.OrderBy.*;
+import static com.github.mostroverkhov.firebase_rsocket.clientcommon.model.read.ReadRequest.OrderBy.CHILD;
+import static com.github.mostroverkhov.firebase_rsocket.clientcommon.model.read.ReadRequest.OrderBy.KEY;
+import static com.github.mostroverkhov.firebase_rsocket.clientcommon.model.read.ReadRequest.OrderBy.VALUE;
 
 /**
  * Created by Maksym Ostroverkhov on 28.02.17.

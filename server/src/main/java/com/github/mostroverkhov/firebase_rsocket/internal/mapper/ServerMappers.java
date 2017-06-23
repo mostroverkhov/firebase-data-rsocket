@@ -1,7 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.mapper;
 
+import com.github.mostroverkhov.firebase_rsocket.servercommon.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.DataCodec;
-import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 
 import java.util.Collection;
 import java.util.Optional;

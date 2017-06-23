@@ -4,7 +4,7 @@ import com.github.mostroverkhov.firebase_rsocket.internal.auth.Authenticator;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.MetadataCodec;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerRequestHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerMapper;
-import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ServerTransport;
+import com.github.mostroverkhov.firebase_rsocket.transport.ServerTransport;
 
 import java.util.Optional;
 import java.util.Queue;

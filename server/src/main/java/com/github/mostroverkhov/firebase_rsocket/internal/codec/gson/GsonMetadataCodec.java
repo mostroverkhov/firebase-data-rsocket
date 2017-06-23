@@ -1,7 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.codec.gson;
 
+import com.github.mostroverkhov.firebase_rsocket.servercommon.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.MetadataCodec;
-import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import org.apache.commons.io.IOUtils;
@@ -9,7 +9,7 @@ import org.apache.commons.io.IOUtils;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.bytesToReader;
+import static com.github.mostroverkhov.firebase_rsocket.servercommon.Conversions.bytesToReader;
 
 /**
  * Created with IntelliJ IDEA.
