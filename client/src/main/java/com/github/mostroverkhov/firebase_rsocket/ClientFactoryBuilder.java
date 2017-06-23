@@ -1,9 +1,8 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.ClientCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.GsonClientCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.GsonSerializer;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.JsonAsStringTypeAdapter;
+import com.github.mostroverkhov.firebase_rsocket.codec.ClientCodec;
+import com.github.mostroverkhov.firebase_rsocket.codec.gson.GsonClientCodec;
+import com.github.mostroverkhov.firebase_rsocket.codec.gson.JsonAsStringTypeAdapter;
 import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ClientTransport;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -17,12 +16,10 @@ public class ClientFactoryBuilder {
             .registerTypeAdapterFactory(
                     new JsonAsStringTypeAdapter
                             .JsonAsStringTypeAdapterFactory()
-            )
-            .create();
+            ).create();
     private static final ClientCodec codec =
-            new GsonClientCodec(
-                    new GsonSerializer(gson, "UTF-8")
-            );
+            new GsonClientCodec(gson,
+                    "UTF-8");
     private final ClientTransport transport;
 
     public ClientFactoryBuilder(ClientTransport transport) {

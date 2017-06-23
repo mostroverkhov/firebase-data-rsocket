@@ -1,6 +1,6 @@
-package com.github.mostroverkhov.firebase_rsocket.internal.codec.gson;
+package com.github.mostroverkhov.firebase_rsocket.codec.gson;
 
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.ClientCodec;
+import com.github.mostroverkhov.firebase_rsocket.codec.ClientCodec;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
@@ -18,18 +18,20 @@ import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.
  * Author: mostroverkhov
  */
 public class GsonClientCodec implements ClientCodec {
+    private final Gson gson;
+    private final String encoding;
+    private final Charset charset;
 
-    private final GsonSerializer gsonSerializer;
-
-    public GsonClientCodec(GsonSerializer serializer) {
-        Objects.requireNonNull(serializer, "serializer");
-        this.gsonSerializer = serializer;
+    public GsonClientCodec(Gson gson, String encoding) {
+        Objects.requireNonNull(gson, "gson");
+        Objects.requireNonNull(encoding, "encoding");
+        this.gson = gson;
+        this.encoding = encoding;
+        this.charset = Charset.forName(encoding);
     }
 
     @Override
     public BytePayload encode(KeyValue metadata, Object request) {
-        Gson gson = gsonSerializer.getGson();
-        Charset charset = gsonSerializer.getCharset();
         byte[] metaDataBytes = Conversions.stringToBytes(gson.toJson(metaDataMap(metadata)), charset);
         byte[] dataBytes = Conversions.stringToBytes(gson.toJson(request), charset);
         return new BytePayload(metaDataBytes, dataBytes);
@@ -37,8 +39,6 @@ public class GsonClientCodec implements ClientCodec {
 
     @Override
     public <Resp> Resp decode(byte[] data, Class<Resp> type) {
-        Gson gson = gsonSerializer.getGson();
-        String encoding = gsonSerializer.getEncoding();
         return gson.fromJson(
                 bytesToReader(
                         data,

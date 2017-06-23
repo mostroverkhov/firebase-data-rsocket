@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.read;
+package com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.read;
 
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;

@@ -1,5 +1,6 @@
-package com.github.mostroverkhov.firebase_rsocket;
+package com.github.mostroverkhov.firebase_rsocket.api;
 
+import com.github.mostroverkhov.firebase_rsocket.Action;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifResponse;
