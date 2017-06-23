@@ -40,7 +40,7 @@ public class AbstractTest {
                 new ClientTransportTcp(socketAddress))
                 .build();
         this.client = clientFactory
-                .client(Client.class);
+                .client();
         Transform transform = clientFactory.transform();
 
         notifTransformer = transform.notificationsOf(Data.class);

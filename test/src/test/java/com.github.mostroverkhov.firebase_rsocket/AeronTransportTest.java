@@ -55,7 +55,7 @@ public class AeronTransportTest {
         client = new ClientBuilder(
                 new ClientTransportAeron(aeronSocketAddress))
                 .build()
-                .client(Client.class);
+                .client();
 
         serverStop = server.start();
     }

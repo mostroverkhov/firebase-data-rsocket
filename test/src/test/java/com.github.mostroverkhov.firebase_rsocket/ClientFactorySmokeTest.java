@@ -45,7 +45,7 @@ public class ClientFactorySmokeTest {
                 new ClientTransportTcp(socketAddress))
                 .build();
         this.transform = clientFactory.transform();
-        this.client = clientFactory.client(Client.class);
+        this.client = clientFactory.client();
         serverStop = server.start();
     }
 

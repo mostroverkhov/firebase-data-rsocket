@@ -43,7 +43,7 @@ public class WebsocketTransportTest {
         ClientFactory clientFactory = new ClientBuilder(
                 new ClientTransportWebsocket(socketAddress))
                 .build();
-        this.client = clientFactory.client(Client.class);
+        this.client = clientFactory.client();
         this.transform = clientFactory.transform();
 
 

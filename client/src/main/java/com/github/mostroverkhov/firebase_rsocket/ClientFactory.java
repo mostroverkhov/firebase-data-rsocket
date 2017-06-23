@@ -1,5 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.api.Client;
 import com.github.mostroverkhov.firebase_rsocket.api.Transform;
 import com.github.mostroverkhov.firebase_rsocket.codec.ClientCodec;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
@@ -31,6 +32,10 @@ class ClientFactory {
         return (T) Proxy.newProxyInstance(client.getClassLoader(),
                 new Class<?>[]{client},
                 new ClientInvocationHandler(clientFlow, codec));
+    }
+
+    public Client client() {
+        return client(Client.class);
     }
 
     public Transform transform() {
@@ -70,18 +75,9 @@ class ClientFactory {
         }
 
         static KeyValue metadata(Op op) {
-            String[] tuples = new String[]{Op.key(), op.value()};
-            KeyValue result;
-            if (tuples.length % 2 == 0) {
-                KeyValue metadata = new KeyValue();
-                for (int i = 0; i < tuples.length - 1; i++) {
-                    metadata.put(tuples[i], tuples[i + 1]);
-                }
-                result = metadata;
-            } else {
-                throw new IllegalArgumentException("Args should be even");
-            }
-            return result;
+            KeyValue metadata = new KeyValue();
+            metadata.put(Op.key(), op.value());
+            return metadata;
         }
 
         static Object requestArg(Object[] args) {

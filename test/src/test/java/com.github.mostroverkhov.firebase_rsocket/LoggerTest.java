@@ -55,7 +55,7 @@ public class LoggerTest {
         ClientFactory clientFactory = new ClientBuilder(
                 new ClientTransportTcp(socketAddress))
                 .build();
-        this.client = clientFactory.client(Client.class);
+        this.client = clientFactory.client();
 
         serverStop = server.start();
     }
