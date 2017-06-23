@@ -1,7 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.codec.gson;
 
+import com.github.mostroverkhov.firebase_rsocket.servercommon.Conversions;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.DataCodec;
-import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
 
@@ -36,7 +36,6 @@ public class GsonDataCodec implements DataCodec {
             return Optional.empty();
         }
         return Optional.of(s);
-
     }
 
     @Override

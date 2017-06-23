@@ -1,8 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.handler;
 
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerRequestHandler;
-import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
+import com.github.mostroverkhov.firebase_rsocket.servercommon.KeyValue;
+import com.github.mostroverkhov.firebase_rsocket.servercommon.model.Path;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 

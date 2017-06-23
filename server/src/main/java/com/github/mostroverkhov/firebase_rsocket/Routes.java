@@ -1,5 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.servercommon.model.Op;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.UnknownHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.delete.DeleteHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.read.DataWindowHandler;
@@ -8,7 +9,6 @@ import com.github.mostroverkhov.firebase_rsocket.internal.handler.write.WritePus
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.DeleteMapper;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ReadMapper;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.WriteMapper;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.Op;
 
 /**
  * Created with IntelliJ IDEA.

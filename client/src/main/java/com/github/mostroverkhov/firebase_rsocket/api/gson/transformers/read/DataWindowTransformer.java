@@ -1,9 +1,9 @@
 package com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.read;
 
 import com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.Transformer;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.TypedReadResponse;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.read.ReadRequest;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.read.ReadResponse;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.read.TypedReadResponse;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

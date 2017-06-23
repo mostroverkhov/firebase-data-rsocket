@@ -1,6 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.mapper;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
+import com.github.mostroverkhov.firebase_rsocket.servercommon.model.read.ReadRequest;
 
 /**
  * Created with IntelliJ IDEA.

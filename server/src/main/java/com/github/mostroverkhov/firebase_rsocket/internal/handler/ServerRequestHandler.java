@@ -1,6 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.handler;
 
-import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
+import com.github.mostroverkhov.firebase_rsocket.servercommon.KeyValue;
 import io.reactivex.Flowable;
 
 /**

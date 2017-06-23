@@ -11,8 +11,8 @@
     <modules>
         <module>client</module>
         <module>server</module>
-        <module>shared</module>
         <module>test</module>
+        <module>transport</module>
         <module>transport-tcp</module>
         <module>transport-aeron</module>
         <module>transport-websocket</module>

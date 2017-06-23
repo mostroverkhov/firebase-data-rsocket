@@ -1,6 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.mapper;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.delete.DeleteRequest;
+import com.github.mostroverkhov.firebase_rsocket.servercommon.model.delete.DeleteRequest;
 
 /**
  * Created with IntelliJ IDEA.

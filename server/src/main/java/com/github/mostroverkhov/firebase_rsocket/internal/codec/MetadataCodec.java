@@ -1,6 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.codec;
 
-import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
+import com.github.mostroverkhov.firebase_rsocket.servercommon.KeyValue;
 
 /**
  * Created with IntelliJ IDEA.

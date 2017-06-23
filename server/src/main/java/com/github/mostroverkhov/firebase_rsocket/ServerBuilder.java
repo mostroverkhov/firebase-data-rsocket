@@ -13,7 +13,7 @@ import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.GsonMetadat
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerRequestHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.read.cache.firebase.*;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerMapper;
-import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ServerTransport;
+import com.github.mostroverkhov.firebase_rsocket.transport.ServerTransport;
 import com.google.gson.Gson;
 
 import java.nio.charset.Charset;

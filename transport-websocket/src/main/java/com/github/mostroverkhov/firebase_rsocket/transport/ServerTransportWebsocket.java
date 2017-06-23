@@ -1,6 +1,5 @@
 package com.github.mostroverkhov.firebase_rsocket.transport;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ServerTransport;
 import com.github.mostroverkhov.server.WsTransportServer;
 import io.reactivesocket.transport.TransportServer;
 

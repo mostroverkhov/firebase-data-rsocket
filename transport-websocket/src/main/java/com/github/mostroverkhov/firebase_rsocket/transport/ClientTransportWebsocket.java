@@ -1,7 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket.transport;
 
 import com.github.mostroverkhov.client.WsTransportClient;
-import com.github.mostroverkhov.firebase_rsocket_data.common.transport.ClientTransport;
 import io.reactivesocket.transport.TransportClient;
 
 import java.net.InetSocketAddress;

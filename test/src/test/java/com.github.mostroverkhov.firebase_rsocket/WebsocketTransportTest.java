@@ -3,11 +3,10 @@ package com.github.mostroverkhov.firebase_rsocket;
 import com.github.mostroverkhov.firebase_rsocket.api.Client;
 import com.github.mostroverkhov.firebase_rsocket.api.Requests;
 import com.github.mostroverkhov.firebase_rsocket.api.Transform;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.read.ReadRequest;
+import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.read.TypedReadResponse;
 import com.github.mostroverkhov.firebase_rsocket.transport.ClientTransportWebsocket;
 import com.github.mostroverkhov.firebase_rsocket.transport.ServerTransportWebsocket;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.TypedReadResponse;
-import com.google.gson.Gson;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
@@ -24,8 +23,6 @@ import java.util.concurrent.TimeUnit;
  * Author: mostroverkhov
  */
 public class WebsocketTransportTest {
-
-    private static final Gson gson = new Gson();
 
     private Completable serverStop;
     private Client client;
