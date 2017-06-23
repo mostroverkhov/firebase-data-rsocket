@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket.internal.codec;
+package com.github.mostroverkhov.firebase_rsocket.codec;
 
 /**
  * Created with IntelliJ IDEA.

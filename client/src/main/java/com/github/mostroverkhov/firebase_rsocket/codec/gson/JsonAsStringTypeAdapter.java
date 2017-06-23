@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.util;
+package com.github.mostroverkhov.firebase_rsocket.codec.gson;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
@@ -13,16 +13,12 @@ import java.io.IOException;
  * Author: mostroverkhov
  */
 public class JsonAsStringTypeAdapter extends TypeAdapter<String> {
-    private Gson gson;
+    private final Gson gson;
     private final TypeAdapter<String> delegateAdapter;
 
     public JsonAsStringTypeAdapter(Gson gson, TypeAdapter<String> delegateAdapter) {
         this.gson = gson;
         this.delegateAdapter = delegateAdapter;
-    }
-
-    public void setGson(Gson gson) {
-        this.gson = gson;
     }
 
     @Override

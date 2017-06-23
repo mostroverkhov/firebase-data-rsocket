@@ -1,5 +1,6 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.api.Requests;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.TypedReadResponse;
 import io.reactivex.Flowable;
@@ -21,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class LatencyCheck extends AbstractTest {
+public class ResponseDelayCheck extends AbstractTest {
 
     private static final int REQUEST_N = 1;
     private static final int SUBSCRIBERS_COUNT = 1000;

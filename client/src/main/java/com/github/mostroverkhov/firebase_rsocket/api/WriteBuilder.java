@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket;
+package com.github.mostroverkhov.firebase_rsocket.api;
 
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.Path;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.write.WriteRequest;

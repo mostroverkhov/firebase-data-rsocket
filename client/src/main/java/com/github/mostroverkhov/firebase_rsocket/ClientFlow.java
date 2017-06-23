@@ -1,7 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.ClientCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.ResponseMappingException;
+import com.github.mostroverkhov.firebase_rsocket.codec.ClientCodec;
+import com.github.mostroverkhov.firebase_rsocket.codec.ResponseMappingException;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
 import com.github.mostroverkhov.firebase_rsocket_data.common.Conversions;
@@ -36,9 +36,10 @@ class ClientFlow {
     @SuppressWarnings("UnnecessaryLocalVariable")
     public <Req, Resp, T> Flowable<T> request(
             ClientCodec clientCodec,
-            Function<? super Resp, Flowable<T>> transformer,
             Req request,
-            KeyValue reqMetadata, Class<Resp> respType) {
+            KeyValue reqMetadata,
+            Class<Resp> respType,
+            Function<? super Resp, Flowable<T>> transformer) {
 
         Flowable<T> readResponseFlow = rsocket
                 .observeOn(Schedulers.io())
@@ -66,9 +67,13 @@ class ClientFlow {
     public <Req, Resp> Flowable<Resp> request(
             ClientCodec clientCodec,
             Req request,
-            Class<Resp> respType,
-            KeyValue metadata) {
-        return request(clientCodec, Flowable::just, request, metadata, respType);
+            KeyValue metadata, Class<Resp> respType) {
+        return request(
+                clientCodec,
+                request,
+                metadata,
+                respType,
+                Flowable::just);
     }
 
     private Flowable<ReactiveSocket> rsocket() {

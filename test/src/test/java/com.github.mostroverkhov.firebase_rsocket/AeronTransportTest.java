@@ -1,7 +1,9 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.notification.NotificationTransformer;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.read.DataWindowTransformer;
+import com.github.mostroverkhov.firebase_rsocket.api.Client;
+import com.github.mostroverkhov.firebase_rsocket.api.Requests;
+import com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.notification.NotificationTransformer;
+import com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.read.DataWindowTransformer;
 import com.github.mostroverkhov.firebase_rsocket.transport.aeron.AeronDriver;
 import com.github.mostroverkhov.firebase_rsocket.transport.aeron.ClientTransportAeron;
 import com.github.mostroverkhov.firebase_rsocket.transport.aeron.ServerTransportAeron;
@@ -50,7 +52,7 @@ public class AeronTransportTest {
                 .classpathPropsAuth("creds.properties")
                 .build();
 
-        client = new ClientFactoryBuilder(
+        client = new ClientBuilder(
                 new ClientTransportAeron(aeronSocketAddress))
                 .build()
                 .client(Client.class);
