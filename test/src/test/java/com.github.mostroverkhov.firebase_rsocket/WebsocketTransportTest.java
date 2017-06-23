@@ -2,8 +2,7 @@ package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.api.Client;
 import com.github.mostroverkhov.firebase_rsocket.api.Requests;
-import com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.notification.NotificationTransformer;
-import com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.read.DataWindowTransformer;
+import com.github.mostroverkhov.firebase_rsocket.api.Transform;
 import com.github.mostroverkhov.firebase_rsocket.transport.ClientTransportWebsocket;
 import com.github.mostroverkhov.firebase_rsocket.transport.ServerTransportWebsocket;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadRequest;
@@ -27,17 +26,13 @@ import java.util.concurrent.TimeUnit;
 public class WebsocketTransportTest {
 
     private static final Gson gson = new Gson();
-    protected DataWindowTransformer<Data> dataWindowTransformer;
-    protected NotificationTransformer<Data> notifTransformer;
 
     private Completable serverStop;
     private Client client;
+    private Transform transform;
 
     @Before
     public void setUp() throws Exception {
-        dataWindowTransformer = new DataWindowTransformer<>(gson, Data.class);
-        notifTransformer = new NotificationTransformer<>(gson, Data.class);
-
         InetSocketAddress socketAddress = new InetSocketAddress("localhost", 8090);
         Server server = new ServerBuilder(
                 new ServerTransportWebsocket(socketAddress))
@@ -45,9 +40,12 @@ public class WebsocketTransportTest {
                 .classpathPropsAuth("creds.properties")
                 .build();
 
-        this.client = new ClientBuilder(
+        ClientFactory clientFactory = new ClientBuilder(
                 new ClientTransportWebsocket(socketAddress))
-                .build().client(Client.class);
+                .build();
+        this.client = clientFactory.client(Client.class);
+        this.transform = clientFactory.transform();
+
 
         serverStop = server.start();
     }
@@ -58,7 +56,7 @@ public class WebsocketTransportTest {
 
         ReadRequest readRequest = presentReadRequest();
         Flowable<TypedReadResponse<Data>> dataWindowFlow = client
-                .dataWindow(readRequest).flatMap(dataWindowTransformer::apply);
+                .dataWindow(readRequest).flatMap(r -> transform.dataWindowOf(Data.class).from(r));
         TestSubscriber<TypedReadResponse<Data>> testSubscriber
                 = requestStreamSubscriber();
 

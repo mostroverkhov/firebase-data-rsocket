@@ -1,12 +1,16 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.api.Client;
-import com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.notification.NotificationTransformer;
-import com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.read.DataWindowTransformer;
+import com.github.mostroverkhov.firebase_rsocket.api.Transform;
+import com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.Transformer;
 import com.github.mostroverkhov.firebase_rsocket.transport.tcp.ClientTransportTcp;
 import com.github.mostroverkhov.firebase_rsocket.transport.tcp.ServerTransportTcp;
-import com.google.gson.Gson;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.TypedNotifResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.ReadResponse;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.read.TypedReadResponse;
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import org.junit.After;
 import org.junit.Before;
 
@@ -18,18 +22,13 @@ import java.util.concurrent.TimeUnit;
  * Author: mostroverkhov
  */
 public class AbstractTest {
-    private static final Gson gson = new Gson();
     protected Completable serverStop;
     protected Client client;
-    protected DataWindowTransformer<Data> dataWindowTransformer;
-    protected NotificationTransformer<Data> notifTransformer;
+    protected Transformer<ReadResponse, Flowable<TypedReadResponse<Data>>> dataWindowTransformer;
+    protected Transformer<NotifResponse, Flowable<TypedNotifResponse<Data>>> notifTransformer;
 
     @Before
     public void setUp() throws Exception {
-
-        dataWindowTransformer = new DataWindowTransformer<>(gson, Data.class);
-        notifTransformer = new NotificationTransformer<>(gson, Data.class);
-
         InetSocketAddress socketAddress = new InetSocketAddress(8090);
         Server server = new ServerBuilder(
                 new ServerTransportTcp(socketAddress))
@@ -37,11 +36,15 @@ public class AbstractTest {
                 .classpathPropsAuth("creds.properties")
                 .build();
 
-        this.client = new ClientBuilder(
+        ClientFactory clientFactory = new ClientBuilder(
                 new ClientTransportTcp(socketAddress))
-                .build()
+                .build();
+        this.client = clientFactory
                 .client(Client.class);
+        Transform transform = clientFactory.transform();
 
+        notifTransformer = transform.notificationsOf(Data.class);
+        dataWindowTransformer = transform.dataWindowOf(Data.class);
         serverStop = server.start();
     }
 

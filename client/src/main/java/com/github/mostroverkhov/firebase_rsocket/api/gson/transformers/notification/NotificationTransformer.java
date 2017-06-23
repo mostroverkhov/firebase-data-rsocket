@@ -1,17 +1,17 @@
 package com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.notification;
 
-import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifResponse;
+import com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.Transformer;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifEventKind;
+import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.NotifResponse;
 import com.github.mostroverkhov.firebase_rsocket_data.common.model.notifications.TypedNotifResponse;
 import com.google.gson.Gson;
 import io.reactivex.Flowable;
-import io.reactivex.functions.Function;
 
 /**
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class NotificationTransformer<T> implements Function<
+public class NotificationTransformer<T> implements Transformer<
         NotifResponse,
         Flowable<TypedNotifResponse<T>>> {
 
@@ -24,7 +24,7 @@ public class NotificationTransformer<T> implements Function<
     }
 
     @Override
-    public Flowable<TypedNotifResponse<T>> apply(NotifResponse input) throws Exception {
+    public Flowable<TypedNotifResponse<T>> from(NotifResponse input) {
         return Flowable.just(typedResponse(input));
     }
 
