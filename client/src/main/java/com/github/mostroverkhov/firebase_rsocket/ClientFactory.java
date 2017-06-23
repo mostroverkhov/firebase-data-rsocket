@@ -49,13 +49,13 @@ class ClientFactory {
                 Action action = method.getDeclaredAnnotation(Action.class);
                 Op op = action.value();
                 Class<?> responseType = responseType(proxy, method);
-                Object arg = requestArg(args);
+                Object request = requestArg(args);
                 KeyValue metadata = metadata(op);
                 return clientFlow.request(
                         codec,
-                        arg,
-                        responseType,
-                        metadata
+                        request,
+                        metadata,
+                        responseType
                 );
             }
             throw new IllegalStateException("Client methods should have Metadata annotation");

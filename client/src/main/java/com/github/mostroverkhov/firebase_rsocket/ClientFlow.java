@@ -36,9 +36,9 @@ class ClientFlow {
     @SuppressWarnings("UnnecessaryLocalVariable")
     public <Req, Resp, T> Flowable<T> request(
             ClientCodec clientCodec,
-            Function<? super Resp, Flowable<T>> transformer,
-            Req request,
-            KeyValue reqMetadata, Class<Resp> respType) {
+            Req request, KeyValue reqMetadata,
+            Class<Resp> respType,
+            Function<? super Resp, Flowable<T>> transformer) {
 
         Flowable<T> readResponseFlow = rsocket
                 .observeOn(Schedulers.io())
@@ -66,9 +66,13 @@ class ClientFlow {
     public <Req, Resp> Flowable<Resp> request(
             ClientCodec clientCodec,
             Req request,
-            Class<Resp> respType,
-            KeyValue metadata) {
-        return request(clientCodec, Flowable::just, request, metadata, respType);
+            KeyValue metadata, Class<Resp> respType) {
+        return request(
+                clientCodec,
+                request,
+                metadata,
+                respType,
+                Flowable::just);
     }
 
     private Flowable<ReactiveSocket> rsocket() {
