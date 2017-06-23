@@ -1,6 +1,6 @@
-package com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.notification;
+package com.github.mostroverkhov.firebase_rsocket.codec.gson.transformers.notification;
 
-import com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.Transformer;
+import com.github.mostroverkhov.firebase_rsocket.api.Transformer;
 import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.notifications.NotifEventKind;
 import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.notifications.NotifResponse;
 import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.notifications.TypedNotifResponse;

@@ -2,7 +2,7 @@ package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.api.Client;
 import com.github.mostroverkhov.firebase_rsocket.api.Transform;
-import com.github.mostroverkhov.firebase_rsocket.api.gson.transformers.Transformer;
+import com.github.mostroverkhov.firebase_rsocket.api.Transformer;
 import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.notifications.NotifResponse;
 import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.notifications.TypedNotifResponse;
 import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.read.ReadResponse;

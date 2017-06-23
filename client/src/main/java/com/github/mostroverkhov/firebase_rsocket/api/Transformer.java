@@ -1,4 +1,4 @@
-package com.github.mostroverkhov.firebase_rsocket.api.gson.transformers;
+package com.github.mostroverkhov.firebase_rsocket.api;
 
 /**
  * Created with IntelliJ IDEA.
