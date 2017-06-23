@@ -3,7 +3,6 @@ package com.github.mostroverkhov.firebase_rsocket;
 import com.github.mostroverkhov.firebase_rsocket.internal.auth.Authenticator;
 import com.github.mostroverkhov.firebase_rsocket.internal.auth.authenticators.CredentialsAuthenticator;
 import com.github.mostroverkhov.firebase_rsocket.internal.auth.authenticators.PermitAllAuthenticator;
-import com.github.mostroverkhov.firebase_rsocket.internal.auth.CredentialsSource;
 import com.github.mostroverkhov.firebase_rsocket.internal.auth.sources.ClasspathPropsCredentialsSource;
 import com.github.mostroverkhov.firebase_rsocket.internal.auth.sources.FsPathPropsCredentialsSource;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.DataCodec;
@@ -51,7 +50,7 @@ public class ServerBuilder {
     private final ServerTransport transport;
     private Authenticator authenticator = PERMIT_ALL_AUTH;
     private Optional<Cache> cache = Optional.empty();
-    private Optional<LogConfig> logConfig = Optional.empty();
+    private Optional<Logger> logger = Optional.empty();
     private Codecs codecs = GSON_CODECS;
 
     public ServerBuilder(ServerTransport transport) {
@@ -97,7 +96,7 @@ public class ServerBuilder {
 
     public ServerBuilder logging(Logger logger) {
         assertNotNull(logger);
-        logConfig = Optional.of(new LogConfig(logger));
+        this.logger = Optional.of(logger);
         return this;
     }
 
@@ -117,9 +116,8 @@ public class ServerBuilder {
                 authenticator,
                 mappers,
                 handlers,
-                dataCodec,
                 metadataCodec,
-                logConfig);
+                logger);
 
         return new Server(serverConfig);
     }
@@ -127,8 +125,8 @@ public class ServerBuilder {
     private static void setCache(List<ServerRequestHandler<?, ?>> handlers, Optional<Cache> cache) {
         cache.ifPresent(c -> {
             handlers.stream()
-                    .filter(h -> h instanceof CacheAware)
-                    .map(h -> ((CacheAware) h))
+                    .filter(h -> h instanceof HasCache)
+                    .map(h -> ((HasCache) h))
                     .forEach(ca -> ca.setCache(c));
         });
     }

@@ -11,18 +11,14 @@ import java.util.Optional;
 /**
  * Created by Maksym Ostroverkhov on 03.03.17.
  */
-public class RequestMappers implements ServerMapper {
+public class ServerMappers implements ServerMapper {
     private final List<ServerMapper<?>> delegates = new ArrayList<>();
 
-    public static RequestMappers newInstance(List<ServerMapper<?>> mappers) {
-        return new RequestMappers(mappers);
+    public static ServerMappers newInstance(List<ServerMapper<?>> mappers) {
+        return new ServerMappers(mappers);
     }
 
-    protected RequestMappers(ServerMapper<?>... mappers) {
-        this(Arrays.asList(mappers));
-    }
-
-    protected RequestMappers(List<ServerMapper<?>> mappers) {
+    protected ServerMappers(List<ServerMapper<?>> mappers) {
         assertAdapters(mappers);
         delegates.addAll(mappers);
     }
@@ -62,7 +58,7 @@ public class RequestMappers implements ServerMapper {
     }
 
     @Override
-    public RequestMappers setDataCodec(DataCodec dataCodec) {
+    public ServerMappers setDataCodec(DataCodec dataCodec) {
         delegates.forEach(m -> m.setDataCodec(dataCodec));
         return this;
     }

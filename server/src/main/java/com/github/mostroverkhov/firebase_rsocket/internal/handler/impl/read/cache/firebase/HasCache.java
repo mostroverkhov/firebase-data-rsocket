@@ -4,7 +4,7 @@ package com.github.mostroverkhov.firebase_rsocket.internal.handler.impl.read.cac
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public interface CacheAware {
+public interface HasCache {
 
-    CacheAware setCache(Cache cache);
+    HasCache setCache(Cache cache);
 }

@@ -4,7 +4,7 @@ package com.github.mostroverkhov.firebase_rsocket.internal.codec;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public interface CodecAware {
+public interface HasCodec {
 
-    CodecAware setDataCodec(DataCodec dataCodec);
+    HasCodec setDataCodec(DataCodec dataCodec);
 }

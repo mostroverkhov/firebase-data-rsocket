@@ -9,22 +9,22 @@ import java.util.List;
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
-public class RequestHandlers {
+public class ServerHandlers {
 
     private final List<ServerRequestHandler<?, ?>> handlers;
 
-    public RequestHandlers(ServerRequestHandler<?, ?>... handlers) {
+    public ServerHandlers(ServerRequestHandler<?, ?>... handlers) {
         assertHandlers(handlers);
         this.handlers = Arrays.asList(handlers);
     }
 
-    private RequestHandlers(List<ServerRequestHandler<?, ?>> handlers) {
+    private ServerHandlers(List<ServerRequestHandler<?, ?>> handlers) {
         assertHandlers(handlers);
         this.handlers = handlers;
     }
 
-    public static RequestHandlers newInstance(List<ServerRequestHandler<?, ?>> handlers) {
-        return new RequestHandlers(handlers);
+    public static ServerHandlers newInstance(List<ServerRequestHandler<?, ?>> handlers) {
+        return new ServerHandlers(handlers);
     }
 
     public ServerRequestHandler<?, ?> handlerFor(KeyValue metadata) {

@@ -2,12 +2,12 @@ package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_rsocket.internal.auth.Authenticator;
 import com.github.mostroverkhov.firebase_rsocket.internal.codec.MetadataCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.RequestHandlers;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerHandlers;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerRequestHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.LogFormatter;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.Logging;
 import com.github.mostroverkhov.firebase_rsocket.internal.logging.ServerFlowLogger;
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.RequestMappers;
+import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerMappers;
 import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerMapper;
 import com.github.mostroverkhov.firebase_rsocket_data.KeyValue;
 import com.github.mostroverkhov.firebase_rsocket_data.common.BytePayload;
@@ -25,7 +25,6 @@ import org.reactivestreams.Publisher;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.dataToBytes;
 import static com.github.mostroverkhov.firebase_rsocket_data.common.Conversions.metadataToBytes;
@@ -46,11 +45,11 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
     public LeaseEnforcingSocket accept(ConnectionSetupPayload setupPayload,
                                        ReactiveSocket reactiveSocket) {
         return new DisabledLeaseAcceptingSocket(
-                new ServerSocket(serverContext()));
+                new ServerSocket(socketConfig()));
     }
 
-    private ServerContext serverContext() {
-        return new ServerContext(
+    private SocketConfig socketConfig() {
+        return new SocketConfig(
                 serverConfig.mappers(),
                 serverConfig.handlers(),
                 serverConfig.metadataCodec(),
@@ -59,13 +58,13 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
     }
 
     private static class ServerSocket extends AbstractReactiveSocket {
-        private final ServerContext context;
-        private final RequestHandlers handlers;
+        private final SocketConfig context;
+        private final ServerHandlers handlers;
         private final ServerMapper<?> requestMapper;
         private final Optional<Logging> logging;
         private final MetadataCodec metadataCodec;
 
-        public ServerSocket(ServerContext context) {
+        public ServerSocket(SocketConfig context) {
             this.context = context;
             this.requestMapper = context.getRequestMappers();
             this.handlers = context.getRequestHandlers();
@@ -76,8 +75,7 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
         @Override
         public Publisher<Payload> requestStream(Payload payload) {
 
-            Optional<UUID> uid = logging.map(__ -> UUID.randomUUID());
-            ServerFlowLogger serverFlowLogger = new ServerFlowLogger(uid, logging);
+            ServerFlowLogger serverFlowLogger = new ServerFlowLogger(logging);
 
             Flowable<BytePayload> payloadBytesFlow = Flowable
                     .fromCallable(() -> payloadBytes(payload))
@@ -141,12 +139,12 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
             return new BytePayload(metadata, data);
         }
 
-        private static Optional<Logging> logging(ServerContext context) {
+        private static Optional<Logging> logging(SocketConfig context) {
             return context
-                    .getLogConfig()
-                    .map(config ->
+                    .getLogger()
+                    .map(logger ->
                             new Logging(
-                                    config.getLogger(),
+                                    logger,
                                     new LogFormatter()));
         }
 
@@ -195,20 +193,20 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
         return new FirebaseRsocketException("No mapper for request: " + metadata);
     }
 
-    private static class ServerContext {
+    private static class SocketConfig {
         private MetadataCodec metadataCodec;
         private final Authenticator authenticator;
-        private final RequestHandlers requestHandlers;
+        private final ServerHandlers requestHandlers;
         private final ServerMapper<?> requestMappers;
-        private final Optional<LogConfig> logConfig;
+        private final Optional<Logger> logConfig;
 
-        public ServerContext(List<ServerMapper<?>> requestMappers,
-                             List<ServerRequestHandler<?, ?>> requestHandlers,
-                             MetadataCodec metadataCodec,
-                             Authenticator authenticator,
-                             Optional<LogConfig> logConfig) {
-            this.requestMappers = RequestMappers.newInstance(requestMappers);
-            this.requestHandlers = RequestHandlers.newInstance(requestHandlers);
+        public SocketConfig(List<ServerMapper<?>> requestMappers,
+                            List<ServerRequestHandler<?, ?>> requestHandlers,
+                            MetadataCodec metadataCodec,
+                            Authenticator authenticator,
+                            Optional<Logger> logConfig) {
+            this.requestMappers = ServerMappers.newInstance(requestMappers);
+            this.requestHandlers = ServerHandlers.newInstance(requestHandlers);
             this.metadataCodec = metadataCodec;
             this.authenticator = authenticator;
             this.logConfig = logConfig;
@@ -222,7 +220,7 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
             return authenticator;
         }
 
-        public RequestHandlers getRequestHandlers() {
+        public ServerHandlers getRequestHandlers() {
             return requestHandlers;
         }
 
@@ -230,7 +228,7 @@ final class ServerSocketAcceptor implements ReactiveSocketServer.SocketAcceptor 
             return requestMappers;
         }
 
-        public Optional<LogConfig> getLogConfig() {
+        public Optional<Logger> getLogger() {
             return logConfig;
         }
     }
