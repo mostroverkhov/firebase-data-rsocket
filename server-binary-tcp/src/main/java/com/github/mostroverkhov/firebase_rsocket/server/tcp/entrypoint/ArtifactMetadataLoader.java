@@ -18,18 +18,19 @@ class ArtifactMetadataLoader {
     }
 
     public Metadata metadata() {
-        return new Metadata(getServerVersion(metaDataProp));
+        return getMetadata(metaDataProp);
     }
 
-    private static Optional<String> getServerVersion(String metadataProp) {
+    private static Metadata getMetadata(String metadataProp) {
         Properties properties = new Properties();
         try {
             InputStream resourceAsStream = StandaloneServerEntryPoint.class.getClassLoader()
                     .getResourceAsStream(metadataProp);
             properties.load(resourceAsStream);
-            return Optional.of(properties.getProperty("server.version"));
+            Optional<String> version = Optional.ofNullable(properties.getProperty("server.version"));
+            return new Metadata(version);
         } catch (IOException e) {
-            return Optional.empty();
+            throw new IllegalArgumentException("Error reading metadata from file on classpath: " + metadataProp, e);
         }
     }
 

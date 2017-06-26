@@ -5,7 +5,6 @@ import com.github.mostroverkhov.firebase_rsocket.ServerBuilder;
 import com.github.mostroverkhov.firebase_rsocket.transport.tcp.ServerTransportTcp;
 
 import java.net.InetSocketAddress;
-import java.util.Optional;
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,31 +17,14 @@ class StandaloneServerConfigurer {
     }
 
     static ServerBuilder configureServerBuilder(Configuration configuration) {
-        Optional<String> serverPort = configuration.getPort();
-        Optional<String> credsFile = configuration.getCredsFile();
-        int port = serverPort.map(StandaloneServerConfigurer::parsePort)
-                .orElseThrow(
-                        () -> new IllegalArgumentException("server.port property missing")
-                );
-        InetSocketAddress socketAddress = new InetSocketAddress(port);
-
+        Integer serverPort = configuration.getPort();
+        String credsFile = configuration.getCredsFile();
+        InetSocketAddress socketAddress = new InetSocketAddress(serverPort);
         ServerBuilder serverBuilder = new ServerBuilder(
                 new ServerTransportTcp(socketAddress))
-                .cacheReads();
+                .cacheReads()
+                .fileSystemPropsAuth(credsFile);
 
-        if (credsFile.isPresent()) {
-            serverBuilder.fileSystemPropsAuth(credsFile.get());
-        } else {
-            serverBuilder.noAuth();
-        }
         return serverBuilder;
-    }
-
-    static int parsePort(String serverPort) {
-        try {
-            return Integer.parseInt(serverPort);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Port: integer expected");
-        }
     }
 }

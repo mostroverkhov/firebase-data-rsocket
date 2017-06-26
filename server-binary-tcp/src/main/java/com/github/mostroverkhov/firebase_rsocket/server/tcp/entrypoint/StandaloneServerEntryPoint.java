@@ -9,22 +9,30 @@ import io.reactivex.Completable;
  */
 public class StandaloneServerEntryPoint {
 
+    public static final String SERVER_PROPERTIES = "server.properties";
+
     public static void main(String[] args) {
-        Configuration config = new ArgsReader().read(args);
-        Server server = new StandaloneServerConfigurer().configure(config);
-        server.start();
-        ArtifactMetadataLoader.Metadata metadata = new ArtifactMetadataLoader("artifact.properties")
-                .metadata();
-        WelcomeScreen.Data data = data(config, metadata);
-        WelcomeScreen screen = new WelcomeScreen(data);
-        screen.show();
-        Completable.never().blockingAwait();
+        try {
+            Configuration config = new ConfigurationReader().read(args);
+            ArtifactMetadataLoader.Metadata metadata = new ArtifactMetadataLoader(
+                    SERVER_PROPERTIES)
+                    .metadata();
+            WelcomeScreen.Data data = data(config, metadata);
+            WelcomeScreen screen = new WelcomeScreen(data);
+            screen.show();
+
+            Server server = new StandaloneServerConfigurer().configure(config);
+            server.start();
+            Completable.never().blockingAwait();
+        } catch (ArgsException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
-    private static WelcomeScreen.Data data(Configuration config, ArtifactMetadataLoader.Metadata metadata) {
+    static WelcomeScreen.Data data(Configuration config, ArtifactMetadataLoader.Metadata metadata) {
         return new WelcomeScreen.Data(
                 metadata.getVersion().orElse("unknown"),
                 "TCP",
-                config.getPort().orElse("unknown"));
+                String.valueOf(config.getPort()));
     }
 }
