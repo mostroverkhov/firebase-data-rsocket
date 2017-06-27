@@ -15,7 +15,9 @@ tcp, websockets, udp. `ClientTransport` and `ServerTransport` implementations fo
 `mvn package` on `server-binary-tcp` will produce runnable uber jar supporting tcp transport. Authorization credentials and port must be provided with `--config`, `--port` arguments.   
 
 Server can be started as    
-`java -jar firebase-rsocket-server-binary-tcp-<VERSION>.jar --port <SERVER_PORT> --config <CREDENTIALS_FILE>`    
+```
+java -jar firebase-rsocket-server-binary-tcp-<VERSION>.jar --port <SERVER_PORT> --config <CREDENTIALS_FILE>
+```    
 
 For example
 ```
