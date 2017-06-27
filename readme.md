@@ -23,7 +23,7 @@ For example
 ```
 java -jar firebase-rsocket-server-binary-tcp-0.1.1-SNAPSHOT.jar --port 8090 --config creds.properties
 ```
-will start server on 8090 port. It assumes credentials file `creds.properties` is in same directory as `jar`. It's convenient to have firebase service account file in same directory aswell. Authorization file format is described in `Authorization` block below    
+will start server on 8090 port, and assumes credentials file `creds.properties` is in same directory as `jar`. It's convenient to have firebase service account file in same directory aswell. Credentials file format is described in `Authorization` block below    
 
 #### Usage
 ###### Setup
