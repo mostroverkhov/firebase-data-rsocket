@@ -16,7 +16,7 @@ tcp, websockets, udp. `ClientTransport` and `ServerTransport` implementations fo
 
 Server can be started as    
 ```
-java -jar firebase-rsocket-server-binary-tcp-<VERSION>.jar --port <SERVER_PORT> --config <CREDENTIALS_FILE>
+java -jar firebase-rsocket-server-binary-tcp-<VERSION>.jar --port <PORT> --config <CREDENTIALS_FILE>
 ```    
 
 For example
