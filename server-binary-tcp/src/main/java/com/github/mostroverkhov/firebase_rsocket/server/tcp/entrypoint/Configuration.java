@@ -1,26 +1,28 @@
 package com.github.mostroverkhov.firebase_rsocket.server.tcp.entrypoint;
 
-import java.util.Optional;
+import java.util.Objects;
 
 /**
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
 class Configuration {
-    private final Optional<String> port;
-    private final Optional<String> credsFile;
+    private final Integer port;
+    private final String credsFile;
 
-    public Configuration(Optional<String> port,
-                         Optional<String> credsFile) {
+    public Configuration(Integer port,
+                         String credsFile) {
+        Objects.requireNonNull(port, "port");
+        Objects.requireNonNull(credsFile, "credsFile");
         this.port = port;
         this.credsFile = credsFile;
     }
 
-    public Optional<String> getPort() {
+    public Integer getPort() {
         return port;
     }
 
-    public Optional<String> getCredsFile() {
+    public String getCredsFile() {
         return credsFile;
     }
 }
