@@ -29,7 +29,6 @@ import static com.github.mostroverkhov.firebase_rsocket.Router.MapperHandler;
  */
 public class ServerBuilder {
 
-    private static final Authenticator PERMIT_ALL_AUTH = new PermitAllAuthenticator();
     private static final Cache DEFAULT_CACHE = new Cache(
             new DumbNativeCache(
                     Executors.newSingleThreadScheduledExecutor(
@@ -47,7 +46,7 @@ public class ServerBuilder {
                     CHARSET_UTF8));
 
     private final ServerTransport transport;
-    private Authenticator authenticator = PERMIT_ALL_AUTH;
+    private Authenticator authenticator;
     private Optional<Cache> cache = Optional.empty();
     private Optional<Logger> logger = Optional.empty();
     private Codecs codecs = GSON_CODECS;
@@ -55,11 +54,6 @@ public class ServerBuilder {
     public ServerBuilder(ServerTransport transport) {
         assertTransport(transport);
         this.transport = transport;
-    }
-
-    public ServerBuilder noAuth() {
-        this.authenticator = PERMIT_ALL_AUTH;
-        return this;
     }
 
     public ServerBuilder classpathPropsAuth(String credsFile) {
