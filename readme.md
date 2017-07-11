@@ -12,15 +12,18 @@ Based on [reactivesocket-java](https://github.com/ReactiveSocket/reactivesocket-
 tcp, websockets, udp. `ClientTransport` and `ServerTransport` implementations for each transport are available on `transport-` submodules    
 
 #### Standalone binaries
-`mvn package` on `server-binary-tcp` will produce runnable uber jar supporting tcp transport. Authorization credentials, if required, should be provided as reference to file using `-Dserver.creds` property. Port parameter is mandatory.   
+`mvn package` on `server-binary-tcp` will produce runnable uber jar supporting tcp transport. Authorization credentials and port must be provided with `--config`, `--port` arguments.   
+
 Server can be started as    
-`java -Dserver.port=<SERVER_PORT> -Dserver.creds=<CREDS_FILE> firebase-rsocket-server-binary-tcp-<VERSION>.jar`    
+```
+java -jar firebase-rsocket-server-binary-tcp-<VERSION>.jar --port <PORT> --config <CREDENTIALS_FILE>
+```    
 
 For example
 ```
-java -Dserver.port=8090 -Dserver.creds=creds.properties -jar firebase-rsocket-server-binary-tcp-0.1.1-SNAPSHOT.jar
+java -jar firebase-rsocket-server-binary-tcp-0.1.1-SNAPSHOT.jar --port 8090 --config creds.properties
 ```
-will start server on 8090 port. It assumes credentials file `creds.properties` is in same directory as `jar`, also it's convenient to have firebase service file in same directory aswell. 
+will start server on 8090 port, and assumes credentials file `creds.properties` is in same directory as `jar`. It's convenient to have firebase service account file in same directory aswell. Credentials file format is described in `Authorization` block below    
 
 #### Usage
 ###### Setup
@@ -121,15 +124,14 @@ as `ServerBuilder.logging(Logger logger)`. Server will report started, served an
 #### Authorization
 
 Firebase rules are used for authorization, particularly, server setup requires authenticator, which
-sets credentials [(docs)](https://firebase.google.com/docs/database/admin/start) via `CredentialsFactory`.
- Currently there is one impl - `PropsCredentialsFactory` for property file based credentials setup, file is
- expected to be on classpath (e.g. in `resources/` folder):
+sets credentials [(docs)](https://firebase.google.com/docs/database/admin/start) via `ServerBuilder`.
+Currently there are 2 implementations, both for property files - filesystem based (`ServerBuilder.fileSystemPropsAuth`) and classpath based (`ServerBuilder.classpathPropsAuth`) ones -both expect reference to credentials config file
  ```
    authFile=fir-rx-data-test-firebase-adminsdk-86b00-5d126dfc04.json
    dbUrl=https://fir-rx-data-test.firebaseio.com/
    dbUserId=firebase_test 
  ```
-For testing purposes one can use non-protected database, in that case `ServerBuilder.noAuth()` should be used
+where `authFile` is Firebase service account file (get one as described in [docs](https://firebase.google.com/docs/admin/setup))    
 
 #### Testing
 
