@@ -56,7 +56,7 @@ class ClientFactory {
         public Object invoke(Object proxy, Method method, Object[] args)
                 throws Throwable {
             if (method.getDeclaringClass() == Object.class) {
-                return method.invoke(this, args);
+                return method.invoke(proxy, args);
             }
             if (method.isAnnotationPresent(Action.class)) {
                 Action action = method.getDeclaredAnnotation(Action.class);
