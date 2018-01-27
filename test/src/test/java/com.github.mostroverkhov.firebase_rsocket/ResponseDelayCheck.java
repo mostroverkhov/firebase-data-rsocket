@@ -1,15 +1,17 @@
+
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.api.Requests;
-import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.read.ReadRequest;
-import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.read.TypedReadResponse;
+import com.github.mostroverkhov.firebase_rsocket.model.read.ReadRequest;
+import com.github.mostroverkhov.firebase_rsocket.model.read.TypedReadResponse;
+import com.github.mostroverkhov.firebase_rsocket.requests.Req;
 import io.reactivex.Flowable;
-import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subscribers.TestSubscriber;
 import org.HdrHistogram.ConcurrentHistogram;
 import org.HdrHistogram.Histogram;
 import org.junit.Ignore;
 import org.junit.Test;
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,10 +20,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+
 /**
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
+
 public class ResponseDelayCheck extends AbstractTest {
 
     private static final int REQUEST_N = 1;
@@ -32,11 +36,11 @@ public class ResponseDelayCheck extends AbstractTest {
     public void read() throws Exception {
 
         ReadRequest readRequest = requestStreamRequest();
-        Flowable<TypedReadResponse<Data>> dataWindowFlow = client
+        Flux<TypedReadResponse<Data>> dataWindowFlow = client.request()
                 .dataWindow(readRequest)
-                .flatMap(dataWindowTransformer::from)
+                .map(dataWindowTransformer)
                 .repeatWhen(completed -> completed.flatMap(Flowable::just))
-                .observeOn(Schedulers.io());
+                .publishOn(Schedulers.elastic());
 
         ConcurrentHistogram histogram = new ConcurrentHistogram(20000, 1);
         histogram.setAutoResize(true);
@@ -53,7 +57,7 @@ public class ResponseDelayCheck extends AbstractTest {
 
     @Override
     public void tearDown() throws Exception {
-        stopServerDelayed(100, TimeUnit.MILLISECONDS);
+        stopServerDelayed(100);
     }
 
     private List<TestSubscriber<TypedReadResponse<Data>>> subscribers(int count, Recorder recorder) {
@@ -122,7 +126,7 @@ public class ResponseDelayCheck extends AbstractTest {
     }
 
     private ReadRequest requestStreamRequest() {
-        return Requests
+        return Req
                 .read("test", "read")
                 .asc()
                 .windowWithSize(2)
@@ -130,3 +134,4 @@ public class ResponseDelayCheck extends AbstractTest {
                 .build();
     }
 }
+

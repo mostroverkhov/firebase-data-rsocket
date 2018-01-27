@@ -2,16 +2,16 @@ package com.github.mostroverkhov.firebase_rsocket;
 
 import com.github.mostroverkhov.firebase_data_rxjava.rx.FirebaseDatabaseManager;
 import com.github.mostroverkhov.firebase_data_rxjava.rx.model.WriteResult;
-import com.github.mostroverkhov.firebase_rsocket.internal.auth.authenticators.CredentialsAuthenticator;
-import com.github.mostroverkhov.firebase_rsocket.internal.auth.CredentialsSource;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.CredentialsAuthenticator;
 import com.github.mostroverkhov.firebase_rsocket.internal.auth.sources.ClasspathPropsCredentialsSource;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import hu.akarnokd.rxjava.interop.RxJavaInterop;
-import io.reactivex.Completable;
+import reactor.adapter.rxjava.RxJava2Adapter;
+import reactor.core.publisher.Mono;
 import rx.Observable;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
@@ -33,7 +33,7 @@ public class DataFixture {
         this.timeOutSec = timeOutSec;
     }
 
-    public Completable fillSampleData() {
+    public Mono<Void> fillSampleData() {
 
         final DatabaseReference test = databaseReference.get();
         FirebaseDatabaseManager manager =
@@ -46,14 +46,19 @@ public class DataFixture {
                     new Data(String.valueOf(i), String.valueOf(i)));
             allWritesStream = allWritesStream.mergeWith(writeStream);
         }
-        Completable errorSignal = Completable.timer(timeOutSec, TimeUnit.SECONDS)
-                .andThen(Completable.error(
+        Duration timeout = Duration.ofSeconds(timeOutSec);
+        Mono<Void> timeoutError = Mono.delay(timeout)
+                .then(Mono.error(
                         new TimeoutException("Fixture Db write timeout")));
-        Completable writeCompleteSignal = RxJavaInterop.toV2Completable(
-                allWritesStream.doOnNext(System.out::println).take(itemCount)
-                        .toCompletable());
 
-        return writeCompleteSignal.ambWith(errorSignal);
+        Mono<Void> writeComplete = RxJava2Adapter.completableToMono(
+                RxJavaInterop.toV2Completable(
+                        allWritesStream
+                                .doOnNext(System.out::println)
+                                .take(itemCount)
+                                .toCompletable()));
+
+        return Mono.first(writeComplete, timeoutError);
     }
 
     public static void main(String... args) {
@@ -64,8 +69,8 @@ public class DataFixture {
                 WRITE_TIMEOUT_SEC);
 
         CredentialsAuthenticator testAuthenticator = new TestAutheticator();
-        testAuthenticator.authenticate().toFlowable().flatMap(
-                __ -> dataFixture.fillSampleData().toFlowable()).blockingSubscribe();
+        testAuthenticator.authenticate().flatMap(
+                __ -> dataFixture.fillSampleData()).block();
     }
 
     private static class TestAutheticator extends CredentialsAuthenticator {

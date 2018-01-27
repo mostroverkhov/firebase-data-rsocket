@@ -7,13 +7,6 @@ import java.util.Date;
  * Author: mostroverkhov
  */
 class WelcomeScreen {
-    private static final String WELCOME_MESSAGE = "  ______ _          _                                          _         _                                  \n" +
-            " |  ____(_)        | |                                        | |       | |                                 \n" +
-            " | |__   _ _ __ ___| |__   __ _ ___  ___   _ __ ___  ___   ___| | __ ___| |_   ___  ___ _ ____   _____ _ __ \n" +
-            " |  __| | | '__/ _ \\ '_ \\ / _` / __|/ _ \\ | '__/ __|/ _ \\ / __| |/ // _ \\ __| / __|/ _ \\ '__\\ \\ / / _ \\ '__|\n" +
-            " | |    | | | |  __/ |_) | (_| \\__ \\  __/ | |  \\__ \\ (_) | (__|   <|  __/ |_  \\__ \\  __/ |   \\ V /  __/ |   \n" +
-            " |_|    |_|_|  \\___|_.__/ \\__,_|___/\\___| |_|  |___/\\___/ \\___|_|\\_\\\\___|\\__| |___/\\___|_|    \\_/ \\___|_|   \n" +
-            "                                                                                                          ";
     private final Data data;
 
     public WelcomeScreen(Data data) {
@@ -21,8 +14,7 @@ class WelcomeScreen {
     }
 
     public void show() {
-        System.out.println(WELCOME_MESSAGE);
-        System.out.println();
+        System.out.println("\nFirebase-rsocket-server\n");
         System.out.println("Version: " + data.getVersion());
         System.out.println("Transport: " + data.getTransport() + " on port: " + data.getPort());
         System.out.println("Started at " + new Date());

@@ -5,25 +5,15 @@
     <parent>
         <artifactId>firebase-rsocket-server-parent</artifactId>
         <groupId>com.github.mostroverkhov</groupId>
-        <version>0.1.1-SNAPSHOT</version>
+        <version>0.2.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>firebase-rsocket-client</artifactId>
-    <version>0.1.1-SNAPSHOT</version>
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.8.0</version>
-        </dependency>
-
         <dependency>
             <groupId>com.github.mostroverkhov</groupId>
-            <artifactId>firebase-rsocket-transport</artifactId>
-            <version>0.1.1-SNAPSHOT</version>
+            <artifactId>firebase-rsocket-common</artifactId>
+            <version>0.2.0-SNAPSHOT</version>
         </dependency>
-
-
     </dependencies>
 </project>

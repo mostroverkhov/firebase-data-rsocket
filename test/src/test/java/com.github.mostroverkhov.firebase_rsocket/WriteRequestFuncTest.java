@@ -1,23 +1,27 @@
+
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.api.Requests;
-import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.write.WriteRequest;
-import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.write.WriteResponse;
+import com.github.mostroverkhov.firebase_rsocket.model.write.WriteRequest;
+import com.github.mostroverkhov.firebase_rsocket.model.write.WriteResponse;
+import com.github.mostroverkhov.firebase_rsocket.requests.Req;
 import com.google.firebase.database.*;
 import io.reactivex.Flowable;
-import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subscribers.TestSubscriber;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
 
 /**
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
+
 public class WriteRequestFuncTest extends AbstractTest {
 
     private DatabaseReference writtenRef;
@@ -31,19 +35,19 @@ public class WriteRequestFuncTest extends AbstractTest {
     @Test
     public void writeData() throws Exception {
         Data data = new Data("w", "w");
-        WriteRequest<Data> writeRequest = Requests
+        WriteRequest<Data> writeRequest = Req
                 .<Data>write("test", "write")
                 .data(data)
                 .build();
 
-        Flowable<WriteResponse> writeResponse = client
+        Flux<WriteResponse> writeResponse = client.request()
                 .write(writeRequest);
 
         TestSubscriber<WriteResponse> writeSubscriber
                 = new TestSubscriber<>();
 
         writeResponse
-                .observeOn(Schedulers.io())
+                .publishOn(Schedulers.elastic())
                 .subscribe(writeSubscriber);
 
         writeSubscriber.awaitDone(10, TimeUnit.SECONDS);
@@ -92,3 +96,4 @@ public class WriteRequestFuncTest extends AbstractTest {
         }
     }
 }
+

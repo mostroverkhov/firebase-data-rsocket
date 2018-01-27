@@ -1,59 +1,38 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
+import com.github.mostroverkhov.firebase_rsocket.codec.gson.GsonDataCodec;
+import com.github.mostroverkhov.firebase_rsocket.internal.GsonPayloadConverter;
+import com.github.mostroverkhov.firebase_rsocket.internal.PayloadConverter;
+import com.github.mostroverkhov.firebase_rsocket.internal.ServerConfig;
 import com.github.mostroverkhov.firebase_rsocket.internal.auth.Authenticator;
-import com.github.mostroverkhov.firebase_rsocket.internal.auth.authenticators.CredentialsAuthenticator;
-import com.github.mostroverkhov.firebase_rsocket.internal.auth.authenticators.PermitAllAuthenticator;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.CredentialsAuthenticator;
 import com.github.mostroverkhov.firebase_rsocket.internal.auth.sources.ClasspathPropsCredentialsSource;
-import com.github.mostroverkhov.firebase_rsocket.internal.auth.sources.FsPathPropsCredentialsSource;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.Codecs;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.DataCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.MetadataCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.GsonDataCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.codec.gson.GsonMetadataCodec;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServerRequestHandler;
-import com.github.mostroverkhov.firebase_rsocket.internal.handler.read.cache.firebase.*;
-import com.github.mostroverkhov.firebase_rsocket.internal.mapper.ServerMapper;
-import com.github.mostroverkhov.firebase_rsocket.transport.ServerTransport;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.sources.FilesystemPropsCredentialsSource;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.RequestHandlers;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.read.cache.*;
+import com.github.mostroverkhov.r2.core.DataCodec;
 import com.google.gson.Gson;
+import io.rsocket.Closeable;
+import io.rsocket.transport.netty.server.NettyContextCloseable;
+import io.rsocket.transport.netty.server.TcpServerTransport;
 
-import java.nio.charset.Charset;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import static com.github.mostroverkhov.firebase_rsocket.Router.MapperHandler;
 
 /**
  * Created with IntelliJ IDEA.
  * Author: mostroverkhov
  */
 public class ServerBuilder {
-
-    private static final Cache DEFAULT_CACHE = new Cache(
-            new DumbNativeCache(
-                    Executors.newSingleThreadScheduledExecutor(
-                            ServerBuilder::newDaemonThread)),
-            new CacheDurationConstant(5, TimeUnit.SECONDS));
-
-    private static final Gson GSON = new Gson();
-    private static final Charset CHARSET_UTF8 = Charset.forName("UTF-8");
-    private static final Codecs GSON_CODECS = new Codecs(
-            new GsonDataCodec(
-                    GSON,
-                    CHARSET_UTF8),
-            new GsonMetadataCodec(
-                    GSON,
-                    CHARSET_UTF8));
-
-    private final ServerTransport transport;
     private Authenticator authenticator;
     private Optional<Cache> cache = Optional.empty();
-    private Optional<Logger> logger = Optional.empty();
-    private Codecs codecs = GSON_CODECS;
+    private final int port;
 
-    public ServerBuilder(ServerTransport transport) {
-        assertTransport(transport);
-        this.transport = transport;
+    public ServerBuilder(int port) {
+        assertPort(port);
+        this.port = port;
     }
 
     public ServerBuilder classpathPropsAuth(String credsFile) {
@@ -66,12 +45,12 @@ public class ServerBuilder {
     public ServerBuilder fileSystemPropsAuth(String credsFile) {
         assertCredsFile(credsFile);
         this.authenticator = new CredentialsAuthenticator(
-                new FsPathPropsCredentialsSource(credsFile));
+                new FilesystemPropsCredentialsSource(credsFile));
         return this;
     }
 
     public ServerBuilder cacheReads() {
-        cache = Optional.of(DEFAULT_CACHE);
+        cache = Optional.of(Defaults.defaultCache);
         return this;
     }
 
@@ -87,57 +66,30 @@ public class ServerBuilder {
         return this;
     }
 
-    public ServerBuilder logging(Logger logger) {
-        assertNotNull(logger);
-        this.logger = Optional.of(logger);
-        return this;
-    }
+    public Server<NettyContextCloseable> build() {
+        validateState();
 
-    public Server build() {
+        RequestHandlers handlers = new RequestHandlers(cache);
+        TcpServerTransport transport = TcpServerTransport.create(port);
 
-        MapperHandler routes = routes();
-        Queue<ServerMapper<?>> mappers = routes.mappers();
-        Queue<ServerRequestHandler<?, ?>> handlers = routes.handlers();
-        DataCodec dataCodec = codecs.getDataCodec();
-        MetadataCodec metadataCodec = codecs.getMetadataCodec();
-
-        setCodec(mappers, dataCodec);
-        setCache(handlers, cache);
-
-        ServerConfig serverConfig = new ServerConfig(
-                transport,
-                authenticator,
-                mappers,
+        ServerConfig<NettyContextCloseable> serverConfig = new ServerConfig<>(
                 handlers,
-                metadataCodec,
-                logger);
-
-        return new Server(serverConfig);
+                authenticator,
+                Defaults.payloadConverter,
+                transport,
+                Defaults.dataCodec);
+        return new Server<>(serverConfig);
     }
 
-    private static void setCache(Collection<ServerRequestHandler<?, ?>> handlers,
-                                 Optional<Cache> cache) {
-        cache.ifPresent(c -> {
-            handlers.stream()
-                    .filter(h -> h instanceof HasCache)
-                    .map(h -> ((HasCache) h))
-                    .forEach(h -> h.setCache(c));
-        });
+    private void validateState() {
+        if (authenticator == null) {
+            throw new IllegalArgumentException("Authenticator must be set");
+        }
     }
 
-    private static void setCodec(Collection<ServerMapper<?>> mappers, DataCodec dataCodec) {
-        mappers.forEach(m -> m.setDataCodec(dataCodec));
-    }
-
-    private static Thread newDaemonThread(Runnable r) {
-        Thread thread = new Thread(r);
-        thread.setDaemon(true);
-        return thread;
-    }
-
-    private static void assertTransport(ServerTransport transport) {
-        if (transport == null) {
-            throw new IllegalArgumentException("ServerTransport should be present");
+    private static void assertPort(int port) {
+        if (port <= 0) {
+            throw new IllegalArgumentException("Port must have positive value");
         }
     }
 
@@ -155,7 +107,21 @@ public class ServerBuilder {
         }
     }
 
-    private MapperHandler routes() {
-        return Routes.router().routes();
+    private static class Defaults {
+        static final Gson gson = new Gson();
+        static final PayloadConverter payloadConverter = new GsonPayloadConverter(gson);
+        static final DataCodec dataCodec = new GsonDataCodec(gson);
+
+        static final Cache defaultCache = new Cache(
+                new NonconditionalCache(
+                        Executors.newSingleThreadScheduledExecutor(
+                                Defaults::newDaemonThread)),
+                new CacheDurationConstant(5, TimeUnit.SECONDS));
+
+        static Thread newDaemonThread(Runnable r) {
+            Thread thread = new Thread(r);
+            thread.setDaemon(true);
+            return thread;
+        }
     }
 }
