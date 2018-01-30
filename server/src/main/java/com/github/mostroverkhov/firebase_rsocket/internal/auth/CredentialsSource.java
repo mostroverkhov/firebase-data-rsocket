@@ -1,7 +1,7 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.auth;
 
-import io.reactivex.Single;
-import io.reactivex.schedulers.Schedulers;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
@@ -23,24 +23,18 @@ public class CredentialsSource {
         this.credsSupplier = credentialsSupplier;
     }
 
-    public Single<Credentials> getCreds() {
+    public Mono<Credentials> getCreds() {
 
-        return Single.<Credentials>create(e -> {
-            if (!e.isDisposed()) {
-                try {
-                    Credentials creds = setCredsOnceAndGet();
-                    if (!e.isDisposed()) {
-                        e.onSuccess(creds);
-                    }
-                } catch (Exception ex) {
-                    if (!e.isDisposed()) {
-                        e.onError(new FirebaseRsocketAuthException(
-                                "Error while reading credentials file. " + ex.getMessage(),
-                                ex));
-                    }
-                }
+        return Mono.<Credentials>create(e -> {
+            try {
+                Credentials creds = setCredsOnceAndGet();
+                e.success(creds);
+            } catch (Exception ex) {
+                e.error(new FirebaseRsocketAuthException(
+                        "Error while reading credentials file. " + ex.getMessage(),
+                        ex));
             }
-        }).subscribeOn(Schedulers.io());
+        }).subscribeOn(Schedulers.elastic());
     }
 
     private Credentials setCredsOnceAndGet() {
@@ -61,7 +55,7 @@ public class CredentialsSource {
         return credsCache.get();
     }
 
-    static void assertArgs(Object... args) {
+    private static void assertArgs(Object... args) {
         for (Object arg : args) {
             if (arg == null) {
                 throw new IllegalArgumentException("Args should not be null: " + Arrays.toString(args));

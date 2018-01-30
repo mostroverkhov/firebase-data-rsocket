@@ -1,31 +1,57 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import io.reactivesocket.server.ReactiveSocketServer;
-import io.reactivesocket.transport.TransportServer;
-import io.reactivex.Completable;
+import com.github.mostroverkhov.firebase_rsocket.internal.PayloadConverter;
+import com.github.mostroverkhov.firebase_rsocket.internal.ServerConfig;
+import com.github.mostroverkhov.firebase_rsocket.internal.auth.Authenticator;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.AuthenticatingServiceHandler;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.RequestHandlers;
+import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServiceHandler;
+import com.github.mostroverkhov.r2.core.DataCodec;
+import com.github.mostroverkhov.r2.core.responder.Codecs;
+import com.github.mostroverkhov.r2.core.responder.Services;
+import com.github.mostroverkhov.r2.java.JavaAcceptorBuilder;
+import com.github.mostroverkhov.r2.java.R2Server;
+import io.rsocket.Closeable;
+import io.rsocket.RSocketFactory;
+import io.rsocket.transport.ServerTransport;
+import reactor.core.publisher.Mono;
 
 /**
  * Created by Maksym Ostroverkhov on 27.02.17.
  */
-public class Server {
+public class Server<T extends Closeable> {
 
-    private final ServerConfig serverConfig;
+    private final Authenticator authenticator;
+    private final ServerTransport<T> transport;
+    private final RequestHandlers requestHandlers;
+    private final PayloadConverter payloadConverter;
+    private final DataCodec dataCodec;
 
-    public Server(ServerConfig serverConfig) {
-        this.serverConfig = serverConfig;
+    Server(ServerConfig<T> serverConfig) {
+        this.requestHandlers = serverConfig.handlers();
+        this.authenticator = serverConfig.authenticator();
+        this.payloadConverter = serverConfig.payloadConverter();
+        this.transport = serverConfig.serverTransport();
+        this.dataCodec = serverConfig.dataCodec();
     }
 
-    public Completable start() {
+    public Mono<T> start() {
+        return new R2Server<T>()
+                .connectWith(RSocketFactory.receive())
+                .configureAcceptor(this::configureAcceptor)
+                .transport(transport)
+                .start();
+    }
 
-        TransportServer.StartedServer server = ReactiveSocketServer
-                .create(serverConfig.transport().transportServer())
-                .start(new ServerSocketAcceptor(serverConfig));
-
-        return Completable.create(e -> {
-            if (!e.isDisposed()) {
-                server.shutdown();
-                e.onComplete();
-            }
-        });
+    private JavaAcceptorBuilder configureAcceptor(JavaAcceptorBuilder builder) {
+        return builder
+                .codecs(new Codecs().add(dataCodec))
+                .services(ctx ->
+                        new Services().add(
+                                new AuthenticatingServiceHandler(
+                                        new ServiceHandler(requestHandlers, payloadConverter),
+                                        authenticator)
+                        )
+                );
     }
 }

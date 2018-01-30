@@ -1,14 +1,14 @@
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.api.Requests;
-import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.delete.DeleteResponse;
-import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.read.TypedReadResponse;
-import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.write.WriteRequest;
-import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.write.WriteResponse;
+import com.github.mostroverkhov.firebase_rsocket.model.delete.DeleteResponse;
+import com.github.mostroverkhov.firebase_rsocket.model.read.TypedReadResponse;
+import com.github.mostroverkhov.firebase_rsocket.model.write.WriteRequest;
+import com.github.mostroverkhov.firebase_rsocket.model.write.WriteResponse;
+import com.github.mostroverkhov.firebase_rsocket.requests.Req;
 import com.google.firebase.database.FirebaseDatabase;
-import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subscribers.TestSubscriber;
 import org.junit.Test;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -26,18 +26,19 @@ public class DeleteRequestFuncTest extends AbstractTest {
     public void deletePresent() throws Exception {
 
         Data data = new Data("w", "w");
-        WriteRequest<Data> writeRequest = Requests
+        WriteRequest<Data> writeRequest = Req
                 .<Data>write("test", "delete")
                 .data(data)
                 .build();
 
-        writeResponse = client
+        FirebaseService svc = client.request();
+        writeResponse = svc
                 .write(writeRequest)
-                .subscribeOn(Schedulers.io()).blockingFirst();
+                .subscribeOn(Schedulers.elastic()).blockFirst();
 
         TestSubscriber<DeleteResponse> deleteTestSubscriber = new TestSubscriber<>();
-        client.delete(Requests.delete(arr(writeResponse)).build())
-                .observeOn(Schedulers.io())
+        svc.delete(Req.delete(arr(writeResponse)).build())
+                .publishOn(Schedulers.elastic())
                 .subscribe(deleteTestSubscriber);
         deleteTestSubscriber.awaitDone(10, TimeUnit.SECONDS);
         deleteTestSubscriber.assertValueCount(1);
@@ -45,12 +46,12 @@ public class DeleteRequestFuncTest extends AbstractTest {
         deleteTestSubscriber.assertComplete();
 
         TestSubscriber<TypedReadResponse<Data>> readTestSubscriber = new TestSubscriber<>();
-        client.dataWindow(
-                Requests.read("test", "delete",
+        svc.dataWindow(
+                Req.read("test", "delete",
                         writeResponse.getWriteKey())
                         .build())
-                .flatMap(dataWindowTransformer::from)
-                .observeOn(Schedulers.io())
+                .map(dataWindowTransformer)
+                .publishOn(Schedulers.elastic())
                 .subscribe(readTestSubscriber);
         readTestSubscriber.awaitDone(10, TimeUnit.SECONDS);
         readTestSubscriber.assertValueCount(0);
@@ -60,10 +61,10 @@ public class DeleteRequestFuncTest extends AbstractTest {
 
     @Test
     public void deleteMissing() throws Exception {
-
+        FirebaseService svc = client.request();
         TestSubscriber<DeleteResponse> deleteTestSubscriber = new TestSubscriber<>();
-        client.delete(Requests.delete("test", "delete", "missing").build())
-                .observeOn(Schedulers.io())
+        svc.delete(Req.delete("test", "delete", "missing").build())
+                .publishOn(Schedulers.elastic())
                 .subscribe(deleteTestSubscriber);
         deleteTestSubscriber.awaitDone(10, TimeUnit.SECONDS);
         deleteTestSubscriber.assertValueCount(1);

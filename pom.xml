@@ -7,44 +7,14 @@
     <groupId>com.github.mostroverkhov</groupId>
     <artifactId>firebase-rsocket-server-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.1-SNAPSHOT</version>
+    <version>0.2.0-SNAPSHOT</version>
     <modules>
+        <module>common</module>
         <module>client</module>
         <module>server</module>
         <module>test</module>
-        <module>transport</module>
-        <module>transport-tcp</module>
-        <module>transport-aeron</module>
-        <module>transport-websocket</module>
         <module>server-binary-tcp</module>
     </modules>
-    <dependencies>
-        <!-- https://mvnrepository.com/artifact/org.reactivestreams/reactive-streams -->
-        <dependency>
-            <groupId>org.reactivestreams</groupId>
-            <artifactId>reactive-streams</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/io.reactivex.rxjava2/rxjava -->
-        <dependency>
-            <groupId>io.reactivex.rxjava2</groupId>
-            <artifactId>rxjava</artifactId>
-            <version>2.0.6</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.reactivesocket</groupId>
-            <artifactId>reactivesocket-core</artifactId>
-            <version>0.5.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.reactivesocket</groupId>
-            <artifactId>reactivesocket-core</artifactId>
-            <version>0.5.2</version>
-        </dependency>
-
-    </dependencies>
     <build>
         <plugins>
             <plugin>

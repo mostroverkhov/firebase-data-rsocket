@@ -1,14 +1,16 @@
+
 package com.github.mostroverkhov.firebase_rsocket;
 
-import com.github.mostroverkhov.firebase_rsocket.api.Requests;
-import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.notifications.TypedNotifResponse;
-import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.read.ReadRequest;
-import com.github.mostroverkhov.firebase_rsocket.clientcommon.model.read.TypedReadResponse;
+import com.github.mostroverkhov.firebase_rsocket.model.notifications.TypedNotifResponse;
+import com.github.mostroverkhov.firebase_rsocket.model.read.ReadRequest;
+import com.github.mostroverkhov.firebase_rsocket.model.read.TypedReadResponse;
+import com.github.mostroverkhov.firebase_rsocket.requests.Req;
 import io.reactivex.Flowable;
-import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subscribers.TestSubscriber;
 import org.junit.Assert;
 import org.junit.Test;
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +18,11 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+
 /**
  * Created by Maksym Ostroverkhov on 28.02.17.
  */
+
 public class ReadRequestFuncTest extends AbstractTest {
 
     private static final int SAMPLE_ITEM_COUNT = 10;
@@ -30,14 +34,14 @@ public class ReadRequestFuncTest extends AbstractTest {
     public void presentRead() throws Exception {
 
         ReadRequest readRequest = presentReadRequest();
-        Flowable<TypedReadResponse<Data>> dataWindowFlow = client
+        Flux<TypedReadResponse<Data>> dataWindowFlow = client.request()
                 .dataWindow(readRequest)
-                .flatMap(dataWindowTransformer::from);
+                .map(dataWindowTransformer);
         TestSubscriber<TypedReadResponse<Data>> testSubscriber
                 = requestStreamSubscriber();
 
         dataWindowFlow
-                .observeOn(Schedulers.io())
+                .publishOn(Schedulers.elastic())
                 .subscribe(testSubscriber);
 
         testSubscriber.awaitDone(20, TimeUnit.SECONDS);
@@ -59,20 +63,20 @@ public class ReadRequestFuncTest extends AbstractTest {
     public void presentReadStartWith() throws Exception {
 
         ReadRequest allRequest = presentReadRequest();
-        Flowable<TypedReadResponse<Data>> allDataWindowFlow = client
+        Flux<TypedReadResponse<Data>> allDataWindowFlow = client.request()
                 .dataWindow(allRequest)
-                .flatMap(dataWindowTransformer::from);
+                .map(dataWindowTransformer);
         TestSubscriber<TypedReadResponse<Data>> allDatatestSubscriber
                 = requestStreamSubscriber();
 
         allDataWindowFlow
-                .observeOn(Schedulers.io())
+                .publishOn(Schedulers.elastic())
                 .subscribe(allDatatestSubscriber);
 
         allDatatestSubscriber.awaitDone(20, TimeUnit.SECONDS);
         int valueCount = SAMPLE_ITEM_COUNT / WINDOW_SIZE;
 
-        ReadRequest tailRequest = Requests
+        ReadRequest tailRequest = Req
                 .read("test", "read")
                 .asc()
                 .windowWithSize(WINDOW_SIZE)
@@ -80,13 +84,13 @@ public class ReadRequestFuncTest extends AbstractTest {
                 .startWith(lastWindowStartKey(allDatatestSubscriber, valueCount))
                 .build();
 
-        Flowable<TypedReadResponse<Data>> tailDataWindowFlow = client
-                .dataWindow(tailRequest).flatMap(dataWindowTransformer::from);
+        Flux<TypedReadResponse<Data>> tailDataWindowFlow = client.request()
+                .dataWindow(tailRequest).map(dataWindowTransformer);
         TestSubscriber<TypedReadResponse<Data>> tailTestSubscriber
                 = requestStreamSubscriber();
 
         tailDataWindowFlow
-                .observeOn(Schedulers.io())
+                .publishOn(Schedulers.elastic())
                 .subscribe(tailTestSubscriber);
 
         tailTestSubscriber.awaitDone(20, TimeUnit.SECONDS);
@@ -101,13 +105,13 @@ public class ReadRequestFuncTest extends AbstractTest {
     public void missingRead() throws Exception {
 
         ReadRequest readRequest = missingReadRequest();
-        Flowable<TypedReadResponse<Data>> dataWindowFlow = client
-                .dataWindow(readRequest).flatMap(dataWindowTransformer::from);
+        Flux<TypedReadResponse<Data>> dataWindowFlow = client.request()
+                .dataWindow(readRequest).map(dataWindowTransformer);
         TestSubscriber<TypedReadResponse<Data>> testSubscriber
                 = requestStreamSubscriber();
 
         dataWindowFlow
-                .observeOn(Schedulers.io())
+                .publishOn(Schedulers.elastic())
                 .subscribe(testSubscriber);
 
         testSubscriber.awaitDone(10, TimeUnit.SECONDS);
@@ -121,14 +125,14 @@ public class ReadRequestFuncTest extends AbstractTest {
     public void presentReadRepeat() throws Exception {
 
         ReadRequest readRequest = presentReadRequest();
-        Flowable<TypedReadResponse<Data>> dataWindowFlow = client
-                .dataWindow(readRequest).flatMap(dataWindowTransformer::from);
+        Flux<TypedReadResponse<Data>> dataWindowFlow = client.request()
+                .dataWindow(readRequest).map(dataWindowTransformer);
         TestSubscriber<TypedReadResponse<Data>> testSubscriber
                 = requestStreamSubscriber();
 
         dataWindowFlow
                 .repeat(READ_REPEAT_N)
-                .observeOn(Schedulers.io())
+                .publishOn(Schedulers.elastic())
                 .subscribe(testSubscriber);
 
         testSubscriber.awaitDone(30, TimeUnit.SECONDS);
@@ -142,11 +146,11 @@ public class ReadRequestFuncTest extends AbstractTest {
     public void presentReadNotifications() throws Exception {
 
         ReadRequest readRequest = presentReadRequest();
-        Flowable<TypedNotifResponse<Data>> notifFlow = client
+        Flux<TypedNotifResponse<Data>> notifFlow = client.request()
                 .dataWindowNotifications(readRequest)
-                .flatMap(notifTransformer::from);
+                .map(notifTransformer);
         TestSubscriber<TypedNotifResponse<Data>> testSubscriber = TestSubscriber.create();
-        notifFlow.observeOn(Schedulers.io())
+        notifFlow.publishOn(Schedulers.elastic())
                 .subscribe(testSubscriber);
         testSubscriber.awaitDone(10, TimeUnit.SECONDS);
         testSubscriber.assertNoErrors();
@@ -171,15 +175,17 @@ public class ReadRequestFuncTest extends AbstractTest {
     public void presentReadNotificationsChained() throws Exception {
 
         ReadRequest readRequest = presentReadRequest();
-        Flowable<TypedNotifResponse<Data>> notifFlow = client
-                .dataWindowNotifications(readRequest).flatMap(notifTransformer::from);
+        Flux<TypedNotifResponse<Data>> notifFlow = client.request()
+                .dataWindowNotifications(readRequest)
+                .map(notifTransformer);
         TestSubscriber<TypedNotifResponse<Data>> testSubscriber = TestSubscriber.create();
-        notifFlow.observeOn(Schedulers.io())
+
+        notifFlow.publishOn(Schedulers.elastic())
                 .filter(TypedNotifResponse::isNextWindow)
                 .map(TypedNotifResponse::getNextDataWindow)
-                .flatMap(req -> client
+                .flatMap(req -> client.request()
                         .dataWindowNotifications(req)
-                        .flatMap(notifTransformer::from))
+                        .map(notifTransformer))
                 .subscribe(testSubscriber);
 
         testSubscriber.awaitDone(10, TimeUnit.SECONDS);
@@ -206,11 +212,11 @@ public class ReadRequestFuncTest extends AbstractTest {
     public void absentReadNotifications() throws Exception {
 
         ReadRequest readRequest = missingReadRequest();
-        Flowable<TypedNotifResponse<Data>> notifFlow = client
+        Flux<TypedNotifResponse<Data>> notifFlow = client.request()
                 .dataWindowNotifications(readRequest)
-                .flatMap(notifTransformer::from);
+                .map(notifTransformer);
         TestSubscriber<TypedNotifResponse<Data>> testSubscriber = TestSubscriber.create();
-        notifFlow.observeOn(Schedulers.io())
+        notifFlow.publishOn(Schedulers.elastic())
                 .subscribe(testSubscriber);
         testSubscriber.awaitDone(10, TimeUnit.SECONDS);
         testSubscriber.assertNoErrors();
@@ -261,7 +267,7 @@ public class ReadRequestFuncTest extends AbstractTest {
     }
 
     private ReadRequest presentReadRequest() {
-        return Requests
+        return Req
                 .read("test", "read")
                 .asc()
                 .windowWithSize(WINDOW_SIZE)
@@ -270,7 +276,7 @@ public class ReadRequestFuncTest extends AbstractTest {
     }
 
     private ReadRequest missingReadRequest() {
-        return Requests
+        return Req
                 .read("foo", "bar")
                 .asc()
                 .windowWithSize(WINDOW_SIZE)
@@ -300,3 +306,4 @@ public class ReadRequestFuncTest extends AbstractTest {
         return true;
     }
 }
+

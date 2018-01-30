@@ -19,13 +19,11 @@ class ConfigurationReader {
     private static final String PORTNAME = "port";
 
     public Configuration read(String[] args) throws ArgsException {
-        System.out.println("Args: " + Arrays.toString(args));
-        ArgumentParser parser = createParser();
+        ArgumentParser parser = argsParser();
         try {
             Namespace namespace = parser.parseArgs(args);
             String portStr = namespace.get(PORTNAME);
             String config = namespace.get(CONFIGNAME);
-            System.out.println("Ns: " + String.valueOf(namespace));
             try {
                 Integer port = Integer.parseInt(portStr);
                 return new Configuration(port, config);
@@ -40,7 +38,7 @@ class ConfigurationReader {
         }
     }
 
-    private static ArgumentParser createParser() {
+    private static ArgumentParser argsParser() {
         ArgumentParser parser = ArgumentParsers.newArgumentParser("firebase-rsocket-server");
         parser.addArgument(CONFIG)
                 .required(true)
