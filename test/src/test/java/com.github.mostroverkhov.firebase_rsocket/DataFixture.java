@@ -17,8 +17,8 @@ import java.util.function.Supplier;
 
 public class DataFixture {
 
-    public static final int ITEM_COUNT = 10;
-    public static final String[] TEST_READ_PATH = {"test", "read"};
+    private static final int ITEM_COUNT = 10;
+    private static final String[] TEST_READ_PATH = {"test", "read"};
     private static final int WRITE_TIMEOUT_SEC = 10;
 
     private final int itemCount;
@@ -34,31 +34,32 @@ public class DataFixture {
     }
 
     public Mono<Void> fillSampleData() {
-
-        final DatabaseReference test = databaseReference.get();
-        FirebaseDatabaseManager manager =
+        return Mono.defer(() -> {
+            final DatabaseReference test = databaseReference.get();
+            FirebaseDatabaseManager manager =
                 new FirebaseDatabaseManager(test);
 
-        Observable<WriteResult> allWritesStream = Observable.empty();
-        for (int i = 0; i < itemCount; i++) {
-            DatabaseReference newItem = test.push();
-            Observable<WriteResult> writeStream = manager.data(__ -> newItem).setValue(
+            Observable<WriteResult> allWritesStream = Observable.empty();
+            for (int i = 0; i < itemCount; i++) {
+                DatabaseReference newItem = test.push();
+                Observable<WriteResult> writeStream = manager.data(__ -> newItem).setValue(
                     new Data(String.valueOf(i), String.valueOf(i)));
-            allWritesStream = allWritesStream.mergeWith(writeStream);
-        }
-        Duration timeout = Duration.ofSeconds(timeOutSec);
-        Mono<Void> timeoutError = Mono.delay(timeout)
+                allWritesStream = allWritesStream.mergeWith(writeStream);
+            }
+            Duration timeout = Duration.ofSeconds(timeOutSec);
+            Mono<Void> timeoutError = Mono.delay(timeout)
                 .then(Mono.error(
-                        new TimeoutException("Fixture Db write timeout")));
+                    new TimeoutException("Fixture Db write timeout")));
 
-        Mono<Void> writeComplete = RxJava2Adapter.completableToMono(
+            Mono<Void> writeComplete = RxJava2Adapter.completableToMono(
                 RxJavaInterop.toV2Completable(
-                        allWritesStream
-                                .doOnNext(System.out::println)
-                                .take(itemCount)
-                                .toCompletable()));
+                    allWritesStream
+                        .doOnNext(System.out::println)
+                        .take(itemCount)
+                        .toCompletable()));
 
-        return Mono.first(writeComplete, timeoutError);
+            return Mono.first(writeComplete, timeoutError);
+        });
     }
 
     public static void main(String... args) {
@@ -69,8 +70,8 @@ public class DataFixture {
                 WRITE_TIMEOUT_SEC);
 
         CredentialsAuthenticator testAuthenticator = new TestAutheticator();
-        testAuthenticator.authenticate().flatMap(
-                __ -> dataFixture.fillSampleData()).block();
+        testAuthenticator.authenticate().then(
+                dataFixture.fillSampleData()).block();
     }
 
     private static class TestAutheticator extends CredentialsAuthenticator {

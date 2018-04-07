@@ -1,7 +1,9 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.auth;
 
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import java.io.IOException;
 import reactor.core.publisher.Mono;
 
 import java.io.InputStream;
@@ -70,7 +72,7 @@ public class CredentialsAuthenticator implements Authenticator {
                         Map<String, Object> auth = new HashMap<>();
                         auth.put("uid", uid);
                         FirebaseOptions options = new FirebaseOptions.Builder()
-                                .setServiceAccount(serviceFileStream.get())
+                                .setCredentials(credentials())
                                 .setDatabaseUrl(databaseUrl)
                                 .setDatabaseAuthVariableOverride(auth)
                                 .build();
@@ -80,6 +82,14 @@ public class CredentialsAuthenticator implements Authenticator {
                     }
                     e.success();
             });
+        }
+
+        private GoogleCredentials credentials() {
+            try {
+                return GoogleCredentials.fromStream(serviceFileStream.get());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }

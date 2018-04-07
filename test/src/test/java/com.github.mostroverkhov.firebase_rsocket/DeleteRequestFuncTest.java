@@ -23,7 +23,7 @@ public class DeleteRequestFuncTest extends AbstractTest {
     private volatile WriteResponse writeResponse;
 
     @Test
-    public void deletePresent() throws Exception {
+    public void deletePresent() {
 
         Data data = new Data("w", "w");
         WriteRequest<Data> writeRequest = Req
@@ -60,7 +60,7 @@ public class DeleteRequestFuncTest extends AbstractTest {
     }
 
     @Test
-    public void deleteMissing() throws Exception {
+    public void deleteMissing() {
         FirebaseService svc = client.request();
         TestSubscriber<DeleteResponse> deleteTestSubscriber = new TestSubscriber<>();
         svc.delete(Req.delete("test", "delete", "missing").build())
