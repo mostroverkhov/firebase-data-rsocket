@@ -11,12 +11,11 @@ import reactor.core.publisher.Flux;
 
 public interface FirebaseService {
 
-    Flux<ReadResponse> dataWindow(ReadRequest readRequest);
+  Flux<ReadResponse> dataWindow(ReadRequest readRequest);
 
-    Flux<NotifResponse> dataWindowNotifications(ReadRequest readRequest);
+  Flux<NotifResponse> dataWindowNotifications(ReadRequest readRequest);
 
-    Flux<WriteResponse> write(WriteRequest writeRequest);
+  Flux<WriteResponse> write(WriteRequest writeRequest);
 
-    Flux<DeleteResponse> delete(DeleteRequest deleteRequest);
-
+  Flux<DeleteResponse> delete(DeleteRequest deleteRequest);
 }

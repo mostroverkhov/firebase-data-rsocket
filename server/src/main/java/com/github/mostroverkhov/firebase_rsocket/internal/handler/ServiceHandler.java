@@ -16,58 +16,45 @@ import reactor.core.publisher.Flux;
 
 public class ServiceHandler implements FirebaseServiceContract {
 
-    private final RequestHandlers requestHandlers;
-    private final PayloadConverter converter;
+  private final RequestHandlers requestHandlers;
+  private final PayloadConverter converter;
 
-    public ServiceHandler(RequestHandlers requestHandlers,
-                          PayloadConverter converter) {
-        this.requestHandlers = requestHandlers;
-        this.converter = converter;
-    }
+  public ServiceHandler(RequestHandlers requestHandlers, PayloadConverter converter) {
+    this.requestHandlers = requestHandlers;
+    this.converter = converter;
+  }
 
-    @Override
-    public Flux<ReadResponse> dataWindow(ReadRequest readRequest) {
-        return requestHandlers.dataWindowHandler()
-                .handle(readRequest)
-                .map(this::asReadResponse);
-    }
+  @Override
+  public Flux<ReadResponse> dataWindow(ReadRequest readRequest) {
+    return requestHandlers.dataWindowHandler().handle(readRequest).map(this::asReadResponse);
+  }
 
-    @Override
-    public Flux<NotifResponse> dataWindowNotifications(ReadRequest readRequest) {
-        return requestHandlers.notifHandler()
-                .handle(readRequest).map(this::asNotifResponse);
-    }
+  @Override
+  public Flux<NotifResponse> dataWindowNotifications(ReadRequest readRequest) {
+    return requestHandlers.notifHandler().handle(readRequest).map(this::asNotifResponse);
+  }
 
-    @Override
-    public Flux<WriteResponse> write(WriteRequest writeRequest) {
-        return requestHandlers
-                .writePushHandler()
-                .handle(writeRequest);
-    }
+  @Override
+  public Flux<WriteResponse> write(WriteRequest writeRequest) {
+    return requestHandlers.writePushHandler().handle(writeRequest);
+  }
 
-    @Override
-    public Flux<DeleteResponse> delete(DeleteRequest deleteRequest) {
-        return requestHandlers
-                .deleteHandler()
-                .handle(deleteRequest);
-    }
+  @Override
+  public Flux<DeleteResponse> delete(DeleteRequest deleteRequest) {
+    return requestHandlers.deleteHandler().handle(deleteRequest);
+  }
 
-    @NotNull
-    private ReadResponse asReadResponse(TypedReadResponse<?> resp) {
-        return new ReadResponse(
-                resp.getReadRequest(),
-                converter.convert(resp.getData()));
-    }
+  @NotNull
+  private ReadResponse asReadResponse(TypedReadResponse<?> resp) {
+    return new ReadResponse(resp.getReadRequest(), converter.convert(resp.getData()));
+  }
 
-    @NotNull
-    private NotifResponse asNotifResponse(TypedNotifResponse resp) {
-        if (resp.isChangeEvent()) {
-            return NotifResponse.changeEvent(
-                    resp.getKind(),
-                    converter.convert(resp.getItem()));
-        } else {
-            return NotifResponse.nextWindow(
-                    resp.getNextDataWindow());
-        }
+  @NotNull
+  private NotifResponse asNotifResponse(TypedNotifResponse resp) {
+    if (resp.isChangeEvent()) {
+      return NotifResponse.changeEvent(resp.getKind(), converter.convert(resp.getItem()));
+    } else {
+      return NotifResponse.nextWindow(resp.getNextDataWindow());
     }
+  }
 }

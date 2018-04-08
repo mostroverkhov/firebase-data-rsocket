@@ -16,42 +16,39 @@ import io.rsocket.RSocketFactory;
 import io.rsocket.transport.ServerTransport;
 import reactor.core.publisher.Mono;
 
-/**
- * Created by Maksym Ostroverkhov on 27.02.17.
- */
+/** Created by Maksym Ostroverkhov on 27.02.17. */
 public class Server<T extends Closeable> {
 
-    private final Authenticator authenticator;
-    private final ServerTransport<T> transport;
-    private final RequestHandlers requestHandlers;
-    private final PayloadConverter payloadConverter;
-    private final DataCodec dataCodec;
+  private final Authenticator authenticator;
+  private final ServerTransport<T> transport;
+  private final RequestHandlers requestHandlers;
+  private final PayloadConverter payloadConverter;
+  private final DataCodec dataCodec;
 
-    Server(ServerConfig<T> serverConfig) {
-        this.requestHandlers = serverConfig.handlers();
-        this.authenticator = serverConfig.authenticator();
-        this.payloadConverter = serverConfig.payloadConverter();
-        this.transport = serverConfig.serverTransport();
-        this.dataCodec = serverConfig.dataCodec();
-    }
+  Server(ServerConfig<T> serverConfig) {
+    this.requestHandlers = serverConfig.handlers();
+    this.authenticator = serverConfig.authenticator();
+    this.payloadConverter = serverConfig.payloadConverter();
+    this.transport = serverConfig.serverTransport();
+    this.dataCodec = serverConfig.dataCodec();
+  }
 
-    public Mono<T> start() {
-        return new R2Server<T>()
-                .connectWith(RSocketFactory.receive())
-                .configureAcceptor(this::configureAcceptor)
-                .transport(transport)
-                .start();
-    }
+  public Mono<T> start() {
+    return new R2Server<T>()
+        .connectWith(RSocketFactory.receive())
+        .configureAcceptor(this::configureAcceptor)
+        .transport(transport)
+        .start();
+  }
 
-    private JavaAcceptorBuilder configureAcceptor(JavaAcceptorBuilder builder) {
-        return builder
-                .codecs(new Codecs().add(dataCodec))
-                .services(ctx ->
-                        new Services().add(
-                                new AuthenticatingServiceHandler(
-                                        new ServiceHandler(requestHandlers, payloadConverter),
-                                        authenticator)
-                        )
-                );
-    }
+  private JavaAcceptorBuilder configureAcceptor(JavaAcceptorBuilder builder) {
+    return builder
+        .codecs(new Codecs().add(dataCodec))
+        .services(
+            ctx ->
+                new Services()
+                    .add(
+                        new AuthenticatingServiceHandler(
+                            new ServiceHandler(requestHandlers, payloadConverter), authenticator)));
+  }
 }

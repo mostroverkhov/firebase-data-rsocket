@@ -1,4 +1,3 @@
-
 package com.github.mostroverkhov.firebase_rsocket;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,12 +21,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-
-/**
- * Created with IntelliJ IDEA.
- * Author: mostroverkhov
- */
-
+/** Created with IntelliJ IDEA. Author: mostroverkhov */
 public class WriteRequestFuncTest extends AbstractTest {
 
   private DatabaseReference writtenRef;
@@ -41,27 +35,17 @@ public class WriteRequestFuncTest extends AbstractTest {
   @Test
   public void writeData() throws Exception {
     Data data = new Data("w", "w");
-    WriteRequest<Data> writeRequest = Req
-        .<Data>write("test", "write")
-        .data(data)
-        .build();
+    WriteRequest<Data> writeRequest = Req.<Data>write("test", "write").data(data).build();
 
     Flux<WriteResponse> writeResponse =
-        client
-            .request()
-            .write(writeRequest)
-            .publishOn(Schedulers.elastic());
+        client.request().write(writeRequest).publishOn(Schedulers.elastic());
 
-    List<WriteResponse> writeResponses = writeResponse
-        .takeUntilOther(Mono.delay(Duration.ofSeconds(10)))
-        .collectList()
-        .block();
+    List<WriteResponse> writeResponses =
+        writeResponse.takeUntilOther(Mono.delay(Duration.ofSeconds(10))).collectList().block();
 
-    assertThat(writeResponses)
-        .hasSize(1);
+    assertThat(writeResponses).hasSize(1);
     WriteResponse writeResponseVal = writeResponses.get(0);
-    assertThat(writeResponseVal.getWriteKey())
-        .isNotNull();
+    assertThat(writeResponseVal.getWriteKey()).isNotNull();
 
     writtenRef = writeResponseNative(writeResponseVal);
     assertWrittenDataNative(data, writtenRef);
@@ -75,14 +59,12 @@ public class WriteRequestFuncTest extends AbstractTest {
         .child(writeResponse.getWriteKey());
   }
 
-  private void assertWrittenDataNative(
-      Data data,
-      DatabaseReference writtenRef)
+  private void assertWrittenDataNative(Data data, DatabaseReference writtenRef)
       throws InterruptedException {
     CountDownLatch latch = new CountDownLatch(1);
     AtomicReference<WriteResult> resultRef = new AtomicReference<>();
-    writtenRef
-        .addListenerForSingleValueEvent(new ValueEventListener() {
+    writtenRef.addListenerForSingleValueEvent(
+        new ValueEventListener() {
           @Override
           public void onDataChange(DataSnapshot dataSnapshot) {
             Data receivedData = dataSnapshot.getValue(Data.class);
@@ -92,9 +74,9 @@ public class WriteRequestFuncTest extends AbstractTest {
 
           @Override
           public void onCancelled(DatabaseError databaseError) {
-            IllegalStateException err = new IllegalStateException(
-                "Error while reading database",
-                databaseError.toException());
+            IllegalStateException err =
+                new IllegalStateException(
+                    "Error while reading database", databaseError.toException());
             resultRef.set(new WriteResult(null, err));
             latch.countDown();
           }
@@ -113,9 +95,7 @@ public class WriteRequestFuncTest extends AbstractTest {
   private void cleanUpWrittenValueNative() throws InterruptedException {
     if (writtenRef != null) {
       CountDownLatch nativeRemoveLatch = new CountDownLatch(1);
-      writtenRef.removeValue(
-          (databaseError, databaseReference) ->
-              nativeRemoveLatch.countDown());
+      writtenRef.removeValue((databaseError, databaseReference) -> nativeRemoveLatch.countDown());
       nativeRemoveLatch.await(10, TimeUnit.SECONDS);
       writtenRef = null;
     }
@@ -136,4 +116,3 @@ public class WriteRequestFuncTest extends AbstractTest {
     }
   }
 }
-

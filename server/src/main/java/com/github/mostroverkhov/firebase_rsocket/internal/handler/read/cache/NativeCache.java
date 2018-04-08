@@ -1,13 +1,9 @@
 package com.github.mostroverkhov.firebase_rsocket.internal.handler.read.cache;
 
 import com.google.firebase.database.DatabaseReference;
-
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created with IntelliJ IDEA.
- * Author: mostroverkhov
- */
+/** Created with IntelliJ IDEA. Author: mostroverkhov */
 public interface NativeCache {
-    void cache(DatabaseReference ref, long duration, TimeUnit timeUnit);
+  void cache(DatabaseReference ref, long duration, TimeUnit timeUnit);
 }

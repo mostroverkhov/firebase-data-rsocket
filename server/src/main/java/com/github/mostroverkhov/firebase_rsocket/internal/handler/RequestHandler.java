@@ -10,16 +10,15 @@ import rx.Observable;
 
 public abstract class RequestHandler {
 
-    protected DatabaseReference reference(Path path) {
-        DatabaseReference dataRef = FirebaseDatabase.getInstance()
-                .getReference();
-        for (String s : path.getChildPaths()) {
-            dataRef = dataRef.child(s);
-        }
-        return dataRef;
+  protected DatabaseReference reference(Path path) {
+    DatabaseReference dataRef = FirebaseDatabase.getInstance().getReference();
+    for (String s : path.getChildPaths()) {
+      dataRef = dataRef.child(s);
     }
+    return dataRef;
+  }
 
-    protected <T> Flux<T> asFlux(Observable<T> observable) {
-        return RxJava2Adapter.flowableToFlux(RxJavaInterop.toV2Flowable(observable));
-    }
+  protected <T> Flux<T> asFlux(Observable<T> observable) {
+    return RxJava2Adapter.flowableToFlux(RxJavaInterop.toV2Flowable(observable));
+  }
 }

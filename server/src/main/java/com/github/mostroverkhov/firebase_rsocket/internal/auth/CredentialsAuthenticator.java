@@ -4,92 +4,89 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import java.io.IOException;
-import reactor.core.publisher.Mono;
-
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
+import reactor.core.publisher.Mono;
 
-/**
- * Created by Maksym Ostroverkhov on 28.02.17.
- */
+/** Created by Maksym Ostroverkhov on 28.02.17. */
 public class CredentialsAuthenticator implements Authenticator {
 
-    private final Mono<Credentials> credsFlow;
+  private final Mono<Credentials> credsFlow;
 
-    public CredentialsAuthenticator(CredentialsSource credsFlow) {
-        this.credsFlow = credsFlow.getCreds();
+  public CredentialsAuthenticator(CredentialsSource credsFlow) {
+    this.credsFlow = credsFlow.getCreds();
+  }
+
+  @Override
+  public Mono<Void> authenticate() {
+    return credsFlow
+        .map(
+            credentials ->
+                FirebaseServerAuth.getInstance(
+                    credentials.getServiceFile(), credentials.getDbUrl(), credentials.getUserId()))
+        .flatMap(FirebaseServerAuth::authenticate);
+  }
+
+  static class FirebaseServerAuth {
+
+    private static volatile FirebaseServerAuth instance;
+
+    private final Supplier<InputStream> serviceFileStream;
+    private final String databaseUrl;
+    private final String uid;
+    private final AtomicBoolean initialized = new AtomicBoolean();
+
+    private FirebaseServerAuth(
+        Supplier<InputStream> serviceFileStream, String databaseUrl, String uid) {
+      this.serviceFileStream = serviceFileStream;
+      this.databaseUrl = databaseUrl;
+      this.uid = uid;
     }
 
-    @Override
-    public Mono<Void> authenticate() {
-        return credsFlow
-                .map(credentials -> FirebaseServerAuth.getInstance(
-                        credentials.getServiceFile(),
-                        credentials.getDbUrl(),
-                        credentials.getUserId()))
-                .flatMap(FirebaseServerAuth::authenticate);
+    static FirebaseServerAuth getInstance(
+        Supplier<InputStream> serviceFile, String databaseUrl, String uid) {
+      if (instance == null) {
+        synchronized (FirebaseServerAuth.class) {
+          if (instance == null) {
+            instance = new FirebaseServerAuth(serviceFile, databaseUrl, uid);
+          }
+        }
+      }
+      return instance;
     }
 
-    static class FirebaseServerAuth {
-
-        private static volatile FirebaseServerAuth instance;
-
-        private final Supplier<InputStream> serviceFileStream;
-        private final String databaseUrl;
-        private final String uid;
-        private final AtomicBoolean initialized = new AtomicBoolean();
-
-        private FirebaseServerAuth(Supplier<InputStream> serviceFileStream,
-                                   String databaseUrl,
-                                   String uid) {
-            this.serviceFileStream = serviceFileStream;
-            this.databaseUrl = databaseUrl;
-            this.uid = uid;
-        }
-
-        static FirebaseServerAuth getInstance(Supplier<InputStream> serviceFile,
-                                              String databaseUrl,
-                                              String uid) {
-            if (instance == null) {
-                synchronized (FirebaseServerAuth.class) {
-                    if (instance == null) {
-                        instance = new FirebaseServerAuth(serviceFile, databaseUrl, uid);
-                    }
-                }
+    Mono<Void> authenticate() {
+      if (initialized.get()) {
+        return Mono.empty();
+      }
+      return Mono.create(
+          e -> {
+            if (FirebaseApp.getApps().isEmpty()) {
+              Map<String, Object> auth = new HashMap<>();
+              auth.put("uid", uid);
+              FirebaseOptions options =
+                  new FirebaseOptions.Builder()
+                      .setCredentials(credentials())
+                      .setDatabaseUrl(databaseUrl)
+                      .setDatabaseAuthVariableOverride(auth)
+                      .build();
+              if (initialized.compareAndSet(false, true)) {
+                FirebaseApp.initializeApp(options);
+              }
             }
-            return instance;
-        }
-
-        Mono<Void> authenticate() {
-            if (initialized.get()) {
-                return Mono.empty();
-            }
-            return Mono.create(e -> {
-                    if (FirebaseApp.getApps().isEmpty()) {
-                        Map<String, Object> auth = new HashMap<>();
-                        auth.put("uid", uid);
-                        FirebaseOptions options = new FirebaseOptions.Builder()
-                                .setCredentials(credentials())
-                                .setDatabaseUrl(databaseUrl)
-                                .setDatabaseAuthVariableOverride(auth)
-                                .build();
-                        if (initialized.compareAndSet(false, true)) {
-                            FirebaseApp.initializeApp(options);
-                        }
-                    }
-                    e.success();
-            });
-        }
-
-        private GoogleCredentials credentials() {
-            try {
-                return GoogleCredentials.fromStream(serviceFileStream.get());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+            e.success();
+          });
     }
+
+    private GoogleCredentials credentials() {
+      try {
+        return GoogleCredentials.fromStream(serviceFileStream.get());
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
 }

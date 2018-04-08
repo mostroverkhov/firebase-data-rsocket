@@ -13,35 +13,35 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 
 public class AuthenticatingServiceHandler implements FirebaseServiceContract {
-    private final Authenticator authenticator;
-    private final FirebaseServiceContract source;
+  private final Authenticator authenticator;
+  private final FirebaseServiceContract source;
 
-    public AuthenticatingServiceHandler(FirebaseServiceContract source, Authenticator authenticator) {
-        this.authenticator = authenticator;
-        this.source = source;
-    }
+  public AuthenticatingServiceHandler(FirebaseServiceContract source, Authenticator authenticator) {
+    this.authenticator = authenticator;
+    this.source = source;
+  }
 
-    @Override
-    public Flux<ReadResponse> dataWindow(ReadRequest readRequest) {
-        return authThen(source.dataWindow(readRequest));
-    }
+  @Override
+  public Flux<ReadResponse> dataWindow(ReadRequest readRequest) {
+    return authThen(source.dataWindow(readRequest));
+  }
 
-    @Override
-    public Flux<NotifResponse> dataWindowNotifications(ReadRequest readRequest) {
-        return authThen(source.dataWindowNotifications(readRequest));
-    }
+  @Override
+  public Flux<NotifResponse> dataWindowNotifications(ReadRequest readRequest) {
+    return authThen(source.dataWindowNotifications(readRequest));
+  }
 
-    @Override
-    public Flux<WriteResponse> write(WriteRequest writeRequest) {
-        return authThen(source.write(writeRequest));
-    }
+  @Override
+  public Flux<WriteResponse> write(WriteRequest writeRequest) {
+    return authThen(source.write(writeRequest));
+  }
 
-    @Override
-    public Flux<DeleteResponse> delete(DeleteRequest deleteRequest) {
-        return authThen(source.delete(deleteRequest));
-    }
+  @Override
+  public Flux<DeleteResponse> delete(DeleteRequest deleteRequest) {
+    return authThen(source.delete(deleteRequest));
+  }
 
-    private <T> Flux<T> authThen(Publisher<T> source) {
-        return authenticator.authenticate().thenMany(source);
-    }
+  private <T> Flux<T> authThen(Publisher<T> source) {
+    return authenticator.authenticate().thenMany(source);
+  }
 }

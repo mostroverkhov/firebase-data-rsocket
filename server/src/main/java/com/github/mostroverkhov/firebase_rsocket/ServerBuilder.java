@@ -12,116 +12,107 @@ import com.github.mostroverkhov.firebase_rsocket.internal.handler.RequestHandler
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.read.cache.*;
 import com.github.mostroverkhov.r2.core.DataCodec;
 import com.google.gson.Gson;
-import io.rsocket.Closeable;
 import io.rsocket.transport.netty.server.NettyContextCloseable;
 import io.rsocket.transport.netty.server.TcpServerTransport;
-
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created with IntelliJ IDEA.
- * Author: mostroverkhov
- */
+/** Created with IntelliJ IDEA. Author: mostroverkhov */
 public class ServerBuilder {
-    private Authenticator authenticator;
-    private Optional<Cache> cache = Optional.empty();
-    private final int port;
+  private Authenticator authenticator;
+  private Optional<Cache> cache = Optional.empty();
+  private final int port;
 
-    public ServerBuilder(int port) {
-        assertPort(port);
-        this.port = port;
+  public ServerBuilder(int port) {
+    assertPort(port);
+    this.port = port;
+  }
+
+  public ServerBuilder classpathPropsAuth(String credsFile) {
+    assertCredsFile(credsFile);
+    this.authenticator =
+        new CredentialsAuthenticator(new ClasspathPropsCredentialsSource(credsFile));
+    return this;
+  }
+
+  public ServerBuilder fileSystemPropsAuth(String credsFile) {
+    assertCredsFile(credsFile);
+    this.authenticator =
+        new CredentialsAuthenticator(new FilesystemPropsCredentialsSource(credsFile));
+    return this;
+  }
+
+  public ServerBuilder cacheReads() {
+    cache = Optional.of(Defaults.defaultCache);
+    return this;
+  }
+
+  public ServerBuilder cacheReads(NativeCache nativeCache, CacheDuration cacheDuration) {
+    assertNotNull(nativeCache, cacheDuration);
+    cache = Optional.of(new Cache(nativeCache, cacheDuration));
+    return this;
+  }
+
+  public ServerBuilder noCacheReads() {
+    cache = Optional.empty();
+    return this;
+  }
+
+  public Server<NettyContextCloseable> build() {
+    validateState();
+
+    RequestHandlers handlers = new RequestHandlers(cache);
+    TcpServerTransport transport = TcpServerTransport.create(port);
+
+    ServerConfig<NettyContextCloseable> serverConfig =
+        new ServerConfig<>(
+            handlers, authenticator, Defaults.payloadConverter, transport, Defaults.dataCodec);
+    return new Server<>(serverConfig);
+  }
+
+  private void validateState() {
+    if (authenticator == null) {
+      throw new IllegalArgumentException("Authenticator must be set");
     }
+  }
 
-    public ServerBuilder classpathPropsAuth(String credsFile) {
-        assertCredsFile(credsFile);
-        this.authenticator = new CredentialsAuthenticator(
-                new ClasspathPropsCredentialsSource(credsFile));
-        return this;
+  private static void assertPort(int port) {
+    if (port <= 0) {
+      throw new IllegalArgumentException("Port must have positive value");
     }
+  }
 
-    public ServerBuilder fileSystemPropsAuth(String credsFile) {
-        assertCredsFile(credsFile);
-        this.authenticator = new CredentialsAuthenticator(
-                new FilesystemPropsCredentialsSource(credsFile));
-        return this;
+  private static void assertCredsFile(String credsFile) {
+    if (credsFile == null || credsFile.isEmpty()) {
+      throw new IllegalArgumentException("Credentials file should be present");
     }
+  }
 
-    public ServerBuilder cacheReads() {
-        cache = Optional.of(Defaults.defaultCache);
-        return this;
+  private static void assertNotNull(Object... args) {
+    for (Object arg : args) {
+      if (arg == null) {
+        throw new IllegalArgumentException("Args should not be null: " + Arrays.toString(args));
+      }
     }
+  }
 
-    public ServerBuilder cacheReads(NativeCache nativeCache,
-                                    CacheDuration cacheDuration) {
-        assertNotNull(nativeCache, cacheDuration);
-        cache = Optional.of(new Cache(nativeCache, cacheDuration));
-        return this;
+  private static class Defaults {
+    static final Gson gson = new Gson();
+    static final PayloadConverter payloadConverter = new GsonPayloadConverter(gson);
+    static final DataCodec dataCodec = new GsonDataCodec(gson);
+
+    static final Cache defaultCache =
+        new Cache(
+            new NonconditionalCache(
+                Executors.newSingleThreadScheduledExecutor(Defaults::newDaemonThread)),
+            new CacheDurationConstant(5, TimeUnit.SECONDS));
+
+    static Thread newDaemonThread(Runnable r) {
+      Thread thread = new Thread(r);
+      thread.setDaemon(true);
+      return thread;
     }
-
-    public ServerBuilder noCacheReads() {
-        cache = Optional.empty();
-        return this;
-    }
-
-    public Server<NettyContextCloseable> build() {
-        validateState();
-
-        RequestHandlers handlers = new RequestHandlers(cache);
-        TcpServerTransport transport = TcpServerTransport.create(port);
-
-        ServerConfig<NettyContextCloseable> serverConfig = new ServerConfig<>(
-                handlers,
-                authenticator,
-                Defaults.payloadConverter,
-                transport,
-                Defaults.dataCodec);
-        return new Server<>(serverConfig);
-    }
-
-    private void validateState() {
-        if (authenticator == null) {
-            throw new IllegalArgumentException("Authenticator must be set");
-        }
-    }
-
-    private static void assertPort(int port) {
-        if (port <= 0) {
-            throw new IllegalArgumentException("Port must have positive value");
-        }
-    }
-
-    private static void assertCredsFile(String credsFile) {
-        if (credsFile == null || credsFile.isEmpty()) {
-            throw new IllegalArgumentException("Credentials file should be present");
-        }
-    }
-
-    private static void assertNotNull(Object... args) {
-        for (Object arg : args) {
-            if (arg == null) {
-                throw new IllegalArgumentException("Args should not be null: " + Arrays.toString(args));
-            }
-        }
-    }
-
-    private static class Defaults {
-        static final Gson gson = new Gson();
-        static final PayloadConverter payloadConverter = new GsonPayloadConverter(gson);
-        static final DataCodec dataCodec = new GsonDataCodec(gson);
-
-        static final Cache defaultCache = new Cache(
-                new NonconditionalCache(
-                        Executors.newSingleThreadScheduledExecutor(
-                                Defaults::newDaemonThread)),
-                new CacheDurationConstant(5, TimeUnit.SECONDS));
-
-        static Thread newDaemonThread(Runnable r) {
-            Thread thread = new Thread(r);
-            thread.setDaemon(true);
-            return thread;
-        }
-    }
+  }
 }
