@@ -1,22 +1,21 @@
 
 package com.github.mostroverkhov.firebase_rsocket;
 
+import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.github.mostroverkhov.firebase_rsocket.model.notifications.TypedNotifResponse;
 import com.github.mostroverkhov.firebase_rsocket.model.read.ReadRequest;
 import com.github.mostroverkhov.firebase_rsocket.model.read.TypedReadResponse;
 import com.github.mostroverkhov.firebase_rsocket.requests.Req;
-import io.reactivex.Flowable;
-import io.reactivex.subscribers.TestSubscriber;
-import org.junit.Assert;
-import org.junit.Test;
-import reactor.core.publisher.Flux;
-import reactor.core.scheduler.Schedulers;
-
-import java.util.ArrayList;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import org.junit.Test;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+import reactor.test.StepVerifier;
 
 
 /**
@@ -25,285 +24,306 @@ import java.util.stream.Collectors;
 
 public class ReadRequestFuncTest extends AbstractTest {
 
-    private static final int SAMPLE_ITEM_COUNT = 10;
-    private static final int WINDOW_SIZE = 2;
-    private static final int REQUEST_N = 1;
-    private static final int READ_REPEAT_N = 3;
+  private static final int SAMPLE_ITEM_COUNT = 10;
+  private static final int WINDOW_SIZE = 2;
+  private static final int READ_REPEAT_N = 3;
 
-    @Test
-    public void presentRead() throws Exception {
+  @Test
+  public void presentRead() {
 
-        ReadRequest readRequest = presentReadRequest();
-        Flux<TypedReadResponse<Data>> dataWindowFlow = client.request()
-                .dataWindow(readRequest)
-                .map(dataWindowTransformer);
-        TestSubscriber<TypedReadResponse<Data>> testSubscriber
-                = requestStreamSubscriber();
+    ReadRequest readRequest = presentReadRequest();
+    Flux<TypedReadResponse<Data>> dataWindow = client.request()
+        .dataWindow(readRequest)
+        .map(dataWindowTransformer)
+        .publishOn(Schedulers.elastic());
 
-        dataWindowFlow
-                .publishOn(Schedulers.elastic())
-                .subscribe(testSubscriber);
+    int windowsCount = SAMPLE_ITEM_COUNT / WINDOW_SIZE;
+    StepVerifier
+        .create(dataWindow.collectList())
+        .expectNextMatches(list -> verifyDataWindows(windowsCount, list))
+        .expectComplete()
+        .verify(Duration.ofSeconds(20));
+  }
 
-        testSubscriber.awaitDone(20, TimeUnit.SECONDS);
-        int valueCount = SAMPLE_ITEM_COUNT / WINDOW_SIZE;
-        testSubscriber
-                .assertNoErrors()
-                .assertValueCount(valueCount);
-
-        for (int i = 0; i < valueCount; i++) {
-            int c = i;
-            testSubscriber.assertValueAt(i,
-                    window -> window.getData().size() == 2);
-            testSubscriber.assertValueAt(i,
-                    window -> assertWindowContent(window, c));
-        }
+  private boolean verifyDataWindows(int windowsCount,
+      List<TypedReadResponse<Data>> windows) {
+    if (windows.size() != windowsCount) {
+      return false;
     }
-
-    @Test
-    public void presentReadStartWith() throws Exception {
-
-        ReadRequest allRequest = presentReadRequest();
-        Flux<TypedReadResponse<Data>> allDataWindowFlow = client.request()
-                .dataWindow(allRequest)
-                .map(dataWindowTransformer);
-        TestSubscriber<TypedReadResponse<Data>> allDatatestSubscriber
-                = requestStreamSubscriber();
-
-        allDataWindowFlow
-                .publishOn(Schedulers.elastic())
-                .subscribe(allDatatestSubscriber);
-
-        allDatatestSubscriber.awaitDone(20, TimeUnit.SECONDS);
-        int valueCount = SAMPLE_ITEM_COUNT / WINDOW_SIZE;
-
-        ReadRequest tailRequest = Req
-                .read("test", "read")
-                .asc()
-                .windowWithSize(WINDOW_SIZE)
-                .orderByKey()
-                .startWith(lastWindowStartKey(allDatatestSubscriber, valueCount))
-                .build();
-
-        Flux<TypedReadResponse<Data>> tailDataWindowFlow = client.request()
-                .dataWindow(tailRequest).map(dataWindowTransformer);
-        TestSubscriber<TypedReadResponse<Data>> tailTestSubscriber
-                = requestStreamSubscriber();
-
-        tailDataWindowFlow
-                .publishOn(Schedulers.elastic())
-                .subscribe(tailTestSubscriber);
-
-        tailTestSubscriber.awaitDone(20, TimeUnit.SECONDS);
-        tailTestSubscriber
-                .assertNoErrors()
-                .assertValueCount(1);
-        tailTestSubscriber.assertValueAt(0,
-                window -> window.getData().size() == 2);
-    }
-
-    @Test
-    public void missingRead() throws Exception {
-
-        ReadRequest readRequest = missingReadRequest();
-        Flux<TypedReadResponse<Data>> dataWindowFlow = client.request()
-                .dataWindow(readRequest).map(dataWindowTransformer);
-        TestSubscriber<TypedReadResponse<Data>> testSubscriber
-                = requestStreamSubscriber();
-
-        dataWindowFlow
-                .publishOn(Schedulers.elastic())
-                .subscribe(testSubscriber);
-
-        testSubscriber.awaitDone(10, TimeUnit.SECONDS);
-        testSubscriber
-                .assertNoErrors()
-                .assertComplete()
-                .assertValueCount(0);
-    }
-
-    @Test
-    public void presentReadRepeat() throws Exception {
-
-        ReadRequest readRequest = presentReadRequest();
-        Flux<TypedReadResponse<Data>> dataWindowFlow = client.request()
-                .dataWindow(readRequest).map(dataWindowTransformer);
-        TestSubscriber<TypedReadResponse<Data>> testSubscriber
-                = requestStreamSubscriber();
-
-        dataWindowFlow
-                .repeat(READ_REPEAT_N)
-                .publishOn(Schedulers.elastic())
-                .subscribe(testSubscriber);
-
-        testSubscriber.awaitDone(30, TimeUnit.SECONDS);
-        int valueCount = READ_REPEAT_N * SAMPLE_ITEM_COUNT / WINDOW_SIZE;
-        testSubscriber
-                .assertNoErrors()
-                .assertValueCount(valueCount);
-    }
-
-    @Test
-    public void presentReadNotifications() throws Exception {
-
-        ReadRequest readRequest = presentReadRequest();
-        Flux<TypedNotifResponse<Data>> notifFlow = client.request()
-                .dataWindowNotifications(readRequest)
-                .map(notifTransformer);
-        TestSubscriber<TypedNotifResponse<Data>> testSubscriber = TestSubscriber.create();
-        notifFlow.publishOn(Schedulers.elastic())
-                .subscribe(testSubscriber);
-        testSubscriber.awaitDone(10, TimeUnit.SECONDS);
-        testSubscriber.assertNoErrors();
-        testSubscriber.assertNotComplete();
-        List<TypedNotifResponse<Data>> events = testSubscriber.values();
-        Assert.assertEquals(3, events.size());
-        List<TypedNotifResponse<Data>> changeEvents = changeEvents(events);
-
-        List<Data> dataList = changeEvents.stream().map(TypedNotifResponse::getItem)
-                .collect(Collectors.toList());
-        Assert.assertTrue(contains(dataList, new Data("0", "0")));
-        Assert.assertTrue(contains(dataList, new Data("1", "1")));
-
-        Optional<TypedNotifResponse<Data>> maybeNextWindow = nextWindowEvent(events);
-        Assert.assertTrue(maybeNextWindow.isPresent());
-        ReadRequest nextRead = maybeNextWindow.get().getNextDataWindow();
-        Assert.assertNotNull(nextRead);
-        Assert.assertNotNull(nextRead.getWindowStartWith());
-    }
-
-    @Test
-    public void presentReadNotificationsChained() throws Exception {
-
-        ReadRequest readRequest = presentReadRequest();
-        Flux<TypedNotifResponse<Data>> notifFlow = client.request()
-                .dataWindowNotifications(readRequest)
-                .map(notifTransformer);
-        TestSubscriber<TypedNotifResponse<Data>> testSubscriber = TestSubscriber.create();
-
-        notifFlow.publishOn(Schedulers.elastic())
-                .filter(TypedNotifResponse::isNextWindow)
-                .map(TypedNotifResponse::getNextDataWindow)
-                .flatMap(req -> client.request()
-                        .dataWindowNotifications(req)
-                        .map(notifTransformer))
-                .subscribe(testSubscriber);
-
-        testSubscriber.awaitDone(10, TimeUnit.SECONDS);
-        testSubscriber.assertNoErrors();
-        testSubscriber.assertNotComplete();
-        List<TypedNotifResponse<Data>> events = testSubscriber.values();
-        Assert.assertEquals(3, events.size());
-        Optional<TypedNotifResponse<Data>> maybeNextWindow = nextWindowEvent(events);
-
-        Assert.assertTrue(maybeNextWindow.isPresent());
-        ReadRequest nextRead = maybeNextWindow.get().getNextDataWindow();
-
-        List<TypedNotifResponse<Data>> changeEvents = changeEvents(events);
-        List<Data> dataList = changeEvents.stream().map(TypedNotifResponse::getItem)
-                .collect(Collectors.toList());
-        Assert.assertTrue(contains(dataList, new Data("2", "2")));
-        Assert.assertTrue(contains(dataList, new Data("3", "3")));
-
-        Assert.assertNotNull(nextRead);
-        Assert.assertNotNull(nextRead.getWindowStartWith());
-    }
-
-    @Test
-    public void absentReadNotifications() throws Exception {
-
-        ReadRequest readRequest = missingReadRequest();
-        Flux<TypedNotifResponse<Data>> notifFlow = client.request()
-                .dataWindowNotifications(readRequest)
-                .map(notifTransformer);
-        TestSubscriber<TypedNotifResponse<Data>> testSubscriber = TestSubscriber.create();
-        notifFlow.publishOn(Schedulers.elastic())
-                .subscribe(testSubscriber);
-        testSubscriber.awaitDone(10, TimeUnit.SECONDS);
-        testSubscriber.assertNoErrors();
-        testSubscriber.assertNotComplete();
-        List<TypedNotifResponse<Data>> events = testSubscriber.values();
-        Assert.assertEquals(1, events.size());
-        TypedNotifResponse<Data> dataItem = events.get(0);
-        Assert.assertTrue(dataItem.isNextWindow());
-        Assert.assertTrue((dataItem.getNextDataWindow().getWindowStartWith().isEmpty()));
-    }
-
-    private <T> boolean contains(List<T> items, T item) {
-        for (T t : items) {
-            if (t.equals(item)) {
-                return true;
-            }
-        }
+    for (int i = 0; i < windowsCount; i++) {
+      TypedReadResponse<Data> window = windows.get(i);
+      if (window.getData().size() != 2) {
         return false;
+      }
+      if (!assertWindowContent(window, i)) {
+        return false;
+      }
     }
+    return true;
+  }
 
-    private <T> Optional<TypedNotifResponse<T>> nextWindowEvent(List<TypedNotifResponse<T>> notifResponses) {
+  @Test
+  public void presentReadStartWith() {
 
-        for (TypedNotifResponse<T> resp : notifResponses) {
-            if (resp.isNextWindow()) {
-                return Optional.of(resp);
-            }
+    ReadRequest allRequest = presentReadRequest();
+    Flux<TypedReadResponse<Data>> readResponse =
+        client.request()
+            .dataWindow(allRequest)
+            .map(dataWindowTransformer)
+            .publishOn(Schedulers.elastic());
+
+    TypedReadResponse<Data> last = readResponse
+        .takeLast(1)
+        .blockFirst();
+    String startKey = last
+        .getReadRequest()
+        .getWindowStartWith();
+
+    ReadRequest tailRequest = Req
+        .read("test", "read")
+        .asc()
+        .windowWithSize(WINDOW_SIZE)
+        .orderByKey()
+        .startWith(startKey)
+        .build();
+
+    Flux<TypedReadResponse<Data>> tailResponse = client
+        .request()
+        .dataWindow(tailRequest)
+        .map(dataWindowTransformer)
+        .publishOn(Schedulers.elastic());
+
+    StepVerifier
+        .create(tailResponse)
+        .expectNextMatches(window -> {
+          List<Data> data = window.getData();
+          return data.size() == 2 &&
+              contains(data,
+                  new Data("8", "8"),
+                  new Data("9", "9"));
+        })
+        .expectComplete()
+        .verify(Duration.ofSeconds(20));
+  }
+
+  @Test
+  public void missingRead() {
+
+    ReadRequest readRequest = missingReadRequest();
+    Flux<TypedReadResponse<Data>> response =
+        client
+            .request()
+            .dataWindow(readRequest)
+            .map(dataWindowTransformer)
+            .publishOn(Schedulers.elastic());
+
+    StepVerifier.create(response)
+        .expectNextCount(0)
+        .expectComplete()
+        .verify(Duration.ofSeconds(10));
+  }
+
+  @Test
+  public void presentReadRepeat() {
+
+    ReadRequest readRequest = presentReadRequest();
+    Flux<TypedReadResponse<Data>> dataWindowFlow = client
+        .request()
+        .dataWindow(readRequest)
+        .map(dataWindowTransformer);
+
+    Flux<TypedReadResponse<Data>> response = dataWindowFlow
+        .repeat(READ_REPEAT_N)
+        .publishOn(Schedulers.elastic());
+
+    int windowsCount = READ_REPEAT_N * SAMPLE_ITEM_COUNT / WINDOW_SIZE;
+
+    StepVerifier
+        .create(response)
+        .expectNextCount(windowsCount)
+        .expectComplete()
+        .verify(Duration.ofSeconds(30));
+  }
+
+  @Test
+  public void presentReadNotifications() {
+
+    ReadRequest readRequest = presentReadRequest();
+    Mono<List<TypedNotifResponse<Data>>> notifications =
+        client
+            .request()
+            .dataWindowNotifications(readRequest)
+            .map(notifTransformer)
+            .takeUntilOther(Mono.delay(Duration.ofSeconds(10)))
+            .collectList()
+            .publishOn(Schedulers.elastic());
+
+    Duration duration = StepVerifier
+        .create(notifications)
+        .expectNextMatches(responses ->
+            dataWindowMatches(
+                responses,
+                new Data("0", "0"),
+                new Data("1", "1")))
+        .expectComplete()
+        .verify(Duration.ofSeconds(11));
+
+    assertThat(duration)
+        .isBetween(
+            Duration.ofSeconds(10),
+            Duration.ofSeconds(11));
+  }
+
+  @Test
+  public void presentReadNotificationsChained() {
+
+    ReadRequest readRequest = presentReadRequest();
+    Flux<TypedNotifResponse<Data>> notifications = client
+        .request()
+        .dataWindowNotifications(readRequest)
+        .map(notifTransformer);
+
+    Mono<List<TypedNotifResponse<Data>>> nextWindowNotifications =
+        notifications
+            .publishOn(Schedulers.elastic())
+            .filter(TypedNotifResponse::isNextWindow)
+            .map(TypedNotifResponse::getNextDataWindow)
+            .flatMap(nextWindowRequest -> client.request()
+                .dataWindowNotifications(nextWindowRequest)
+                .map(notifTransformer))
+            .takeUntilOther(Mono.delay(Duration.ofSeconds(10)))
+            .collectList();
+
+    Duration duration = StepVerifier.create(nextWindowNotifications)
+        .expectNextMatches(responses ->
+            dataWindowMatches(responses,
+                new Data("2", "2"),
+                new Data("3", "3")))
+        .expectComplete()
+        .verify(Duration.ofSeconds(11));
+
+    assertThat(duration)
+        .isBetween(
+            Duration.ofSeconds(10),
+            Duration.ofSeconds(11));
+  }
+
+  @Test
+  public void absentReadNotifications() {
+
+    ReadRequest readRequest = missingReadRequest();
+
+    Mono<List<TypedNotifResponse<Data>>> notifications = client
+        .request()
+        .dataWindowNotifications(readRequest)
+        .map(notifTransformer)
+        .takeUntilOther(Mono.delay(Duration.ofSeconds(10)))
+        .collectList()
+        .publishOn(Schedulers.elastic());
+
+    Duration duration = StepVerifier
+        .create(notifications)
+        .expectNextMatches(responses -> {
+          boolean sizeMatches = responses.size() == 1;
+          if (!sizeMatches) {
+            return false;
+          }
+          TypedNotifResponse<Data> response = responses.get(0);
+          return response.isNextWindow()
+              && response
+              .getNextDataWindow()
+              .getWindowStartWith()
+              .isEmpty();
+        }).expectComplete()
+        .verify(Duration.ofSeconds(11));
+
+    assertThat(duration)
+        .isBetween(
+            Duration.ofSeconds(10),
+            Duration.ofSeconds(11));
+  }
+
+  private boolean dataWindowMatches(
+      List<TypedNotifResponse<Data>> responses,
+      Data first,
+      Data second) {
+    boolean sizeMatches = responses.size() == 3;
+    List<Data> dataList = changeEvents(responses);
+    boolean dataMatches =
+        contains(dataList, first, second);
+
+    Optional<TypedNotifResponse<Data>> nextWindow =
+        singleNextEvent(responses);
+    boolean nextWindowMatches = nextWindow
+        .map(TypedNotifResponse::getNextDataWindow)
+        .map(ReadRequest::getWindowStartWith)
+        .isPresent();
+    return sizeMatches && dataMatches && nextWindowMatches;
+  }
+
+  private <T> boolean contains(List<T> items, T... targetItems) {
+    for (T targetItem : targetItems) {
+      boolean found = false;
+      for (T item : items) {
+        if (item.equals(targetItem)) {
+          found = true;
+          break;
         }
-        return Optional.empty();
+      }
+      if (!found) {
+        return false;
+      }
     }
+    return true;
+  }
 
-    private <T> List<TypedNotifResponse<T>> changeEvents(List<TypedNotifResponse<T>> notifResponses) {
-        List<TypedNotifResponse<T>> res = new ArrayList<>();
-        for (TypedNotifResponse<T> resp : notifResponses) {
-            if (resp.isChangeEvent()) {
-                res.add(resp);
-            }
-        }
-        return res;
+  private <T> Optional<TypedNotifResponse<T>> singleNextEvent(
+      List<TypedNotifResponse<T>> notifResponses) {
+    List<TypedNotifResponse<T>> nextEvents = notifResponses.stream()
+        .filter(TypedNotifResponse::isNextWindow)
+        .collect(toList());
+    if (nextEvents.size() == 1) {
+      return Optional.of(nextEvents.get(0));
+    } else {
+      return Optional.empty();
     }
+  }
 
-    private String lastWindowStartKey(TestSubscriber<TypedReadResponse<Data>> testSubscriber,
-                                      int valueCount) {
-        return testSubscriber
-                .values()
-                .get(valueCount - 1)
-                .getReadRequest()
-                .getWindowStartWith();
+  private <T> List<T> changeEvents(List<TypedNotifResponse<T>> notifResponses) {
+    return notifResponses
+        .stream()
+        .filter(TypedNotifResponse::isChangeEvent)
+        .map(TypedNotifResponse::getItem)
+        .collect(toList());
+  }
+
+  private ReadRequest presentReadRequest() {
+    return Req
+        .read("test", "read")
+        .asc()
+        .windowWithSize(WINDOW_SIZE)
+        .orderByKey()
+        .build();
+  }
+
+  private ReadRequest missingReadRequest() {
+    return Req
+        .read("foo", "bar")
+        .asc()
+        .windowWithSize(WINDOW_SIZE)
+        .orderByKey()
+        .build();
+  }
+
+  private boolean assertWindowContent(TypedReadResponse<Data> window, int index) {
+    int doubledIndex = index * 2;
+    for (Data data : window.getData()) {
+      if (!String.valueOf(doubledIndex).equals(data.getId())) {
+        return false;
+      }
+      doubledIndex++;
     }
-
-    private ReadRequest presentReadRequest() {
-        return Req
-                .read("test", "read")
-                .asc()
-                .windowWithSize(WINDOW_SIZE)
-                .orderByKey()
-                .build();
-    }
-
-    private ReadRequest missingReadRequest() {
-        return Req
-                .read("foo", "bar")
-                .asc()
-                .windowWithSize(WINDOW_SIZE)
-                .orderByKey()
-                .build();
-    }
-
-
-    private TestSubscriber<TypedReadResponse<Data>> requestStreamSubscriber() {
-        return new TestSubscriber<TypedReadResponse<Data>>(REQUEST_N) {
-            @Override
-            public void onNext(TypedReadResponse<Data> o) {
-                super.onNext(o);
-                request(REQUEST_N);
-            }
-        };
-    }
-
-    private boolean assertWindowContent(TypedReadResponse<Data> window, int index) {
-        int doubledIndex = index * 2;
-        for (Data data : window.getData()) {
-            if (!String.valueOf(doubledIndex).equals(data.getId())) {
-                return false;
-            }
-            doubledIndex++;
-        }
-        return true;
-    }
+    return true;
+  }
 }
 

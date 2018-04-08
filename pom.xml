@@ -21,6 +21,7 @@
         <slf4j.version>1.7.25</slf4j.version>
         <argparse4j.version>0.7.0</argparse4j.version>
         <junit.version>4.12</junit.version>
+        <assertj.version>3.9.1</assertj.version>
         <hdrhistogram.version>2.1.9</hdrhistogram.version>
         <version>0.2.0-SNAPSHOT</version>
     </properties>
@@ -99,6 +100,11 @@
                 <groupId>io.projectreactor</groupId>
                 <artifactId>reactor-test</artifactId>
                 <version>${reactor.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.github.mostroverkhov</groupId>
