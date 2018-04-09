@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.HdrHistogram.ConcurrentHistogram;
 import org.HdrHistogram.Histogram;
@@ -31,13 +32,13 @@ public class ResponseDelayEstimate extends AbstractTest {
   public void read() {
 
     ReadRequest readRequest = requestStreamRequest();
-    Flux<TypedReadResponse<Data>> dataWindowFlow =
+    Flux<TypedReadResponse<Data>> dataWindow =
         client
             .request()
             .dataWindow(readRequest)
             .map(dataWindowTransformer)
             .repeatWhen(completed -> completed.flatMap(Flowable::just))
-            .publishOn(Schedulers.elastic());
+            .publishOn(Schedulers.fromExecutorService(Executors.newFixedThreadPool(16)));
 
     ConcurrentHistogram histogram = new ConcurrentHistogram(20000, 1);
     histogram.setAutoResize(true);
@@ -45,7 +46,7 @@ public class ResponseDelayEstimate extends AbstractTest {
 
     List<TestSubscriber> subscribers = subscribers(SUBSCRIBERS_COUNT, recorder);
 
-    subscribers.forEach(dataWindowFlow::subscribe);
+    subscribers.forEach(dataWindow::subscribe);
     Mono.delay(Duration.ofSeconds(10)).block();
     subscribers.forEach(TestSubscriber::cancel);
     histogram.outputPercentileDistribution(System.out, 1d);
