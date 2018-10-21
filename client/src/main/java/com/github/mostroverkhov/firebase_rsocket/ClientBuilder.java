@@ -4,9 +4,10 @@ import com.github.mostroverkhov.firebase_rsocket.codec.gson.GsonDataCodec;
 import com.github.mostroverkhov.firebase_rsocket.typed.Typed;
 import com.github.mostroverkhov.firebase_rsocket.typed.gson.GsonTyped;
 import com.github.mostroverkhov.firebase_rsocket.typed.gson.JsonAsStringTypeAdapter;
+import com.github.mostroverkhov.r2.core.Codecs;
 import com.github.mostroverkhov.r2.core.DataCodec;
-import com.github.mostroverkhov.r2.core.requester.RequesterFactory;
-import com.github.mostroverkhov.r2.java.R2Client;
+import com.github.mostroverkhov.r2.core.RequesterFactory;
+import com.github.mostroverkhov.r2.reactor.R2Client;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.rsocket.RSocketFactory;
@@ -29,7 +30,7 @@ public class ClientBuilder {
   public Mono<Client> build() {
     return new R2Client()
         .connectWith(RSocketFactory.connect())
-        .configureRequester(b -> b.codec(Defaults.dataCodec))
+        .configureAcceptor(b -> b.codecs(new Codecs().add(Defaults.dataCodec)))
         .transport(TcpClientTransport.create(host, port))
         .start()
         .map(this::createClient);

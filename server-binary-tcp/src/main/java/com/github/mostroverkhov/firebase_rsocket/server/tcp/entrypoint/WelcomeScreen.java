@@ -13,18 +13,21 @@ class WelcomeScreen {
   public void show() {
     System.out.println("\nFirebase-rsocket-server\n");
     System.out.println("Version: " + data.getVersion());
-    System.out.println("Transport: " + data.getTransport() + " on port: " + data.getPort());
+    System.out.println("Transport: " + data.getTransport());
+    System.out.println("Address: " + data.getHost() + ":" + data.getPort());
     System.out.println("Started at " + new Date());
   }
 
   public static class Data {
     private final String version;
     private final String transport;
+    private String host;
     private final String port;
 
-    public Data(String version, String transport, String port) {
+    public Data(String version, String transport, String host, String port) {
       this.version = version;
       this.transport = transport;
+      this.host = host;
       this.port = port;
     }
 
@@ -34,6 +37,10 @@ class WelcomeScreen {
 
     public String getTransport() {
       return transport;
+    }
+
+    public String getHost() {
+      return host;
     }
 
     public String getPort() {

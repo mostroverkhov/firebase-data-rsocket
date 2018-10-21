@@ -12,7 +12,7 @@ import com.github.mostroverkhov.firebase_rsocket.internal.handler.RequestHandler
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.read.cache.*;
 import com.github.mostroverkhov.r2.core.DataCodec;
 import com.google.gson.Gson;
-import io.rsocket.transport.netty.server.NettyContextCloseable;
+import io.rsocket.transport.netty.server.CloseableChannel;
 import io.rsocket.transport.netty.server.TcpServerTransport;
 import java.util.Arrays;
 import java.util.Optional;
@@ -23,10 +23,13 @@ import java.util.concurrent.TimeUnit;
 public class ServerBuilder {
   private Authenticator authenticator;
   private Optional<Cache> cache = Optional.empty();
+  private final String host;
   private final int port;
 
-  public ServerBuilder(int port) {
+  public ServerBuilder(String host, int port) {
+    assertHost(host);
     assertPort(port);
+    this.host = host;
     this.port = port;
   }
 
@@ -60,13 +63,13 @@ public class ServerBuilder {
     return this;
   }
 
-  public Server<NettyContextCloseable> build() {
+  public Server<CloseableChannel> build() {
     validateState();
 
     RequestHandlers handlers = new RequestHandlers(cache);
-    TcpServerTransport transport = TcpServerTransport.create(port);
+    TcpServerTransport transport = TcpServerTransport.create(host, port);
 
-    ServerConfig<NettyContextCloseable> serverConfig =
+    ServerConfig<CloseableChannel> serverConfig =
         new ServerConfig<>(
             handlers, authenticator, Defaults.payloadConverter, transport, Defaults.dataCodec);
     return new Server<>(serverConfig);
@@ -81,6 +84,12 @@ public class ServerBuilder {
   private static void assertPort(int port) {
     if (port <= 0) {
       throw new IllegalArgumentException("Port must have positive value");
+    }
+  }
+
+  private static void assertHost(String host) {
+    if (host == null || host.isEmpty()) {
+      throw new IllegalArgumentException("Bind address must be non-empty");
     }
   }
 

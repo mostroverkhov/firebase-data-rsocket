@@ -6,11 +6,11 @@ import com.github.mostroverkhov.firebase_rsocket.internal.auth.Authenticator;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.AuthenticatingServiceHandler;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.RequestHandlers;
 import com.github.mostroverkhov.firebase_rsocket.internal.handler.ServiceHandler;
+import com.github.mostroverkhov.r2.core.Codecs;
 import com.github.mostroverkhov.r2.core.DataCodec;
-import com.github.mostroverkhov.r2.core.responder.Codecs;
-import com.github.mostroverkhov.r2.core.responder.Services;
-import com.github.mostroverkhov.r2.java.JavaAcceptorBuilder;
-import com.github.mostroverkhov.r2.java.R2Server;
+import com.github.mostroverkhov.r2.core.Services;
+import com.github.mostroverkhov.r2.reactor.R2Server;
+import com.github.mostroverkhov.r2.reactor.ServerAcceptorBuilder;
 import io.rsocket.Closeable;
 import io.rsocket.RSocketFactory;
 import io.rsocket.transport.ServerTransport;
@@ -41,11 +41,11 @@ public class Server<T extends Closeable> {
         .start();
   }
 
-  private JavaAcceptorBuilder configureAcceptor(JavaAcceptorBuilder builder) {
+  private ServerAcceptorBuilder configureAcceptor(ServerAcceptorBuilder builder) {
     return builder
         .codecs(new Codecs().add(dataCodec))
         .services(
-            ctx ->
+            (ctx, requesterFactory) ->
                 new Services()
                     .add(
                         new AuthenticatingServiceHandler(

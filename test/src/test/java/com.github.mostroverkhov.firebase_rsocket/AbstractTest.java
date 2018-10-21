@@ -5,7 +5,7 @@ import com.github.mostroverkhov.firebase_rsocket.model.notifications.TypedNotifR
 import com.github.mostroverkhov.firebase_rsocket.model.read.ReadResponse;
 import com.github.mostroverkhov.firebase_rsocket.model.read.TypedReadResponse;
 import com.github.mostroverkhov.firebase_rsocket.typed.Typed;
-import io.rsocket.transport.netty.server.NettyContextCloseable;
+import io.rsocket.transport.netty.server.CloseableChannel;
 import java.time.Duration;
 import java.util.function.Function;
 import org.junit.After;
@@ -14,7 +14,9 @@ import reactor.core.publisher.Mono;
 
 /** Created with IntelliJ IDEA. Author: mostroverkhov */
 public class AbstractTest {
+  private static final String SERVER_HOST = "127.0.0.1";
   private static final int SERVER_PORT = 8090;
+
   protected Mono<Void> serverStop;
   protected Client client;
   protected Function<ReadResponse, TypedReadResponse<Data>> dataWindowTransformer;
@@ -22,11 +24,14 @@ public class AbstractTest {
 
   @Before
   public void setUp() throws Exception {
-    Server<NettyContextCloseable> server =
-        new ServerBuilder(SERVER_PORT).cacheReads().classpathPropsAuth("creds.properties").build();
+    Server<CloseableChannel> server =
+        new ServerBuilder(SERVER_HOST, SERVER_PORT)
+            .cacheReads()
+            .classpathPropsAuth("creds.properties")
+            .build();
 
-    NettyContextCloseable closeable = server.start().block();
-    serverStop = closeable.close();
+    CloseableChannel closeable = server.start().block();
+    serverStop = Mono.fromRunnable(closeable::dispose).then(closeable.onClose());
 
     client = new ClientBuilder("localhost", SERVER_PORT).build().block();
 
