@@ -3,7 +3,7 @@ package com.github.mostroverkhov.firebase_rsocket.server.tcp.entrypoint;
 import com.github.mostroverkhov.firebase_rsocket.Server;
 import com.github.mostroverkhov.firebase_rsocket.ServerBuilder;
 import io.rsocket.Closeable;
-import io.rsocket.transport.netty.server.NettyContextCloseable;
+import io.rsocket.transport.netty.server.CloseableChannel;
 import reactor.core.publisher.Mono;
 
 /** Created with IntelliJ IDEA. Author: mostroverkhov */
@@ -20,7 +20,7 @@ public class StandaloneServerEntryPoint {
       WelcomeScreen welcomeScreen = new WelcomeScreen(data(config, metadata));
       welcomeScreen.show();
 
-      Mono<NettyContextCloseable> started = newServer(config).start();
+      Mono<CloseableChannel> started = newServer(config).start();
       started.flatMap(Closeable::onClose).block();
 
     } catch (ArgsException e) {
@@ -28,15 +28,22 @@ public class StandaloneServerEntryPoint {
     }
   }
 
-  private static Server<NettyContextCloseable> newServer(Configuration conf) {
+  private static Server<CloseableChannel> newServer(Configuration conf) {
+    String serverAddress = conf.getBindAddress();
     Integer serverPort = conf.getPort();
     String credsFile = conf.getCredsFile();
 
-    return new ServerBuilder(serverPort).cacheReads().fileSystemPropsAuth(credsFile).build();
+    return new ServerBuilder(serverAddress, serverPort)
+        .cacheReads()
+        .fileSystemPropsAuth(credsFile)
+        .build();
   }
 
   static WelcomeScreen.Data data(Configuration config, ArtifactMetadataLoader.Metadata metadata) {
     return new WelcomeScreen.Data(
-        metadata.getVersion().orElse("unknown"), TRANSPORT, String.valueOf(config.getPort()));
+        metadata.getVersion().orElse("unknown"),
+        TRANSPORT,
+        String.valueOf(config.getBindAddress()),
+        String.valueOf(config.getPort()));
   }
 }

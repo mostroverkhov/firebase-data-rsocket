@@ -8,6 +8,7 @@ RSocket is an application protocol providing Reactive Streams semantics over an 
 Server
 ```
      Mono<NettyContextCloseable> startedServer = new ServerBuilder(
+                     SERVER_HOST,
                      SERVER_PORT)
                      .cacheReads()
                      .classpathPropsAuth("creds.properties")
@@ -22,7 +23,7 @@ Builtin implementation provides simple caching of every data window query for
 
 Client
 ```
-        Mono<Client> client = new ClientBuilder(HOST, SERVER_PORT)
+        Mono<Client> client = new ClientBuilder(SERVER_HOST, SERVER_PORT)
                                 .build();
         Mono<FirebaseService> = client.map(Client::request);                        
 ```
@@ -101,18 +102,18 @@ Client
  Removes data on path `test\delete\missi`
 
 #### Standalone binaries
-`mvn package` on `server-binary-tcp` will produce runnable fat jar. Authorization credentials and port must be provided with `--config`, `--port` arguments.   
+`mvn package` on `server-binary-tcp` will produce runnable fat jar. Authorization credentials and address must be provided with `--config`, and `--host`, `--port` arguments.   
 
 Server can be started as    
 ```
-java -jar firebase-rsocket-server-binary-tcp-<VERSION>.jar --port <PORT> --config <CREDENTIALS_FILE>
+java -jar firebase-rsocket-server-binary-tcp-<VERSION>.jar --host <BIND_ADDRESS> --port <PORT> --config <CREDENTIALS_FILE>
 ```    
 
 For example
 ```
-java -jar firebase-rsocket-server-binary-tcp-0.2-SNAPSHOT.jar --port 8090 --config creds.properties
+java -jar firebase-rsocket-server-binary-tcp-0.2-SNAPSHOT.jar --host 127.0.0.1 --port 8090 --config creds.properties
 ```
-will start server on 8090 port, and assumes credentials file `creds.properties` is in same directory as `jar`. It's convenient to have firebase service account file in same directory aswell. Credentials file format is described in `Authorization` block below
+will start server on `127.0.0.1:8090`, and assumes credentials file `creds.properties` is in same directory as `jar`. Credentials file format is described in `Authorization` block below
     
 #### Authorization
 
@@ -133,7 +134,7 @@ where `authFile` is Firebase service account file (get one as described in [docs
  It uses props based authenticator, credentials are expected to be in `resources/creds.properties`.
    
 #### LICENSE
-Copyright 2017 Maksym Ostroverkhov
+Copyright 2018 Maksym Ostroverkhov
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

@@ -123,7 +123,7 @@ public class ReadRequestFuncTest extends AbstractTest {
     Flux<TypedReadResponse<Data>> response =
         dataWindowFlow.repeat(READ_REPEAT_N).publishOn(Schedulers.elastic());
 
-    int windowsCount = READ_REPEAT_N * SAMPLE_ITEM_COUNT / WINDOW_SIZE;
+    int windowsCount = (READ_REPEAT_N + 1) * SAMPLE_ITEM_COUNT / WINDOW_SIZE;
 
     StepVerifier.create(response)
         .expectNextCount(windowsCount)
